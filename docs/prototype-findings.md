@@ -18,11 +18,11 @@ we carry across, and what we leave behind.
 
 **Is matching satisfying?** *Yes, unreservedly.* Finding the right good at the right shop for the right buyer was
 compelling from the first buy-and-sell run — *"finding the shop that sells blasting charges and remembering that the
-buyer on Dock Nine wants some was already exciting"* — and it held up across every session after. The model of
+buyer on Dock Nine wants some was already exciting"* — and it held up across every run after. The model of
 finding things and bringing them to people is the game.
 
 **Does the galaxy feel alive?** *Yes, after a rebuild of how it changes, and only at the right volume.* The first
-mechanism (per-want expiry and recreation, rolled per entity per jump) worked and was far too loud: four sessions in a
+mechanism (per-want expiry and recreation, rolled per entity per jump) worked and was far too loud: four runs in a
 row reported three or four messages on every landing. Three attempts to fix it failed. The fourth — a galaxy-wide
 change budget plus a relevance filter — worked, and the designer's verdict on the bracketing runs was **"alive at 4,
 two reads closer to dead than to calm."** The mechanism is a keeper; the number is content.
@@ -158,7 +158,7 @@ fought it.
 
 **Let the player declare their plan, and make the declaration a verb.**
 `watch` — the player saying in so many words that their plan runs through this buyer or this lot, capped at five —
-earned its place in a single session. It was the only route by which good news could reach the player at all, the
+earned its place in a single run. It was the only route by which good news could reach the player at all, the
 only route for "they're buying again" and "that lot is being bought out", and the cap was hit in both bracketing runs
 without the refusal reading as a wall. The designer's own best moment with it: *a hold full of wheat, a watch set on
 the galley that had gone dark, and a sale made when it reopened.*
@@ -174,7 +174,7 @@ arriving, lots being picked over by someone other than the player — and almost
 out to be *"the quietest-working part of the whole change"*: eight to twelve lots appearing over a run and six to
 fifteen being bought out from under the player, all of it read off a live, galaxy-wide trade guide, with nothing
 shouted. Meanwhile announced change skewed heavily to bad news — **5.3 doors closing for every door opening** — and
-was the complaint for four sessions running.
+was the complaint for four runs running.
 
 Two consequences. First, **a strong, always-current, galaxy-wide reference surface is not UI polish; it is the organ
 that carries aliveness**, and the full game should budget change preferentially toward things the player *finds*
@@ -202,7 +202,7 @@ not the want.** Per-want churn was both noisier and less legible than per-person
 ### 2.3 People
 
 **Access is the reward the player notices; money is the one they don't.**
-Introductions and leads were the standout mechanic of the entire prototype, in every session, with *none ever
+Introductions and leads were the standout mechanic of the entire prototype, in every run, with *none ever
 missed* once written as the character's own line carrying a named want: *"the introductions, especially the
 multi-level ones, really worked nicely."* An introduction creates a pure travel sub-goal whose payoff is access
 rather than credits, and it was the best-working thing in the game. Relationship payoff should lean on **access,
@@ -238,7 +238,7 @@ want, a price only offered in person, a story beat.
 ### 2.4 Content
 
 **Invert the tag-to-good ratio, and vague wants start working.**
-Vague wants were the most promising idea in the content and went nearly unused across three sessions: *"I don't think
+Vague wants were the most promising idea in the content and went nearly unused across three runs: *"I don't think
 I did much with the vague wants, at all."* The content explains why, countably: **27 tags across 24 goods**, with the
 largest tag covering five goods. At a near-1:1 ratio a vague want asks *"is there anything at all that fits?"*, which
 is strictly harder than a plain want and pays no more for the trouble. The designer's own reading is the fix:
@@ -286,7 +286,7 @@ wanted) instead of a grid. Two smaller notes worth keeping: minor buyers are pla
 characters are satisfying an *urge* and should lean vague; and how funny each character is should be a decided part of
 their personality rather than an accident of who got written first.
 
-### 2.5 Goal structure and the session
+### 2.5 Goal structure and the campaign
 
 **Don't let one place and one deadline own the endgame.**
 The debt was payable only at the lender's station, with a hard jump limit, so late in a run every sub-goal was judged
@@ -325,7 +325,7 @@ what is hidden per run, and hold more content than one run can see.**
 
 **Interruption is a design input.**
 The browser's back button ended two play-test runs outright, because nothing was saved. A longer game needs
-save/resume, which means being interrupted and playing across sessions are inputs to the design from the start, not a
+save/resume, which means being interrupted and playing across sittings are inputs to the design from the start, not a
 feature to add at the end.
 
 ---
@@ -396,7 +396,7 @@ Move these to the new repo, in `docs/`, as prototype-era decisions that are real
 - **`design-overview.md`**, this document's companion at a higher altitude, written the same day. It holds the game's
   name, the division between what to design up front and what to settle by playing, the nine top-level chunks the
   game is made of with what each one has already settled here, the demonstration that galaxy scale is a consequence
-  rather than a decision, and the one thing to settle before anything else: **the shape of a session**, which is the
+  rather than a decision, and the one thing to settle before anything else: **the shape of a campaign**, which is the
   unexamined assumption this document carries out of the prototype. Read it for what is undecided and in what order;
   read this one for what is known.
 - **This document.**
@@ -425,7 +425,7 @@ Move these to the new repo, in `docs/`, as prototype-era decisions that are real
 ### 5.3 Architecture to keep as principles, not as code
 
 The code is a throw-away prototype and is not coming along. These five choices were never the source of a problem in
-any session and should be made again from scratch:
+any sitting and should be made again from scratch:
 
 1. **One seam: a pure rules engine with no UI**, driven by start-a-run / act / read-only queries, deterministic for a
    given content set, seed and action sequence, never reading the clock.

@@ -123,7 +123,7 @@ cheaply. Open, and now **the blocking question**, because ADR 0004 denominates a
 wasted jump and the daily burn in days: the granularity, what a day consists of, and whether travel consumes a
 variable amount of it.
 
-### The world's three substances — mutually constrained, and sized by the session
+### The world's three substances — mutually constrained, and sized by the campaign
 
 **3. The map.** Locations, topology, travel cost and what a journey consumes. This is the chunk that is a real
 decision rather than a consequence, and it is underweighted: the most-played shape in the prototype was the
@@ -215,7 +215,7 @@ structure, how much does one campaign see, and what does the map look like. Scal
 Read the findings document for what is known. Read this one for what is undecided and in what order. The next three
 things, in order:
 
-1. ~~**Settle the session** (§3).~~ **Done**, 2026-10-22: ADR 0004, the shape of a campaign.
+1. ~~**Settle the campaign** (§3).~~ **Done**, 2026-10-22: ADR 0004, the shape of a campaign.
 2. **Settle the time model** (chunk 2) — the blocking question, because ADR 0004 denominates deadlines, passage work
    and the daily burn in days — then **the topology** (chunk 3) and **the four upstream parameters** in §5.
 3. **Build the first playable milestone against the named question** — a galaxy at real scale with thin demand,
