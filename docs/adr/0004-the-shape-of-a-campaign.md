@@ -1,6 +1,8 @@
 # ADR 0004: The campaign is one continuous game, won by a ladder of commissions and lost with the last patron
 
-**Status:** accepted, 2026-10-22
+**Status:** accepted, 2026-10-22; decision 16 amended in wording 2026-10-22 by ADR 0005 (decision 14) — a
+standing arrangement is a **daily rate billed a week in advance**, not a cost deducted daily. The intent,
+that the burn is a number the player *chose*, is what drove the amendment and is unchanged.
 **Context:** `docs/design-overview.md` §3 (the question this settles), `docs/prototype-findings.md` §2.1, §2.2, §2.3, §2.5, §4; ADR 0001, ADR 0002
 
 ## Context
@@ -132,9 +134,9 @@ two, not ladders of their own.
 
 **16. No firm and no management layer.** The plural in the game's title stays a **voice** — the boast of
 somebody who knows people, not an org chart. Reach extends through **services** bought one at a time (a
-courier for one delivery, a message carried, a load held) and **standing arrangements** bought as
-recurring daily cost (a broker on retainer, a berth, an information service). Both buy away friction,
-never cargo and never access. The player remains the one doing things. The daily burn is therefore a
+courier for one delivery, a message carried, a load held) and **standing arrangements** bought on a
+**daily rate billed a week in advance** (a broker on retainer, a berth, an information service). Both buy
+away friction, never cargo and never access. The player remains the one doing things. The daily burn is therefore a
 number the player *chose*, which is where large-scale pressure comes from instead of from a loan.
 
 **17. A quest is non-transactional**: no price, no standing at stake, free to decline, paid purely in
@@ -213,7 +215,8 @@ Recorded because each is the obvious suggestion somebody will make again.
   fillable at composition time.
 - **Save/resume is satisfied by ADR 0003 as written** — a deterministic engine driven by an action
   sequence is already a save file — so decision 20 adds a requirement to *commit*, not an architecture.
-- **Time (chunk 2) is now the blocking question.** A commission's deadline, passage work's cost, a
-  wasted jump and the daily burn are all denominated in days, and a day does not yet mean anything.
-  The map (chunk 3) follows, because decision 6's distance axis is topology.
+- ~~**Time (chunk 2) is now the blocking question.**~~ **Settled**, 2026-10-22, in ADR 0005: the day is
+  atomic, a day grants an allowance of **actions** spent on people and distance but never on trade, and a
+  journey costs a route-dependent number of days. The map (chunk 3) is now the blocking question, because
+  decision 6's distance axis is topology and ADR 0005 makes route length in days a property of it.
 - `area:session` in `docs/agents/triage-labels.md` is renamed `area:campaign`.

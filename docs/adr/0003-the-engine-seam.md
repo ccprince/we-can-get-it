@@ -1,6 +1,8 @@
 # ADR 0003: One seam — a pure rules engine the content is handed to
 
-**Status:** accepted, 2026-10-22
+**Status:** accepted, 2026-10-22; amended 2026-10-22 by ADR 0005 (decision 19) — *action sequence* is
+renamed **command sequence**, and the engine's entry point is start-a-**campaign**, *run* having been
+retired by ADR 0004. The determinism requirement itself is unchanged.
 **Context:** `docs/prototype-findings.md` §5.3 (the five choices this decision re-makes), ADR 0001, ADR 0002
 
 ## Context
@@ -21,10 +23,11 @@ every statement below should survive that choice.
 
 ## Decision
 
-**1. One seam: a pure rules engine with no UI.** The engine is driven by start-a-run, act, and read-only
-queries, and nothing else. It is **deterministic** for a given content set, seed and action sequence, and
-it **never reads the clock**. Determinism is not a nicety: the measurement process this project depends on
-(findings §5.4) requires the same seed played twice at two settings to differ only in the setting.
+**1. One seam: a pure rules engine with no UI.** The engine is driven by start-a-campaign, take-a-command,
+and read-only queries, and nothing else. It is **deterministic** for a given content set, seed and
+command sequence, and it **never reads the clock**. Determinism is not a nicety: the measurement process
+this project depends on (findings §5.4) requires the same seed played twice at two settings to differ
+only in the setting.
 
 **2. Content is data the engine receives, and never imports.** Hand-written, with clear fields, held
 separately from the rules, so content can be revised without touching code and so the engine can be driven
@@ -43,10 +46,11 @@ live in **one** place, so adding a field doesn't mean editing fourteen fixtures.
 
 ## Why these and not a fuller architecture
 
-Everything else is downstream of design decisions that aren't made yet — the campaign (overview §3), the
-time model, the topology. These five are not: they hold whatever the campaign turns out to be, and each
-one would be expensive to retrofit. The rule for anything beyond them is the project's working method
-(overview §2): build the thing that answers a named question, and let the structure follow.
+Everything else is downstream of design decisions that weren't made yet when this was written — the
+campaign (since settled, ADR 0004), the time model (ADR 0005), the topology (still open). These five are
+not: they hold whatever the campaign turns out to be, and each one would be expensive to retrofit. The
+rule for anything beyond them is the project's working method (overview §2): build the thing that answers
+a named question, and let the structure follow.
 
 ## Consequences
 
@@ -58,4 +62,4 @@ one would be expensive to retrofit. The rule for anything beyond them is the pro
 - A content field added for one want shape costs one defaults site, not fourteen fixtures — which matters
   because the first content set exists to answer an open question and will be revised while it does.
 - The deterministic rule forbids the engine reaching for the clock for anything, including shuffling.
-  Seeds come in through start-a-run.
+  Seeds come in through start-a-campaign.

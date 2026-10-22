@@ -28,8 +28,8 @@ question, plus a short write-up of what came of it.
 
 ## Do not re-litigate
 
-Each of these was tried, played and recorded. Reasons are in findings §3; read them before
-reopening one.
+The first six were tried, played and recorded, with reasons in findings §3; the rest were settled by a
+design decision and the reasons are in the ADR's rejected alternatives. Read them before reopening one.
 
 1. **Reducing notification load by hiding information.** Tried three ways; all addressed delivery,
    and the volume came from generation.
@@ -38,6 +38,13 @@ reopening one.
 4. **Warmth as an invisible price effect.** Comes back, but only with a legible handle (findings §2.3).
 5. **An end screen listing memorable deliveries, under a purely monetary goal.**
 6. **Zero-space goods in a galaxy where everything is wanted.** A bet that cannot be lost.
+7. **A baseline daily burn** — upkeep, food, berth fees the player didn't buy. A slow-acting loan, which
+   is the pressure shape ADR 0004 rejected; the burn is a number the player *chose* (ADR 0005).
+8. **A calendar that only supplies reasons**, with nothing in it learnable in advance. Throws away the
+   best answer available to the requirement that cross-campaign knowledge be the galaxy's grammar rather
+   than its facts; schedules are published and exploitable (ADR 0005).
+9. **A sub-day clock** — hours, or morning and afternoon. A second time unit on every reading surface,
+   for a precision nothing in the design asked for; the day is atomic (ADR 0005).
 
 **Every tuned number from the prototype is void** — the change budget of 4, the watch cap of 5, the
 debt of 1,500, 16 jumps, a hold of 40, 300 starting credits, all of it. They were found at
@@ -46,7 +53,7 @@ prototype scale and none transfer. Quote one only as history, never as a startin
 ## Architecture
 
 Five principles, stated fully in **ADR 0003**: one seam — a pure rules engine with no UI,
-deterministic for a given content set, seed and action sequence, never reading the clock; content is
+deterministic for a given content set, seed and command sequence, never reading the clock; content is
 data the engine receives and never imports; a validator rejects content mistakes at load; rules live
 in the engine, not the view; tests go through the public seam only, with fixed seeds and
 purpose-built content, and new-field defaults in one place.

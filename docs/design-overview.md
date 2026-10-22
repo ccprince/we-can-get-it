@@ -67,7 +67,9 @@ game nobody has played. This document and that one should be the whole of the up
 
 ---
 
-## 3. Settled: the shape of a campaign
+## 3. Settled
+
+### 3.1 The shape of a campaign
 
 **Settled 2026-10-22 in `docs/adr/0004-the-shape-of-a-campaign.md`.** This section was the first design
 job, and it was the right one: it was the most consequential open question and the one unexamined
@@ -97,9 +99,39 @@ measurement. In brief:
 
 What this unblocks, and what it answered of the five questions this section used to ask: the unit of
 play, what persists, what a sitting is, what the goal rewards besides credits, and whether a campaign can
-end badly. **Time (chunk 2) is now the blocking question** — a deadline, a wasted jump, passage work and
-the daily burn are all denominated in days, and a day does not yet mean anything. The map (chunk 3)
-follows it.
+end badly. What it left blocking was time, which §3.2 settles.
+
+### 3.2 The time model
+
+**Settled 2026-10-22 in `docs/adr/0005-the-time-model.md`.** ADR 0004 left this blocking and said why: a
+commission's deadline, passage work, a wasted jump and the daily burn are all denominated in days, and a
+day did not yet mean anything. The ADR holds nineteen decisions in full; in brief:
+
+- **The day is atomic** — an integer index with nothing underneath it — on **one galaxy-wide calendar** of
+  years, months and weeks, perfectly regular and authored as content. Months give a date a sayable name
+  and carry no mechanics; the week carries closures and billing. Seasons are local and authored. No time
+  zones. Everything dated is stated as an **absolute date**.
+- **A day grants an allowance of `action`s, and where the player is supplies the menu** — one loop, with
+  no special case for travel. **Trade is not an action**: time is spent on people and on distance, never
+  on shopping. Waiting is ending the day, chosen a day at a time, so the engine holds no interrupt
+  conditions. One **digest** at every day boundary.
+- **A journey costs a route-dependent number of days, fixed at departure**, and transit is a place —
+  played day by day, with a thin menu that events can add to, and **out of contact**, so galaxy news lands
+  as a span on arrival and distance costs knowledge as well as days. The change budget re-denominates to
+  **per day** and runs everywhere, including in the black; every fact the player holds carries its
+  **as-of date**.
+- **Pressure is dated, never metered.** No baseline burn: arrangements are quoted daily and billed a week
+  in advance, prepaid, so nothing accrues against the player. A commission fails at the end of its stated
+  day and never before. **Nothing takes a day without naming its date first** — rumour, notice, effect —
+  while **schedules** are a separate always-true tier the player can learn and exploit, which is the best
+  answer available to ADR 0004's demand that cross-campaign knowledge be the galaxy's grammar rather than
+  its facts. **Passage work** is a class of order — paid in advance, cargo supplied — covering passengers
+  and mail, with mail the floor under the promise that nobody is ever stranded.
+
+Deliberately left open there: transit events in full, and with them whether a journey's length can ever
+move and whether an event may take cargo; and whether the rumour tier over-warns things that ought to be
+sudden. **The map (chunk 3) is now the blocking question**, and it inherits a job: route length in days is
+a property of topology, so the map is where a wasteable jump and ADR 0004's distance axis are built.
 
 ## 4. The chunks
 
@@ -115,18 +147,19 @@ homecoming and not a positioning tax on the last third (§2.5), so each commissi
 time; interruption is a design input (§2.5), so state commits after every action. What is left here is measurement —
 the roster size, the rungs per act, the daily burn — and measurement is play.
 
-**2. Time.** Jumps or days; calendars, weekends, schedules, seasons, shipping cycles. Load-bearing, because the
-findings' sharpest diagnosis of "too random" is that **change the player can attribute to a cause reads as a living
-world at any volume, and change they cannot reads as dice at any volume** (§2.2) — and the carriers of attribution
-are calendars and named local events. A time model richer than "a jump happened" is how aliveness gets bought
-cheaply. Open, and now **the blocking question**, because ADR 0004 denominates a commission's deadline, passage work, a
-wasted jump and the daily burn in days: the granularity, what a day consists of, and whether travel consumes a
-variable amount of it.
+**2. Time.** Days, not jumps; the calendar, schedules, seasons, what a day consists of and what a journey consumes
+of it. **Settled in ADR 0005**; see §3.2 above. The finding that drove it holds in the result: **change the player can
+attribute to a cause reads as a living world at any volume, and change they cannot reads as dice at any volume**
+(§2.2), and the carriers of attribution are calendars and named local events — so the calendar is a published,
+exploitable tier rather than decoration, and nothing takes a day from the player without naming its date first. What
+is left here is measurement: actions per day, days per journey, deadline lengths, the week's length, what mail pays.
 
 ### The world's three substances — mutually constrained, and sized by the campaign
 
-**3. The map.** Locations, topology, travel cost and what a journey consumes. This is the chunk that is a real
-decision rather than a consequence, and it is underweighted: the most-played shape in the prototype was the
+**3. The map.** Locations, topology, travel cost and what a journey consumes. **Now the blocking question**, and
+it arrives with a job from ADR 0005: route length in days is a property of the topology, so the map is where a
+wasteable jump and the distance axis actually get built. This is the chunk that is a real decision rather than a
+consequence, and it is underweighted: the most-played shape in the prototype was the
 **outbound fill at an intermediate stop** — at A, bound for C, stopping at B — and it was never designed (§2.1).
 That shape *is* topology. Five effectively fully-connected locations produced no intermediate stops and no wasted
 jumps, which is also why the dump, the stock race and the split never fired. A map with routes, distances and detours
@@ -200,7 +233,8 @@ Unpacked, almost every part of "how big is the galaxy" is derived from something
 - **How many locations** is set by how much of the galaxy one campaign should see, since the galaxy must hold more
   content than one campaign can visit and shuffles what is hidden at campaign start (§2.5, ADR 0004).
 - **How many people per location** is set by the change budget and by what makes landing somewhere worth the stop.
-- **How far apart things are** is set by the time model and by the decision that a jump can be wasted.
+- **How far apart things are** is set by the time model — route-dependent journey lengths in days, fixed at
+  departure (ADR 0005) — and by the decision that a jump can be wasted.
 
 What is left after the derivations is the **topology** (chunk 3) — and that is a genuine design decision, not an
 arithmetic one.
@@ -212,14 +246,15 @@ structure, how much does one campaign see, and what does the map look like. Scal
 
 ## 6. How to use this
 
-Read the findings document for what is known. Read this one for what is undecided and in what order. The next three
-things, in order:
+Read the findings document for what is known. Read this one for what is undecided and in what order. The next
+things, in order, with the first two now done:
 
 1. ~~**Settle the campaign** (§3).~~ **Done**, 2026-10-22: ADR 0004, the shape of a campaign.
-2. **Settle the time model** (chunk 2) — the blocking question, because ADR 0004 denominates deadlines, passage work
-   and the daily burn in days — then **the topology** (chunk 3) and **the four upstream parameters** in §5.
-3. **Build the first playable milestone against the named question** — a galaxy at real scale with thin demand,
+2. ~~**Settle the time model** (chunk 2).~~ **Done**, 2026-10-22: ADR 0005, the time model.
+3. **Settle the topology** (chunk 3) — now the blocking question, and holding ADR 0005's route lengths in days —
+   then **the four upstream parameters** in §5.
+4. **Build the first playable milestone against the named question** — a galaxy at real scale with thin demand,
    orders as the backbone, and a content set written to answer how plain and vague wants divide the game — with the
    measurement harness built first (§5.4).
 
-Anything that is not one of those three is probably a number, and numbers are found by playing.
+Anything that is not one of those is probably a number, and numbers are found by playing.
