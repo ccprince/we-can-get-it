@@ -8,13 +8,18 @@ Each entry cites its source so the evidence behind it can be read: `findings` is
 
 Terms marked **undecided** are named deliberately and have no settled meaning yet. Don't invent one.
 
-## The session
+**Do not use the word *session*.** It was ambiguous between the unit of play and a stretch at the keyboard;
+those are **campaign** and **sitting**, and the overview's "shape of a session" is the shape of a campaign.
+
+## The campaign
 
 | Term | Meaning |
 | --- | --- |
-| **session** | The unit of play — a run, a campaign, or a campaign made of runs. **Undecided**, and the first thing to settle; everything else is scaled to it (overview §3). |
-| **run** | One pass through the game, from start to settling up. In the prototype a run was sixteen jumps against a debt; that scale is void, the word is not (findings §5.2, §6). |
-| **jump** | A move from one location to another, and the prototype's unit of time. Whether the full game runs on jumps or on days is open, and the answer carries attribution with it (overview §4, chunk 2). |
+| **campaign** | The unit of play: one whole winnable game, from the start to the last commission delivered. Continuous — nothing resets inside it — and long enough to take many sittings (overview §3). |
+| **sitting** | One real-world stretch at the keyboard, of which a campaign takes many. Any number of days long; interruption is free, and the design cares only that a short sitting still feels finished (findings §2.5, overview §3). |
+| **act** | A tier of the **ladder**, holding several commissions at one level of ambition. Clearing it unlocks the next tier — bigger patrons, further places, goods previously out of reach — and adds patrons to the roster. Several rungs per act and not one, because a shape needs 2–4 instances before it can be judged (findings §2.4, ADR 0004). |
+| **run** | Prototype history only: one sixteen-jump pass against a debt. Deliberately not a unit of the full game, so its scale cannot come back in with the word (findings §6). |
+| **jump** | A move from one location to another, and the prototype's unit of time. The full game's clock is days; what a day is, and what a journey consumes of it, stays open (overview §4, chunk 2). |
 
 ## Commerce
 
@@ -26,6 +31,11 @@ Terms marked **undecided** are named deliberately and have no settled meaning ye
 | **want** | Something a buyer is after. Classified on two axes — how specific the desire, how specific the voice — giving the four want shapes (findings §2.1). |
 | **order** | A want a buyer states plainly **with the price they will pay**. The game's primary transaction and the dependable floor under speculation's ceiling; an accepted order is also the strongest form of plan declaration (findings §2.1). |
 | **accepted job** | An order the player has taken on. The same thing as an accepted order, named for the commitment rather than the offer (findings §2.1, §2.2). |
+| **commission** | An order of the largest kind: a patron's job, stating what is wanted, where, by when and for what. Not a sibling of **order** but a subtype of it, so there is one transaction path. The rungs of the ladder a campaign is won by climbing; accepting one stakes **standing**. Several stand on offer at once with visible windows and may be **withdrawn** by the galaxy before they are taken, while only one at a time can be accepted — so the decision is which of these is worth the slot (ADR 0004). |
+| **ladder** | The finite, uncounted series of commissions a campaign offers, ending in one final commission that cannot be filled without most of the galaxy and most of the player's relationships. Delivering it is the win. |
+| **breadth**, **depth**, **distance** | The three axes a commission's difficulty is designed against, and price is not one of them. **Breadth** is a list ("one of every kind of X"), leaning on tags. **Depth** is access — the holder won't deal with a stranger, so the job is three introductions long. **Distance** is a route the map makes awkward. They pull on goods, people and the map respectively; the final commission demands all three (ADR 0004). |
+| **passage work** | Badly-paid, slow work available for the asking, paid in advance, that will get a broke player off the rock. More of it at busy hubs than at backwater outposts. The reason there is no stranded state: being broke costs **days**, not the campaign. |
+| **standing arrangement** | A service bought on a recurring daily cost — a broker on retainer, a held berth, an information service — which reduces friction and never supplies cargo or access. Distinct from a **service**, a one-off bought per use — a courier for one delivery, a message carried, a load held. Both are purchased, never managed: the player is the one doing things. |
 | **offer** | What a buyer will pay for a particular good against a particular want. A function of the good's worth and the quality of the match, never a per-want constant (findings §2.1). |
 | **reaction** | What a buyer says when shown a good — the in-fiction form of the match tier (findings §5.2). |
 | **match tier** | How well a good answers a want: **refused**, **acceptable**, or **great** (findings §5.2). |
@@ -54,7 +64,11 @@ Terms marked **undecided** are named deliberately and have no settled meaning ye
 | **contact** | A buyer the player knows of, held in the contacts list as last known. Nothing is hidden by relevance filtering; landing corrects what is stale (findings §2.2). |
 | **lead** | A pointer to a want or a buyer the player has been told about (findings §5.2). |
 | **introduction** | A character's own line naming another buyer and a want of theirs. The standout mechanic of the prototype: a pure travel sub-goal whose payoff is access rather than credits (findings §2.3). |
+| **quest** | A non-transactional undertaking: **no price**, no standing at stake, free to decline, paid purely in access, information or warmth. One errand or a chain of them; the absence of a price is what defines it, not the presence of steps. Covers the favour, and is the road to a **vouch** (ADR 0004). |
 | **warmth** | How well a buyer knows the player. Pays in access, information and story, with credits as the scorekeeper; rises **once per want fully met**, not per delivery and not per unit (findings §2.3). |
+| **standing** | How far the galaxy still takes the player at their word — and mechanically, the **patron roster** itself: the named list of patrons who will still deal with him. Failing a commission costs that patron; clearing an act adds patrons; a **vouch** recovers one. Its entire effect is which commissions are offered, never the player's capability, so failure costs opportunity and cannot spiral: with a long list he picks the commission that fits his plans, and as it shortens the commissions drive his choices instead. An **empty roster ends the campaign** — the one loss condition (ADR 0004). |
+| **patron** | Whoever a commission comes from, and a name on the **standing** roster. Authored content with a voice, while a commission's *substance* is composed by the engine from this campaign's own galaxy, so a rung can surprise the designer. A patron whose job is dropped drops the player, in his own words — which is what makes the loss attributable rather than dice (findings §2.2, ADR 0004). |
+| **vouch** | A warm character staking their own name on the player, restoring one step of **standing**. Askable only of the very warm, once per person ever, and it spends that warmth. The only upward movement standing has, and it is paid for out of the spine of progression. |
 | **quiet spell** | A stretch during which a buyer has left the market. Three beats — warn, go quiet, come back — with the buyer's identity and unsatisfied wants preserved across it. The buyer leaves, not the want (findings §2.2). |
 | **wind-down** | The warning beat that opens a quiet spell, landing two or three jumps ahead of it (findings §2.2, §5.2). |
 
@@ -71,7 +85,7 @@ Terms marked **undecided** are named deliberately and have no settled meaning ye
 ## The nine chunks
 
 The top-level parts of the design, used as area names in the issue tracker (overview §4):
-**session**, **time**, **map**, **goods and matching**, **demand and supply**, **people**,
+**campaign** (formerly *session*), **time**, **map**, **goods and matching**, **demand and supply**, **people**,
 **change**, **knowledge and its reading surfaces**, **the content pipeline**.
 
 ## Names to avoid

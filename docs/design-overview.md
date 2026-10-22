@@ -67,37 +67,39 @@ game nobody has played. This document and that one should be the whole of the up
 
 ---
 
-## 3. Settle this first: the shape of a session
+## 3. Settled: the shape of a campaign
 
-**The single most consequential open question, and the one unexamined assumption carried out of the prototype.**
+**Settled 2026-10-22 in `docs/adr/0004-the-shape-of-a-campaign.md`.** This section was the first design
+job, and it was the right one: it was the most consequential open question and the one unexamined
+assumption carried out of the prototype, because the prototype's sixteen-jump *run* was scaffolding that
+every other part of the design was quietly scaled to.
 
-The prototype was a sixteen-jump run against a 1,500-credit debt, with a fresh shuffle each time — a very short,
-high-time-pressure game. That was scaffolding chosen to make two questions answerable in two weeks, and the findings
-correctly voided all of its numbers. What it did not void is the *run* itself, which every other part of the design
-is quietly scaled to.
+The ADR holds the decision in full, with its rejected alternatives and the numbers it hands to
+measurement. In brief:
 
-The designer's vision, stated 2026-10-22, is **somewhere between a roguelike and a campaign.** Nailing down where is
-the first design job, before the map, the catalogue or the galaxy's size, because:
+- **The unit of play is a campaign**, one continuous winnable game taking many **sittings**. *Session* is
+  retired as a word: it was ambiguous between the two. **Nothing resets inside a campaign** — accumulated
+  access is the best thing in the game, so episodic feel comes from **acts** that gate what the galaxy
+  offers next, never from runs that reset.
+- **The win is a delivery**: a ladder of commissions ending in one final commission that cannot be filled
+  without most of the galaxy and most of the player's relationships. Not a balance. Difficulty comes from
+  **breadth, depth and distance** — a list, access through people, an awkward route — which pull on
+  chunks 4, 6 and 3 respectively.
+- **The loss is the patron roster emptying.** Standing *is* the named list of patrons who will still deal
+  with the player: failing a commission costs that patron, clearing an act adds patrons, and a **vouch**
+  from a very warm character recovers one at the cost of that warmth. Standing gates what is offered and
+  nothing else, so failure costs opportunity and never capability and cannot spiral.
+- **Variability is drawn once per campaign** from a reserve larger than one campaign can see — including
+  who is hidden — and only *state* moves within a campaign. Nothing carries between campaigns but the
+  player's own understanding, which must therefore be of the galaxy's grammar rather than its facts.
+- **Interruption is free and the day is the beat**, so ten minutes and a long evening are both good ways
+  to sit down.
 
-- **It sets the scale of everything.** How much content exists, how much one sitting sees, how big the goal is, how
-  large a payout can be without deciding the game (§2.5 on windfalls).
-- **It decides whether warmth and access persist.** Introductions and leads were the standout mechanic of the whole
-  prototype (§2.3), and their entire value is accumulation. If a run resets them, the best thing in the game is
-  capped at one sitting's worth. If it does not, something else has to carry the fresh start.
-- **It decides what a goal rewards.** A purely monetary goal makes a run summary worthless and crowds out story
-  (§2.5). A longer game needs that fixed more, not less, because variety has to beat grinding over dozens of turns
-  rather than sixteen.
-- **It decides what prospecting is.** Going somewhere to find out who is there died by the fourth prototype run,
-  because the galaxy was known. The fix is shuffling what is hidden — but *what* can be shuffled depends on what
-  persists.
-- **It is upstream of the carried-forward open question.** How plain and vague wants divide the game (findings §4)
-  cannot be answered by a content set until there is a session for that content to sit in.
-
-Questions to answer, concretely: What is the unit of play — a run, a campaign, or a campaign made of runs? What
-persists between units, and what resets? How long is one sitting, and how many sittings is a whole thing? What is the
-goal, and what does it reward besides credits? What ends a session badly, and can it?
-
----
+What this unblocks, and what it answered of the five questions this section used to ask: the unit of
+play, what persists, what a sitting is, what the goal rewards besides credits, and whether a campaign can
+end badly. **Time (chunk 2) is now the blocking question** — a deadline, a wasted jump, passage work and
+the daily burn are all denominated in days, and a day does not yet mean anything. The map (chunk 3)
+follows it.
 
 ## 4. The chunks
 
@@ -106,16 +108,20 @@ findings, and the order is roughly one of dependency. Pointers are to sections o
 
 ### Upstream — everything else is scaled to these
 
-**1. The session.** The unit of play, what persists, length, the goal and what it rewards, save/resume and
-interruption. See §3 above; this is the one to settle first. Settled: a monetary-only goal is not enough (§2.5); a
-single place to settle up must be a deliberate homecoming and not a positioning tax on the last third (§2.5);
-interruption is a design input (§2.5).
+**1. The campaign.** The unit of play, what persists, length, the goal and what it rewards, save/resume and
+interruption. **Settled in ADR 0004**; see §3 above. The findings that constrained it all hold in the result: a
+monetary-only goal is not enough (§2.5), so the win is a delivery; a single place to settle up must be a deliberate
+homecoming and not a positioning tax on the last third (§2.5), so each commission names its own destination at offer
+time; interruption is a design input (§2.5), so state commits after every action. What is left here is measurement —
+the roster size, the rungs per act, the daily burn — and measurement is play.
 
 **2. Time.** Jumps or days; calendars, weekends, schedules, seasons, shipping cycles. Load-bearing, because the
 findings' sharpest diagnosis of "too random" is that **change the player can attribute to a cause reads as a living
 world at any volume, and change they cannot reads as dice at any volume** (§2.2) — and the carriers of attribution
 are calendars and named local events. A time model richer than "a jump happened" is how aliveness gets bought
-cheaply. Open: the granularity, and whether travel consumes a variable amount of it.
+cheaply. Open, and now **the blocking question**, because ADR 0004 denominates a commission's deadline, passage work, a
+wasted jump and the daily burn in days: the granularity, what a day consists of, and whether travel consumes a
+variable amount of it.
 
 ### The world's three substances — mutually constrained, and sized by the session
 
@@ -191,16 +197,16 @@ Unpacked, almost every part of "how big is the galaxy" is derived from something
   the galaxy wants.
 - **How much demand** is set by the thin-demand decision: more goods than wants, so that some goods are wanted by
   nobody at the moment (§2.1). A ratio, not a count.
-- **How many locations** is set by how much of the galaxy one session should see, since the galaxy must hold more
-  content than one unit of play can visit and must shuffle what is hidden (§2.5).
+- **How many locations** is set by how much of the galaxy one campaign should see, since the galaxy must hold more
+  content than one campaign can visit and shuffles what is hidden at campaign start (§2.5, ADR 0004).
 - **How many people per location** is set by the change budget and by what makes landing somewhere worth the stop.
 - **How far apart things are** is set by the time model and by the decision that a jump can be wasted.
 
 What is left after the derivations is the **topology** (chunk 3) — and that is a genuine design decision, not an
 arithmetic one.
 
-So the questions actually worth sitting down with are: what is a session (§3), what is the tag structure, how much
-does one session see, and what does the map look like. Scale is arithmetic afterwards.
+So the questions actually worth sitting down with are: what is a campaign (§3, settled), what is the tag
+structure, how much does one campaign see, and what does the map look like. Scale is arithmetic afterwards.
 
 ---
 
@@ -209,8 +215,9 @@ does one session see, and what does the map look like. Scale is arithmetic after
 Read the findings document for what is known. Read this one for what is undecided and in what order. The next three
 things, in order:
 
-1. **Settle the session** (§3). It is a design conversation, not a build task, and everything is scaled to it.
-2. **Settle the four upstream parameters** in §5, plus the time model and the topology.
+1. ~~**Settle the session** (§3).~~ **Done**, 2026-10-22: ADR 0004, the shape of a campaign.
+2. **Settle the time model** (chunk 2) — the blocking question, because ADR 0004 denominates deadlines, passage work
+   and the daily burn in days — then **the topology** (chunk 3) and **the four upstream parameters** in §5.
 3. **Build the first playable milestone against the named question** — a galaxy at real scale with thin demand,
    orders as the backbone, and a content set written to answer how plain and vague wants divide the game — with the
    measurement harness built first (§5.4).
