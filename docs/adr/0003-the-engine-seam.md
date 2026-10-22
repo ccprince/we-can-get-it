@@ -6,7 +6,7 @@
 ## Context
 
 The `schlepper` prototype is discarded and none of its code comes across. Five of its architectural
-choices, though, were **never the source of a problem in any session** across two weeks of building and
+choices, though, were **never the source of a problem in any sitting** across two weeks of building and
 eight hand-played runs, and two of them were load-bearing in fixing the problems that did occur: the
 notification rebuild was only measurable because the engine was deterministic and driveable headlessly,
 and the one time a game rule was computed in the page it sat outside the test suite until it was moved
@@ -43,8 +43,8 @@ live in **one** place, so adding a field doesn't mean editing fourteen fixtures.
 
 ## Why these and not a fuller architecture
 
-Everything else is downstream of design decisions that aren't made yet — the session (overview §3), the
-time model, the topology. These five are not: they hold whatever the session turns out to be, and each
+Everything else is downstream of design decisions that aren't made yet — the campaign (overview §3), the
+time model, the topology. These five are not: they hold whatever the campaign turns out to be, and each
 one would be expensive to retrofit. The rule for anything beyond them is the project's working method
 (overview §2): build the thing that answers a named question, and let the structure follow.
 

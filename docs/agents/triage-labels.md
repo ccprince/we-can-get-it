@@ -18,8 +18,8 @@ Three further families, all of them project-specific. Apply them alongside a tri
 instead of one.
 
 **`area:*` — the nine chunks of `docs/design-overview.md` §4.** Every issue belongs to one:
-`area:session`, `area:time`, `area:map`, `area:goods`, `area:demand`, `area:people`, `area:change`,
-`area:knowledge`, `area:content`. The chunks are ordered roughly by dependency; session and time are
+`area:campaign`, `area:time`, `area:map`, `area:goods`, `area:demand`, `area:people`, `area:change`,
+`area:knowledge`, `area:content`. The chunks are ordered roughly by dependency; campaign and time are
 upstream of everything.
 
 **Working method**, from `docs/design-overview.md` §2 and `docs/prototype-findings.md` §5.4:

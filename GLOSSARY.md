@@ -9,7 +9,8 @@ Each entry cites its source so the evidence behind it can be read: `findings` is
 Terms marked **undecided** are named deliberately and have no settled meaning yet. Don't invent one.
 
 **Do not use the word *session*.** It was ambiguous between the unit of play and a stretch at the keyboard;
-those are **campaign** and **sitting**, and the overview's "shape of a session" is the shape of a campaign.
+those are **campaign** and **sitting**; where older text says *session* of the unit of play, it
+means the **campaign** (ADR 0004).
 
 ## The campaign
 

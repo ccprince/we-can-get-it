@@ -10,7 +10,7 @@ two documents.
 - **`docs/prototype-findings.md`** — what is **known**, with the evidence. Settled conclusions, dead
   ends, and the process that produced them.
 - **`docs/design-overview.md`** — what is **undecided**, and in what order. The nine chunks the game
-  is made of, and the one thing to settle first: the shape of a session.
+  is made of, and what to settle next, in order.
 - **`GLOSSARY.md`** — the vocabulary, nearly all of it earned in play. Use these words; don't coin
   synonyms for them.
 - **`docs/adr/`** — decisions. ADR 0003 governs code and should be read before writing any.
