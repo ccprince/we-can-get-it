@@ -1,7 +1,8 @@
 # Running a ticket
 
-**The default end of a ticket is an open PR**, not a commit on `main`. Branch before the first
-commit; the pre-commit hook refuses code on `main` and will catch it late if you forget.
+**The default end of a ticket is an open PR**, not a commit on `main` — reached across **two
+sessions**, one to build and one to review and ship. Branch before the first commit; the pre-commit
+hook refuses code on `main` and will catch it late if you forget.
 
 A **decision** — an ADR, a glossary change, the canon — is not a ticket and goes straight to `main`.
 Every ADR in the log landed that way.
@@ -42,13 +43,37 @@ token usage per turn, and #32 is the open question of whether that reading is wo
    `git branch <name> && git reset --hard origin/main && git checkout <name>`.
 2. **Commit** as the work settles. The hook runs `npm run check` on every commit, so a commit that
    lands is a commit that typechecks, lints and passes its tests.
-3. **Review** before the PR, not after: `/code-review`, then take the findings in their own commit.
-   The skeleton's review found a documented breach and a real bug, and both were cheaper to fix on
-   the branch than in a PR comment.
-4. **Push and open the PR**, with the body the `pr` skill's template asks for:
-   `git push -u origin <name>` then `gh pr create --title "<ticket title> (#<n>)" --body-file <path>`.
-   Open the body with `Closes #<n>` so the merge closes the ticket.
-5. **Stop there.** The PR is the deliverable. Merging is the human's call unless they ask.
+3. **Push, and stop.** `git push -u origin <name>`. The implementing session ends here, with the
+   branch pushed and no PR.
+
+   **`/implement` will tell you to review now. In this repo that call belongs to the next session**
+   — the skill's last two lines are "call the Skill tool with code-review" and "commit your work to
+   the current branch", and the first of them is the 70k this break exists to move. Commit, push,
+   and hand back.
+
+4. **Review in a new session**, on the branch: `/mattpocock-skills:code-review main`. It needs the
+   fixed point and nothing else — it finds the ticket from the `(#<n>)` in the commit messages and
+   `CODING_STANDARDS.md` by searching, which is why a cold session can do this at all.
+
+5. **Take the findings in their own commit, then open the PR** — both in that second session.
+   `/code-review` only reports; it does not fix, commit or open anything, so these are the
+   session's own jobs and not the skill's. Review before the PR, not after: the skeleton's review
+   found a documented breach and a real bug, and both were cheaper to fix on the branch than in a
+   PR comment. Then `gh pr create --title "<ticket title> (#<n>)" --body-file <path>`, with the
+   body the `pr` skill's template asks for and `Closes #<n>` at the top.
+
+6. **Stop there.** The PR is the deliverable. Merging is the human's call unless they ask.
+
+**Why the sequence breaks at the push.** Reviewing and shipping cost about 70k and need none of the
+implementation history: `/code-review`'s two agents already run context-fresh on the diff alone, and
+taking their findings needs only the files those findings name. A second session re-orients on a
+diff for about 30k, where the implementing session paid 110k to re-orient on the canon — so the
+break removes 70k from the full context and adds 30k to an empty one. It also puts a reader on the
+diff who has not spent the last hour convincing itself the design was right.
+
+This also splits what `/retro` looks back on. Run it in whichever session holds the material — the
+implementing one for how the work went, the reviewing one for what the review caught — or point it
+at the other session's log, which is how this rule was written.
 
 ## Merging, when asked
 
