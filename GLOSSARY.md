@@ -20,7 +20,7 @@ means the **campaign** (ADR 0004).
 | **sitting** | One real-world stretch at the keyboard, of which a campaign takes many. Any number of days long; interruption is free, and the design cares only that a short sitting still feels finished (findings §2.5, overview §3). |
 | **act** | A tier of the **ladder**, holding several commissions at one level of ambition. Clearing it unlocks the next tier — bigger patrons, further places, goods previously out of reach — and adds patrons to the roster. Several rungs per act and not one, because a shape needs 2–4 instances before it can be judged (findings §2.4, ADR 0004). Distinct from an **action**, which is a thing the player does in a day. |
 | **run** | Prototype history only: one sixteen-jump pass against a debt. Deliberately not a unit of the full game, so its scale cannot come back in with the word (findings §6). |
-| **jump** | A move from one location to another. Its *unit of time* sense is prototype history only: the clock is **days**, and a journey costs a route-dependent number of them, fixed when the player departs (ADR 0005). |
+| **jump** | The traversal of one **lane**: a move from a location to the location that lane joins it to. Its *unit of time* sense is prototype history only — the clock is **days**, and a journey's length follows from the lane's **distance** and the ship's **speed** (ADR 0005, ADR 0006). |
 
 ## Time
 
@@ -39,6 +39,31 @@ means the **campaign** (ADR 0004).
 | **schedule** | A published, repeating rhythm that is simply true and always was — a weekly closure, an annual festival, a shipping cycle. Costs nothing from the **change budget**, can be planned against, and is the part of the galaxy's *grammar* that survives between campaigns while its particulars are redrawn (ADR 0005). |
 | **rumour** | The first beat of a coming delay: undated, uncertain, and it may come to nothing. Read off the **trade guide** rather than announced, which is what makes paying attention a skill rather than a lookup (ADR 0005). |
 | **notice** | The second beat: the delay firms into a dated fact, and can therefore be routed around. **Nothing takes a day from the player without naming its date first** — an unannounced lost day is the one kind of change that reads as dice and can reach the loss condition (ADR 0005). |
+
+## The map
+
+| Term | Meaning |
+| --- | --- |
+| **chart** | The reading surface for the map, and common knowledge from day one: which locations exist, what **lanes** join them, and what each lane costs. It shows the numbers already converted for the player's ship — days, **fare**, and whether their **range** reaches at all — rather than the raw **distance** (ADR 0006). |
+| **location** | A place on the **chart**, and an atomic node: one action menu, no interior geography and no distance inside it. A place never leaves the chart, though it can go dark or become unreachable (ADR 0006). |
+| **lane** | The only way between the two **locations** it joins, with a **gate** at each end. Symmetric, and carrying a single authored number, its **distance**. Travel is along lanes and nowhere else, which is what makes a place *on the way* (ADR 0006). |
+| **route** | A planned sequence of **lanes** from where the player is to where they mean to end up. A plan the player holds, not a thing the engine commits to. |
+| **leg** | One **lane** of a **route**, flown as one departure. Its cost in days and in **fare** is fixed when the player departs, and the destination cannot be changed once underway (ADR 0005, ADR 0006). |
+| **distance** | The single authored number a **lane** carries. Days and **fare** are both derived from it, so the chart and the content each hold one number per lane (ADR 0006). |
+| **range** | The largest **distance** the ship can fly in one **leg**. A lane beyond it cannot be flown at any price, and range bought with credits is the **only** gate on the map — further places are a wall with a price on it, never a wall locked by an **act** (ADR 0006). |
+| **speed** | **Distance** per day: a leg takes `ceil(distance / speed)` days, never fewer than one. A faster ship cuts days but not **fare** (ADR 0006). |
+| **fare** | What a **leg** costs in credits: the **distance** times one galaxy-wide rate, quoted before departure and paid at departure. Not a burn — nothing accrues, and nothing is charged while the player sits still. In fiction it is access to the **gate** (ADR 0005 decision 14, ADR 0006). |
+| **gate** | What makes a **lane** flyable, one at each end. An on-ramp and not a teleport: the crossing still takes days in **transit**. Its operator is who can close a lane or surcharge it, which is what makes such a change attributable rather than dice (ADR 0006). |
+| **motif** | An authored fragment of topology with a named shape and typed **slots**, assembled per campaign to build the map. The map's grammar is the motifs and their invariants, which survive between campaigns; which locations fill them does not (ADR 0006). |
+| **slot** | A hole in a **motif**, typed in **tag** vocabulary — an extractor at a **spur** end, a market at a **chokepoint** — and filled from the reserve at campaign start. Some slots are deliberately **untyped**, so a region's grammar has exceptions in it (ADR 0006). |
+| **spur** | A **motif** shape: a dead end that must be flown out and back, so the journey there can be wasted. |
+| **chokepoint** | A **motif** shape: a **location** every route through a region passes. The most interesting thing a **rumour** can be about. |
+| **region** | A cluster of **locations** placed by one **motif**, with an economic grain running through it — raw out of the **spur**, finished out of the junction — so trade has a direction over the topology (ADR 0006). |
+| **system** | A name several **locations** share, drawn together on the **chart**. Prose and legibility only: it carries no mechanics, and every **lane** inside one still costs at least a day (ADR 0006). |
+| **standing character** | What a **location** is known to trade in, stated in **tag** vocabulary and published on the **trade guide** from day one. It tells the player where to start looking; what is actually in stock, at what price and who is there to want it is discovered and carries an **as-of date** (ADR 0006). |
+
+There is no fuel in the model. **Fuel** is prose — a **tell** for the **fare** and for **range** — and never a
+tracked quantity, a refuelling chore, or anything that competes with the **hold** (ADR 0006).
 
 ## Commerce
 

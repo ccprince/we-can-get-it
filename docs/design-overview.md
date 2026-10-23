@@ -133,6 +133,38 @@ move and whether an event may take cargo; and whether the rumour tier over-warns
 sudden. **The map (chunk 3) is now the blocking question**, and it inherits a job: route length in days is
 a property of topology, so the map is where a wasteable jump and ADR 0004's distance axis are built.
 
+### 3.3 The map
+
+**Settled 2026-10-22 in `docs/adr/0006-the-map.md`.** ADR 0005 left this blocking and handed it a job:
+route length in days is a property of topology, so the map is where a wasteable jump and ADR 0004's
+**distance** axis actually get built. The ADR holds twenty decisions in full; in brief:
+
+- **The map is a sparse graph of authored lanes**, not a complete graph with a distance matrix. Travel is
+  along a **lane** and nowhere else, which is what makes a place *on the way* — and the fully-connected
+  five is exactly the arrangement that cannot produce the **outbound fill at an intermediate stop**.
+- **Identity is authored; position is generated.** A location's name, voice and prose are written by hand
+  and drawn from a reserve with a hidden subset; where it sits in the graph is rolled per campaign. The
+  graph itself is assembled from authored **motifs** — spur, chokepoint, cluster, ring, three-world system
+  — with **slots typed in tag vocabulary**, so a region has an economic grain, plus untyped slots so the
+  grammar has exceptions in it. Invariants are validated at load.
+- **A lane carries one number, its distance.** The ship converts it: **speed** into days, one galaxy-wide
+  rate into a **fare** quoted and paid at departure, **range** into whether the lane is flyable at all.
+  The fiction is **gates and lanes** — the fare is gate access, and a gate is an on-ramp rather than a
+  teleport, so transit stays days long and played day by day. No tracked fuel anywhere, and **mail must
+  always pay its own fare**.
+- **The chart is common knowledge from day one**, as is each location's **standing character**; what is
+  in stock, at what price and who is there is not. **Range is the only gate on the map** — acts move the
+  patrons, not the walls — everything drawn is visitable, and the campaign starts at a market hub.
+- **The map participates in change.** Lanes carry rumours and notices and bind only at departure; a place
+  never leaves the chart but a lane can close, dated and usually bounded; tolls are events rather than
+  geography. The **chart** becomes a first-class reading surface that shows converted numbers.
+
+Deliberately left open: research as an action and the on-board computer, parked with two constraints
+recorded; whether a lane closure may disconnect the drawn map mid-campaign; whether the gate operator has
+any mechanics; and ADR 0005's transit events, inherited whole. **What blocks next is no longer a chunk but
+the four upstream parameters of §5** — the tag structure first, which ADR 0006 has just given a second
+customer, since tags now type the map's slots as well as matching goods to wants.
+
 ## 4. The chunks
 
 Nine top-level parts. Each is a coherent area of design and of build, each has something already settled by the
@@ -156,16 +188,15 @@ is left here is measurement: actions per day, days per journey, deadline lengths
 
 ### The world's three substances — mutually constrained, and sized by the campaign
 
-**3. The map.** Locations, topology, travel cost and what a journey consumes. **Now the blocking question**, and
-it arrives with a job from ADR 0005: route length in days is a property of the topology, so the map is where a
-wasteable jump and the distance axis actually get built. This is the chunk that is a real decision rather than a
-consequence, and it is underweighted: the most-played shape in the prototype was the
-**outbound fill at an intermediate stop** — at A, bound for C, stopping at B — and it was never designed (§2.1).
-That shape *is* topology. Five effectively fully-connected locations produced no intermediate stops and no wasted
-jumps, which is also why the dump, the stock race and the split never fired. A map with routes, distances and detours
-hands you route-shaped sub-goals and a wasteable jump for free. Settled: route-shaped sub-goals should be designed
-deliberately, not left to fall out of the map (§2.1); a jump must be able to be unproductive, watching the overbuying
-habit while making it so (§2.1).
+**3. The map.** Locations, topology, travel cost and what a journey consumes. **Settled in ADR 0006**; see
+§3.3 above. The findings that made this chunk urgent hold in the result: **no jump was ever wasted** and
+three built mechanics stayed inert because of it (§2.1), so a lane now costs days *and* a fare and a spur
+can be flown for nothing; the most-played shape was the **outbound fill at an intermediate stop** and
+*that shape is topology* (§2.1), so the graph is sparse and motifs place places on the way deliberately;
+route-shaped sub-goals are designed rather than left to fall out of the map (§2.1), which is what typed
+motif slots are for. What is left here is measurement: the distance scale and the spread between the
+shortest and longest lane, the fare rate, baseline range, speed and hold, the draw size, and how many
+spurs and chokepoints the invariants should demand.
 
 **4. Goods and matching.** The catalogue, the tag system, match tiers, and what an offer is worth. Settled, and these
 are strong: **an offer is a function of the good's worth and the quality of the match**, never a per-want constant
@@ -237,23 +268,28 @@ Unpacked, almost every part of "how big is the galaxy" is derived from something
   departure (ADR 0005) — and by the decision that a jump can be wasted.
 
 What is left after the derivations is the **topology** (chunk 3) — and that is a genuine design decision, not an
-arithmetic one.
+arithmetic one. **Settled 2026-10-22 in ADR 0006**, which also moves one of the derivations above: how far apart
+things are is now a lane's authored **distance** converted by the ship's **speed**, and how many locations one
+campaign sees is the **draw size** over a reserve.
 
-So the questions actually worth sitting down with are: what is a campaign (§3, settled), what is the tag
-structure, how much does one campaign see, and what does the map look like. Scale is arithmetic afterwards.
+So the questions actually worth sitting down with are: what is a campaign (§3.1, settled), what does the map look
+like (§3.3, settled), what is the tag structure, and how much does one campaign see. The last two are what remain.
+Scale is arithmetic afterwards.
 
 ---
 
 ## 6. How to use this
 
 Read the findings document for what is known. Read this one for what is undecided and in what order. The next
-things, in order, with the first two now done:
+things, in order, with the first three now done:
 
 1. ~~**Settle the campaign** (§3).~~ **Done**, 2026-10-22: ADR 0004, the shape of a campaign.
 2. ~~**Settle the time model** (chunk 2).~~ **Done**, 2026-10-22: ADR 0005, the time model.
-3. **Settle the topology** (chunk 3) — now the blocking question, and holding ADR 0005's route lengths in days —
-   then **the four upstream parameters** in §5.
-4. **Build the first playable milestone against the named question** — a galaxy at real scale with thin demand,
+3. ~~**Settle the topology** (chunk 3).~~ **Done**, 2026-10-22: ADR 0006, the map.
+4. **Settle the four upstream parameters** in §5 — **the tag structure first**, since ADR 0006 decision 4 makes
+   tags type the map's motif slots as well as match goods to wants, and the catalogue size falls out of the
+   goods-per-kind-tag target. Then how much of the galaxy one campaign sees.
+5. **Build the first playable milestone against the named question** — a galaxy at real scale with thin demand,
    orders as the backbone, and a content set written to answer how plain and vague wants divide the game — with the
    measurement harness built first (§5.4).
 
