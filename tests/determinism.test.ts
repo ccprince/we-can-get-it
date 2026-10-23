@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { isRejected, startCampaign, takeCommand, view } from '../src/engine';
 import type { Command, ContentSet, View } from '../src/engine';
-import { loadedContentSet } from './support/content';
+import { aGalaxy, aLane, aLocation, aStart, loadedContentSet } from './support/content';
 
 /**
  * Determinism is a test, not a convention: the measurement method this project
@@ -33,6 +33,28 @@ const SEQUENCE: readonly Command[] = [
   { kind: 'wait' },
 ];
 
+/** A galaxy with somewhere to go, so a sequence can carry a departure (#9). */
+function aFlyableGalaxy(): ContentSet {
+  return loadedContentSet(
+    aGalaxy({
+      locations: [
+        aLocation(),
+        aLocation({ id: 'bellwether', name: 'Bellwether Yards', prose: 'A repair yard.' }),
+      ],
+      lanes: [aLane({ ends: ['kestrel', 'bellwether'], distance: 12 })],
+      start: aStart({ credits: 500 }),
+    }),
+  );
+}
+
+/** Out, across, and a day on the far side: a leg flown day by day. */
+const A_JOURNEY: readonly Command[] = [
+  { kind: 'depart', toId: 'bellwether' },
+  { kind: 'wait' },
+  { kind: 'wait' },
+  { kind: 'wait' },
+];
+
 describe('determinism', () => {
   it('gives identical views for the same content set, seed and command sequence', () => {
     const content = loadedContentSet();
@@ -44,6 +66,12 @@ describe('determinism', () => {
     expect(play(loadedContentSet(), 20261022, SEQUENCE)).toEqual(
       play(loadedContentSet(), 20261022, SEQUENCE),
     );
+  });
+
+  it('replays a command sequence that travels, which is also the save', () => {
+    const content = aFlyableGalaxy();
+
+    expect(play(content, 20261022, A_JOURNEY)).toEqual(play(content, 20261022, A_JOURNEY));
   });
 
   it('does not depend on a shared generator: two campaigns in one process agree', () => {
