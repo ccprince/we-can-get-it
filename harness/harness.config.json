@@ -1,0 +1,9 @@
+{
+  "days": 20,
+  "firstSeed": 1,
+  "seedCount": 8,
+  "out": "harness/out/tourist.csv",
+  "settings": [
+    { "name": "walking-skeleton", "content": "content/walking-skeleton.json" }
+  ]
+}
