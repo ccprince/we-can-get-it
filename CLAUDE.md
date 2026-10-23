@@ -17,6 +17,21 @@ code starts at the walking skeleton (#7) and is built chunk by chunk, each a pla
 - **`CODING_STANDARDS.md`** — read at review time: where the standards live, which are judgement
   calls, and which are already checks.
 
+## Orientation: what to read, and what not to
+
+An implementing session reads an ADR's **`## Decision`** section, not the whole ADR —
+`sed -n '/^## Decision/,/^## Rejected/p' docs/adr/<file>`. The rationale and the rejected
+alternatives are design-and-review reading. Four of the nine ADRs are over 21k characters and 0008
+is 27k; #9 spent 16.6k tokens on two of them and needed about a third of that.
+
+**Not in orientation**, each for its own reason:
+
+- **`CODING_STANDARDS.md`** — review time, and `/code-review` finds it by searching.
+- **`docs/agents/issue-tracker.md`** — only when creating, labelling or closing an issue.
+- **`docs/prototype-findings.md`** and **`docs/design-overview.md`** — design reading. A ticket
+  carries what it needs to be built, and its parent milestone carries the rest.
+- **eslint, vitest and tsconfig** — read the failure, not the config.
+
 ## No more up-front design documents
 
 This is a rule, not a preference. Two prior attempts designed heavily up front and it did not help;
