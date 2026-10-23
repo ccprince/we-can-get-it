@@ -38,6 +38,13 @@ on its own: the parent milestone issue holds the agreed signatures, the **Implem
 must not do. `gh issue view` prints the parent in its `parent:` field. Read the parent first, then
 the ticket's own acceptance criteria.
 
+**Read the parent; read a sibling only when the boundary is unstated.** A ticket's own
+**Not in this ticket** clauses and its parent's **Out of Scope** section are the authoritative
+boundary, and the tickets written for this milestone carry them — #10, #12 and #27 each name the
+sibling that owns the work they stop short of. Reading the siblings in case costs around 7k a
+session and tells you what those clauses already said. When the boundary genuinely is unstated, read
+the one sibling it is unstated against, and say so in the PR.
+
 ## Wayfinding operations
 
 Used by `/wayfinder`. The **map** is a single issue with **child** issues as tickets.

@@ -31,8 +31,9 @@ Two things follow:
   about 155k apiece rather than 115k. Split for headroom, when a ticket would otherwise finish with
   none left for a wrong turn; not to reduce the total work, which it increases.
 
-Measure the next one rather than trusting these numbers: the session transcripts under
-`~/.claude/projects/` carry the token usage per turn.
+These numbers are one session read by hand and will go stale as the canon and the skills grow.
+Re-measure rather than trust them: the session transcripts under `~/.claude/projects/` carry the
+token usage per turn, and #32 is the open question of whether that reading is worth an instrument.
 
 ## The sequence
 
