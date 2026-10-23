@@ -1,8 +1,9 @@
-import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { mkdirSync, writeFileSync } from 'node:fs';
 import { dirname } from 'node:path';
 import { isRejected, loadContent, startCampaign, takeCommand, view } from '../src/engine';
 import type { ContentSet } from '../src/engine';
 import { readConfig, seedsOf, type HarnessConfig, type Setting } from './config';
+import { readJson } from './files';
 import { rowFor, toCsv, type Row } from './csv';
 import { tourist, type Policy } from './policy';
 
@@ -26,8 +27,14 @@ import { tourist, type Policy } from './policy';
 
 const DEFAULT_CONFIG = 'harness/harness.config.json';
 
-/** A setting and the galaxy it measures, loaded before a single day is run. */
-type Galaxy = {
+/**
+ * A setting with its content set loaded, before a single day is run.
+ *
+ * Deliberately not called a galaxy: a **drawn galaxy** is what the **draw**
+ * produced for one campaign, and this is the **reserve** side of the line —
+ * one content set, shared by every seed the run plays.
+ */
+type LoadedSetting = {
   readonly setting: Setting;
   readonly content: ContentSet;
 };
@@ -40,9 +47,9 @@ function main(): void {
   // Every content set is loaded up front, so a content mistake stops the run
   // before any of it is measured. Never a measurement against a silently
   // patched galaxy (ADR 0003 decision 3).
-  const galaxies = config.settings.map(load);
+  const loaded = config.settings.map(load);
 
-  const rows = measure(config, galaxies, policy);
+  const rows = measure(config, loaded, policy);
   write(config.out, toCsv(rows));
 
   console.log(
@@ -55,8 +62,8 @@ function many(count: number, thing: string): string {
   return `${count} ${thing}${count === 1 ? '' : 's'}`;
 }
 
-function load(setting: Setting): Galaxy {
-  const raw: unknown = JSON.parse(readFileSync(setting.contentPath, 'utf8'));
+function load(setting: Setting): LoadedSetting {
+  const raw = readJson(setting.contentPath, `${setting.name} cannot be measured`);
   const loaded = loadContent(raw);
 
   for (const report of loaded.reports) {
@@ -81,13 +88,13 @@ function load(setting: Setting): Galaxy {
  */
 function measure(
   config: HarnessConfig,
-  galaxies: readonly Galaxy[],
+  loaded: readonly LoadedSetting[],
   policy: Policy,
 ): readonly Row[] {
   const rows: Row[] = [];
   for (const seed of seedsOf(config)) {
-    for (const galaxy of galaxies) {
-      rows.push(...measureCampaign(galaxy, seed, config.days, policy));
+    for (const setting of loaded) {
+      rows.push(...measureCampaign(setting, seed, config.days, policy));
     }
   }
   return rows;
@@ -103,12 +110,12 @@ function measure(
  * rather than the state they left behind.
  */
 function measureCampaign(
-  galaxy: Galaxy,
+  loaded: LoadedSetting,
   seed: number,
   days: number,
   policy: Policy,
 ): readonly Row[] {
-  const { setting, content } = galaxy;
+  const { setting, content } = loaded;
   const rows: Row[] = [];
   let campaign = startCampaign(content, seed);
 

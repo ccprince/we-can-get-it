@@ -24,8 +24,8 @@ up. A run is `seedCount` seeds from `firstSeed`, each played for `days` days, ag
   "seedCount": 8,
   "out": "harness/out/tourist.csv",
   "settings": [
-    { "name": "as-written", "content": "content/walking-skeleton.json" },
-    { "name": "richer", "content": "content/richer.json" }
+    { "name": "as-written", "contentPath": "content/walking-skeleton.json" },
+    { "name": "richer", "contentPath": "content/richer.json" }
   ]
 }
 ```

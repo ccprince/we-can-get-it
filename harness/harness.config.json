@@ -4,6 +4,6 @@
   "seedCount": 8,
   "out": "harness/out/tourist.csv",
   "settings": [
-    { "name": "walking-skeleton", "content": "content/walking-skeleton.json" }
+    { "name": "walking-skeleton", "contentPath": "content/walking-skeleton.json" }
   ]
 }
