@@ -1,7 +1,7 @@
 import { dateOf, type CalendarDate } from './calendar';
 import type { Campaign, DigestEntry } from './campaign';
 import { departureTo, offeredCommands, type Command } from './commands';
-import type { Lane, Location } from './content';
+import { locationNamed, type Lane, type Location } from './content';
 import { daysToFly, fareToFly, otherEnd, withinRange } from './map';
 
 /**
@@ -113,9 +113,7 @@ export function view(campaign: Campaign): View {
 
   return {
     here:
-      where.kind === 'at'
-        ? hereFor(locations, where.locationId)
-        : null,
+      where.kind === 'at' ? hereAt(locations, where.locationId) : null,
     transit:
       where.kind === 'in-transit'
         ? {
@@ -138,14 +136,6 @@ export function view(campaign: Campaign): View {
           },
     menu: { offered: offeredCommands() },
   };
-}
-
-function hereFor(locations: readonly Location[], locationId: string): HereView {
-  const here = locations.find((location) => location.id === locationId);
-  if (here === undefined) {
-    throw new Error(`the campaign is at ${locationId}, which the content set does not hold`);
-  }
-  return { name: here.name, prose: here.prose };
 }
 
 function chartFor(campaign: Campaign): ChartView {
@@ -185,11 +175,12 @@ function departFor(campaign: Campaign, toId: string): Command | null {
   return 'rejected' in departureTo(campaign, toId) ? null : { kind: 'depart', toId };
 }
 
-/** Every lane end names a location the loader has already checked exists. */
+/** Every location id in a read model names a location the loader has checked. */
 function nameOf(locations: readonly Location[], locationId: string): string {
-  const location = locations.find((candidate) => candidate.id === locationId);
-  if (location === undefined) {
-    throw new Error(`the chart names ${locationId}, which the content set does not hold`);
-  }
-  return location.name;
+  return locationNamed({ locations }, locationId).name;
+}
+
+function hereAt(locations: readonly Location[], locationId: string): HereView {
+  const { name, prose } = locationNamed({ locations }, locationId);
+  return { name, prose };
 }
