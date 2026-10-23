@@ -1,4 +1,5 @@
-import type { Campaign, Leg, Whereabouts } from './campaign';
+import type { Campaign, DigestEntry, Leg, Whereabouts } from './campaign';
+import { locationNamed, type ContentSet } from './content';
 import { daysToFly, fareToFly, laneBetween, withinRange } from './map';
 
 /**
@@ -180,23 +181,49 @@ function depart(campaign: Campaign, toId: string): CommandResult {
 }
 
 function endTheDay(campaign: Campaign): Campaign {
+  const ended = dayEnds(campaign);
   return {
     ...campaign,
     day: campaign.day + 1,
-    where: dayFlown(campaign.where),
-    // One digest, at every day boundary (ADR 0005 decision 8). Nothing reaches
-    // the player yet: the change budget is out of scope for this milestone.
-    digest: { day: campaign.day, entries: [] },
+    where: ended.where,
+    // One digest, at every day boundary, whose content varies by where the
+    // player is (ADR 0005 decision 8). Beyond a landing nothing reaches them
+    // yet: the change budget is out of scope for this milestone.
+    digest: { day: campaign.day, entries: ended.entries },
   };
 }
 
 /**
- * A day of a **leg** spent. **Transit is a place, played day by day**: a
- * multi-day haul is not one atomic act that lands the player later (ADR 0005
- * decision 10).
+ * What the day boundary does to where the player is, and what it hands the
+ * digest.
+ *
+ * **Transit is a place, played day by day** (ADR 0005 decision 10): a day of a
+ * **leg** is spent at every boundary, and the leg ends by landing rather than
+ * by a separate arrival step. The player is **out of contact** while it runs,
+ * so the span arrives all at once on the day they set down (decisions 8 and
+ * 11).
  */
-function dayFlown(where: Whereabouts): Whereabouts {
-  if (where.kind === 'at') return where;
-  const leg = { ...where.leg, daysFlown: where.leg.daysFlown + 1 };
-  return { kind: 'in-transit', leg };
+function dayEnds(campaign: Campaign): {
+  readonly where: Whereabouts;
+  readonly entries: readonly DigestEntry[];
+} {
+  if (campaign.where.kind === 'at') return { where: campaign.where, entries: [] };
+
+  const leg: Leg = { ...campaign.where.leg, daysFlown: campaign.where.leg.daysFlown + 1 };
+  if (leg.daysFlown < leg.days) {
+    return { where: { kind: 'in-transit', leg }, entries: [] };
+  }
+
+  return {
+    where: { kind: 'at', locationId: leg.toId },
+    entries: [{ text: spanOf(campaign.content, leg) }],
+  };
+}
+
+/** The leg, as the arrival digest states it: the days it took and its two ends. */
+function spanOf(content: ContentSet, leg: Leg): string {
+  const from = locationNamed(content, leg.fromId).name;
+  const to = locationNamed(content, leg.toId).name;
+  const days = leg.days === 1 ? '1 day' : `${leg.days} days`;
+  return `${days} out of ${from}, you set down at ${to}.`;
 }

@@ -159,6 +159,22 @@ export function within(count: number, range: Range): boolean {
 }
 
 /**
+ * The location an id names. Every location id in a loaded content set names a
+ * location the set holds — the loader has already refused the ones that do not
+ * — so this is total for any content set that got past it.
+ */
+export function locationNamed(
+  content: Pick<ContentSet, 'locations'>,
+  locationId: string,
+): Location {
+  const location = content.locations.find((candidate) => candidate.id === locationId);
+  if (location === undefined) {
+    throw new Error(`${locationId} is not a location the content set holds`);
+  }
+  return location;
+}
+
+/**
  * The tags any buyer holds as a **bonus** or a **refusal**. A role is a
  * property of a buyer's relationship to a tag rather than a class of tag
  * (ADR 0007 decision 7), so this is the only way to ask which tags are in a
