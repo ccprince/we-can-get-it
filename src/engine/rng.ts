@@ -1,0 +1,37 @@
+/**
+ * The seeded generator. Randomness comes from a generator created in
+ * `startCampaign` from the seed and threaded explicitly — never a module-level
+ * one, which would make two campaigns in one page load differ (ADR 0009
+ * decision 3).
+ *
+ * It is a value rather than an object with hidden state, so that a campaign
+ * stays an immutable value and `takeCommand` can return a new one without
+ * cloning discipline. Drawing from it returns the number **and** the generator
+ * to use next.
+ *
+ * Nothing in the walking skeleton draws from it: the first consumer is the
+ * draw (#11). It is created and threaded from the first day so that it is
+ * never retrofitted, which is what ADR 0009 decision 3 is guarding against.
+ */
+export type Rng = {
+  readonly state: number;
+};
+
+export function rngFromSeed(seed: number): Rng {
+  // Any 32-bit state will do; the algorithm is mulberry32, and ADR 0009 leaves
+  // open whether the choice becomes part of the save format.
+  return { state: seed >>> 0 };
+}
+
+/** A whole number in `[0, bound)`, with the generator to use next. */
+export function drawInt(rng: Rng, bound: number): readonly [number, Rng] {
+  if (!Number.isInteger(bound) || bound < 1) {
+    throw new Error(`a draw needs a whole bound of at least 1, not ${bound}`);
+  }
+  const state = (rng.state + 0x6d2b79f5) >>> 0;
+  let mixed = state;
+  mixed = Math.imul(mixed ^ (mixed >>> 15), mixed | 1);
+  mixed ^= mixed + Math.imul(mixed ^ (mixed >>> 7), mixed | 61);
+  const drawn = (mixed ^ (mixed >>> 14)) >>> 0;
+  return [drawn % bound, { state }];
+}

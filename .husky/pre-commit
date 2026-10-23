@@ -1,0 +1,3 @@
+#!/usr/bin/env sh
+# The pre-commit hook runs what CI runs (ADR 0009, consequences).
+npm run check
