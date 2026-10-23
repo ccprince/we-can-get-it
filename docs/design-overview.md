@@ -165,6 +165,46 @@ any mechanics; and ADR 0005's transit events, inherited whole. **What blocks nex
 the four upstream parameters of §5** — the tag structure first, which ADR 0006 has just given a second
 customer, since tags now type the map's slots as well as matching goods to wants.
 
+### 3.4 The tag structure
+
+**Settled 2026-10-22 in `docs/adr/0007-the-tag-structure.md`.** ADR 0006 moved the blocking question off
+the chunks and onto the four upstream parameters of §5, naming the tag structure first because decision 4
+there had given tags a second customer. The ADR holds eighteen decisions in full; in brief:
+
+- **A tag declares its class** — **kind**, **quality**, **origin** or **quirk** — because *goods per
+  usable kind-tag*, the one lever findings §2.4 names, is not a computable quantity in a flat vocabulary
+  of strings. A good carries **exactly one kind**, and kinds are **flat**. **Kinds are the only public
+  class**: a kind may be said on the trade guide, in a commission's breadth list and in a location's
+  character, while quality, origin and quirk are named nowhere and reached only through **tells**.
+- **A kind is *usable*** when it carries a declared floor of goods, and **only a usable kind may be the
+  subject of a vague want** — which is what stops the prototype's failure recurring behind a healthy
+  mean. The ratio is reported as a distribution.
+- **A want is a conjunction of tag terms** with optional negation, or one named good; no disjunction,
+  because breadth is the kind vocabulary's job. **Bonus and refusal are roles held on the buyer**, not
+  classes of tag, and any tag used in a role must spread far enough to be learnable.
+- **The engine derives the match, content supplies only the pieces.** Four tiers —
+  `refused`/`grudging`/`acceptable`/`great` — with **grudging** derived from partial satisfaction of a
+  conjunction, which puts findings §2.4's own balloon-silk example into the rules. **Grudging belongs to
+  speculation**: it pays no warmth and **closes the want it is sold against**, so the better price is
+  forgone, while on an order no tier below acceptable is a transaction at all — the buyer declines, the
+  order stays open, and standing is staked on the date rather than on a bad afternoon. The player's
+  reading is the test: *the best I've got*, or *go and find something better*. The **offer** is
+  **worth × tier × voice premium**, so the four want
+  shapes are mechanically real and the open question of §4 is answerable by moving one number.
+- **Every number is either a declared content-set bound or a labelled sizing estimate.** The prototype's
+  1–4 tags per good and 2–4 goods per role tag are void as values and kept as reasons; two seeds are
+  estimated (six to eight goods per usable kind, twenty to thirty kinds) and the rest is arithmetic.
+- **A location's standing character is an enumerated *character*** declaring the kinds it supplies and
+  demands, which is what a motif slot types against — so ADR 0006's economic grain is two characters'
+  kind sets disagreeing along a lane. The **cross-product tool is the loader in a reporting mode**, one
+  content model with two verdicts: fail for a mistake, report for a writer to judge.
+
+Deliberately left open: **a way to ask questions** — the third part of findings §2.4's fix, which belongs
+to chunk 6 because the thing the player does is call on somebody; whether kinds should stay public;
+whether the character enumeration is the right granularity. **What blocks next is the draw** — how much
+of the galaxy one campaign sees — and it inherits a job: the reserve must satisfy every character the
+motifs demand, at the draw size, with this campaign's hidden locations excluded.
+
 ## 4. The chunks
 
 Nine top-level parts. Each is a coherent area of design and of build, each has something already settled by the
@@ -198,11 +238,15 @@ motif slots are for. What is left here is measurement: the distance scale and th
 shortest and longest lane, the fare rate, baseline range, speed and hold, the draw size, and how many
 spurs and chokepoints the invariants should demand.
 
-**4. Goods and matching.** The catalogue, the tag system, match tiers, and what an offer is worth. Settled, and these
-are strong: **an offer is a function of the good's worth and the quality of the match**, never a per-want constant
-(§2.1) — fix it in the rules, because content discipline will not survive several hands; every tag needs a *tell* in
-the prose (§2.4); 1–4 tags per good, bonus and refusal tags on 2–4 goods each, two-way quality tags, origin tags only
-where the origin matters, idiosyncratic tags rationed (§2.4, §5.2).
+**4. Goods and matching.** The catalogue, the tag system, match tiers, and what an offer is worth. **Settled in ADR
+0007**; see §3.4 above. The findings that drove it hold in the result: **an offer is a function of the good's worth
+and the quality of the match**, never a per-want constant (§2.1), so worth, tier and the voice premium are all
+engine-side and content states no price except an order's; every tag needs a *tell* in the prose (§2.4), so a tag
+with no tell fails the load; two-way quality tags, origin tags only where the origin matters and idiosyncratic tags
+rationed (§2.4, §5.2) are now classes with rules rather than habits. The prototype's *1–4 tags per good* and *bonus
+and refusal tags on 2–4 goods* are void as numbers and kept as reasons: they become bounds a content set declares,
+and both are expected to widen as the catalogue grows. What is left here is measurement: the two seeds of §5, the
+tier multipliers, the voice premium, the declared bounds, and the size of the character enumeration.
 
 **5. Demand and supply.** Wants, orders and the four want shapes on one side; lots, stock, prices, restocking and the
 stock race on the other. Settled: **an order is the primary transaction and states its price** (§2.1), the
@@ -258,7 +302,9 @@ Unpacked, almost every part of "how big is the galaxy" is derived from something
 - **How many goods** is set by the tag ratio. The lever for vague wants is many goods per kind-tag, and the prototype
   failed at **27 tags across 24 goods**, where a vague want asks only "is there anything at all that fits?" (§2.4).
   Choose a target — say six to eight goods per usable kind-tag — and the catalogue size falls out of how many kinds
-  the galaxy wants.
+  the galaxy wants. **Settled 2026-10-22 in ADR 0007**, which makes *usable* a validated property of a kind so the
+  ratio cannot be met on average while half the kinds are singletons, and records both the target and the kind count
+  as **sizing estimates** — void on first measurement.
 - **How much demand** is set by the thin-demand decision: more goods than wants, so that some goods are wanted by
   nobody at the moment (§2.1). A ratio, not a count.
 - **How many locations** is set by how much of the galaxy one campaign should see, since the galaxy must hold more
@@ -273,8 +319,10 @@ things are is now a lane's authored **distance** converted by the ship's **speed
 campaign sees is the **draw size** over a reserve.
 
 So the questions actually worth sitting down with are: what is a campaign (§3.1, settled), what does the map look
-like (§3.3, settled), what is the tag structure, and how much does one campaign see. The last two are what remain.
-Scale is arithmetic afterwards.
+like (§3.3, settled), what is the tag structure (§3.4, settled), and how much does one campaign see. **The last is
+what remains.** Scale is arithmetic afterwards — and ADR 0007 decision 16 makes that literal: the chain above runs
+off two estimated seeds, goods per usable kind-tag and the number of kinds, with the catalogue size, the want count
+and the rest falling out of them as arithmetic rather than judgement.
 
 ---
 
@@ -286,9 +334,10 @@ things, in order, with the first three now done:
 1. ~~**Settle the campaign** (§3).~~ **Done**, 2026-10-22: ADR 0004, the shape of a campaign.
 2. ~~**Settle the time model** (chunk 2).~~ **Done**, 2026-10-22: ADR 0005, the time model.
 3. ~~**Settle the topology** (chunk 3).~~ **Done**, 2026-10-22: ADR 0006, the map.
-4. **Settle the four upstream parameters** in §5 — **the tag structure first**, since ADR 0006 decision 4 makes
-   tags type the map's motif slots as well as match goods to wants, and the catalogue size falls out of the
-   goods-per-kind-tag target. Then how much of the galaxy one campaign sees.
+4. ~~**Settle the tag structure**, the first of the four upstream parameters in §5.~~ **Done**, 2026-10-22:
+   ADR 0007, the tag structure. It also fixed what the remaining parameters *are*: the catalogue size and the
+   rest of §5's chain are arithmetic over two seeds, so what is left of this item is **how much of the galaxy
+   one campaign sees** — the draw size over the reserve, which ADR 0007 hands a constraint.
 5. **Build the first playable milestone against the named question** — a galaxy at real scale with thin demand,
    orders as the backbone, and a content set written to answer how plain and vague wants divide the game — with the
    measurement harness built first (§5.4).
