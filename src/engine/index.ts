@@ -9,7 +9,7 @@
  *   view(campaign)               -> View
  */
 export { loadContent } from './load-content';
-export type { LoadResult, Problem, Report } from './load-content';
+export type { Finding, LoadResult, Problem, Report } from './load-content';
 export type { Calendar, ContentSet, Location, Month, Start } from './content';
 
 export { startCampaign } from './campaign';

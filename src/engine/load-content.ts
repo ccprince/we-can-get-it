@@ -1,22 +1,17 @@
 import { daysPerYear } from './calendar';
-import type { Calendar, ContentSet, Location, Month, Start } from './content';
+import type { Bounds, Calendar, ContentSet, Location, Month, Range, Start } from './content';
+import {
+  fails,
+  isObject,
+  judge,
+  readInteger,
+  readNonEmptyTexts,
+  readText,
+  type Problem,
+  type Report,
+} from './verdicts';
 
-/**
- * A content mistake, named by what it is and where it is. A mistake **fails**
- * the load; a suspicion is **reported for a writer to judge** (ADR 0007
- * decision 18). The two verdicts are different channels here so that they
- * cannot be conflated later.
- */
-export type Problem = {
-  readonly where: string;
-  readonly what: string;
-};
-
-/** Something for a writer to look at. Never a reason to fail a load. */
-export type Report = {
-  readonly where: string;
-  readonly what: string;
-};
+export type { Finding, Problem, Report } from './verdicts';
 
 export type LoadResult =
   | { readonly ok: true; readonly content: ContentSet; readonly reports: readonly Report[] }
@@ -33,17 +28,69 @@ export function loadContent(raw: unknown): LoadResult {
   const reports: Report[] = [];
 
   if (!isObject(raw)) {
-    return { ok: false, problems: [{ where: '', what: 'is not an object' }], reports };
+    return { ok: false, problems: [fails('', 'is not an object')], reports };
   }
 
+  const bounds = readBounds(raw.bounds, problems);
   const calendar = readCalendar(raw.calendar, problems, reports);
   const locations = readLocations(raw.locations, problems);
   const start = readStart(raw.start, locations ?? [], problems);
 
-  if (calendar === undefined || locations === undefined || start === undefined || problems.length > 0) {
+  if (
+    bounds === undefined ||
+    calendar === undefined ||
+    locations === undefined ||
+    start === undefined ||
+    problems.length > 0
+  ) {
     return { ok: false, problems, reports };
   }
-  return { ok: true, content: { calendar, locations, start }, reports };
+  return { ok: true, content: { bounds, calendar, locations, start }, reports };
+}
+
+/**
+ * The bounds the validator enforces are the ones the content set declared, so
+ * a content set that declares none cannot be checked at all and fails here
+ * rather than being checked against numbers the engine invented (ADR 0007
+ * decision 15).
+ */
+function readBounds(raw: unknown, problems: Problem[]): Bounds | undefined {
+  if (!isObject(raw)) {
+    problems.push(fails('bounds', 'is missing'));
+    return undefined;
+  }
+
+  const tagsPerGood = readRange(raw.tagsPerGood, 'bounds.tagsPerGood', problems);
+  const goodsPerRoleTag = readRange(raw.goodsPerRoleTag, 'bounds.goodsPerRoleTag', problems);
+  const usabilityFloor = readInteger(raw.usabilityFloor, 'bounds.usabilityFloor', 1, problems);
+  const quirkRation = readInteger(raw.quirkRation, 'bounds.quirkRation', 0, problems);
+
+  if (
+    tagsPerGood === undefined ||
+    goodsPerRoleTag === undefined ||
+    usabilityFloor === undefined ||
+    quirkRation === undefined
+  ) {
+    return undefined;
+  }
+  return { tagsPerGood, goodsPerRoleTag, usabilityFloor, quirkRation };
+}
+
+function readRange(raw: unknown, where: string, problems: Problem[]): Range | undefined {
+  if (!isObject(raw)) {
+    problems.push(fails(where, 'is missing'));
+    return undefined;
+  }
+
+  const least = readInteger(raw.least, `${where}.least`, 0, problems);
+  const most = readInteger(raw.most, `${where}.most`, 0, problems);
+  if (least === undefined || most === undefined) return undefined;
+
+  if (least > most) {
+    problems.push(fails(where, `runs from ${least} down to ${most}, which is no range at all`));
+    return undefined;
+  }
+  return { least, most };
 }
 
 function readCalendar(
@@ -52,7 +99,7 @@ function readCalendar(
   reports: Report[],
 ): Calendar | undefined {
   if (!isObject(raw)) {
-    problems.push({ where: 'calendar', what: 'is missing' });
+    problems.push(fails('calendar', 'is missing'));
     return undefined;
   }
 
@@ -66,10 +113,12 @@ function readCalendar(
     weekdayNames !== undefined &&
     weekdayNames.length !== daysPerWeek
   ) {
-    problems.push({
-      where: 'calendar.weekdayNames',
-      what: `names ${weekdayNames.length} weekdays for a week of ${daysPerWeek} days`,
-    });
+    problems.push(
+      fails(
+        'calendar.weekdayNames',
+        `names ${weekdayNames.length} weekdays for a week of ${daysPerWeek} days`,
+      ),
+    );
   }
 
   if (
@@ -83,10 +132,12 @@ function readCalendar(
 
   const calendar: Calendar = { daysPerWeek, weekdayNames, months, firstYear };
   const days = daysPerYear(calendar);
-  reports.push({
-    where: 'calendar',
-    what: `a year is ${months.length} months, ${days / daysPerWeek} weeks, ${days} days`,
-  });
+  reports.push(
+    judge(
+      'calendar',
+      `a year is ${months.length} months, ${days / daysPerWeek} weeks, ${days} days`,
+    ),
+  );
 
   return calendar;
 }
@@ -97,7 +148,7 @@ function readMonths(
   problems: Problem[],
 ): readonly Month[] | undefined {
   if (!Array.isArray(raw) || raw.length === 0) {
-    problems.push({ where: 'calendar.months', what: 'names no months' });
+    problems.push(fails('calendar.months', 'names no months'));
     return undefined;
   }
 
@@ -105,7 +156,7 @@ function readMonths(
   raw.forEach((entry, index) => {
     const where = `calendar.months[${index}]`;
     if (!isObject(entry)) {
-      problems.push({ where, what: 'is not an object' });
+      problems.push(fails(where, 'is not an object'));
       return;
     }
     const name = readText(entry.name, `${where}.name`, problems);
@@ -116,10 +167,12 @@ function readMonths(
     // with no remainders (ADR 0005 decision 2): the divisibility is what makes
     // weekday derivable from the day index alone.
     if (daysPerWeek !== undefined && days % daysPerWeek !== 0) {
-      problems.push({
-        where,
-        what: `${name} is ${days} days, which is not a whole number of ${daysPerWeek}-day weeks`,
-      });
+      problems.push(
+        fails(
+          where,
+          `${name} is ${days} days, which is not a whole number of ${daysPerWeek}-day weeks`,
+        ),
+      );
       return;
     }
     months.push({ name, days });
@@ -130,7 +183,7 @@ function readMonths(
 
 function readLocations(raw: unknown, problems: Problem[]): readonly Location[] | undefined {
   if (!Array.isArray(raw) || raw.length === 0) {
-    problems.push({ where: 'locations', what: 'names no locations' });
+    problems.push(fails('locations', 'names no locations'));
     return undefined;
   }
 
@@ -139,7 +192,7 @@ function readLocations(raw: unknown, problems: Problem[]): readonly Location[] |
   raw.forEach((entry, index) => {
     const where = `locations[${index}]`;
     if (!isObject(entry)) {
-      problems.push({ where, what: 'is not an object' });
+      problems.push(fails(where, 'is not an object'));
       return;
     }
     const id = readText(entry.id, `${where}.id`, problems);
@@ -148,7 +201,7 @@ function readLocations(raw: unknown, problems: Problem[]): readonly Location[] |
     if (id === undefined || name === undefined || prose === undefined) return;
 
     if (seen.has(id)) {
-      problems.push({ where: `${where}.id`, what: `repeats an id already used: ${id}` });
+      problems.push(fails(`${where}.id`, `repeats an id already used: ${id}`));
       return;
     }
     seen.add(id);
@@ -164,7 +217,7 @@ function readStart(
   problems: Problem[],
 ): Start | undefined {
   if (!isObject(raw)) {
-    problems.push({ where: 'start', what: 'is missing' });
+    problems.push(fails('start', 'is missing'));
     return undefined;
   }
 
@@ -174,59 +227,12 @@ function readStart(
   const day = readInteger(raw.day, 'start.day', 1, problems);
 
   if (locationId !== undefined && !locations.some((location) => location.id === locationId)) {
-    problems.push({
-      where: 'start.locationId',
-      what: `names a location that does not exist: ${locationId}`,
-    });
+    problems.push(
+      fails('start.locationId', `names a location that does not exist: ${locationId}`),
+    );
     return undefined;
   }
 
   if (locationId === undefined || credits === undefined || day === undefined) return undefined;
   return { locationId, credits, day };
-}
-
-function isObject(value: unknown): value is Record<string, unknown> {
-  return typeof value === 'object' && value !== null && !Array.isArray(value);
-}
-
-function readText(value: unknown, where: string, problems: Problem[]): string | undefined {
-  if (typeof value !== 'string' || value.trim() === '') {
-    problems.push({ where, what: 'is missing or not a line of text' });
-    return undefined;
-  }
-  return value;
-}
-
-function readNonEmptyTexts(
-  value: unknown,
-  where: string,
-  problems: Problem[],
-): readonly string[] | undefined {
-  if (!Array.isArray(value) || value.length === 0) {
-    problems.push({ where, what: 'is missing or empty' });
-    return undefined;
-  }
-  const texts: string[] = [];
-  value.forEach((entry, index) => {
-    const text = readText(entry, `${where}[${index}]`, problems);
-    if (text !== undefined) texts.push(text);
-  });
-  return texts.length === value.length ? texts : undefined;
-}
-
-function readInteger(
-  value: unknown,
-  where: string,
-  least: number,
-  problems: Problem[],
-): number | undefined {
-  if (typeof value !== 'number' || !Number.isInteger(value)) {
-    problems.push({ where, what: 'is missing or not a whole number' });
-    return undefined;
-  }
-  if (value < least) {
-    problems.push({ where, what: `is ${value}, which is less than ${least}` });
-    return undefined;
-  }
-  return value;
 }

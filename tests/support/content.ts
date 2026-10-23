@@ -45,11 +45,30 @@ export function aStart(overrides: RawObject = {}): RawObject {
   };
 }
 
+/**
+ * The bounds a content set declares for the validator to enforce (ADR 0007
+ * decision 15). Every number here is a placeholder to be measured; the engine
+ * holds none of them.
+ */
+export function aBounds(overrides: RawObject = {}): RawObject {
+  return {
+    tagsPerGood: { least: 1, most: 5 },
+    goodsPerRoleTag: { least: 2, most: 8 },
+    usabilityFloor: 2,
+    quirkRation: 2,
+    ...overrides,
+  };
+}
+
 /** The trivial content set of #7: one location, no goods. */
 export function aContentSet(overrides: RawObject = {}): RawObject {
   return {
+    bounds: aBounds(),
     calendar: aCalendar(),
     locations: [aLocation()],
+    tags: [],
+    goods: [],
+    buyers: [],
     start: aStart(),
     ...overrides,
   };
