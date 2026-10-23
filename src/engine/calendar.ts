@@ -14,12 +14,16 @@ export type CalendarDate = {
   readonly year: number;
 };
 
+/** A year is the sum of its months, with no remainder (ADR 0005 decision 2). */
+export function daysPerYear(calendar: Calendar): number {
+  return calendar.months.reduce((total, month) => total + month.days, 0);
+}
+
 export function dateOf(calendar: Calendar, day: number): CalendarDate {
   const sinceFirstDay = day - 1;
-  const daysPerYear = calendar.months.reduce((total, month) => total + month.days, 0);
-
-  const year = calendar.firstYear + Math.floor(sinceFirstDay / daysPerYear);
-  let dayOfYear = sinceFirstDay % daysPerYear;
+  const inAYear = daysPerYear(calendar);
+  const year = calendar.firstYear + Math.floor(sinceFirstDay / inAYear);
+  let dayOfYear = sinceFirstDay % inAYear;
 
   let month: Month | undefined;
   for (const candidate of calendar.months) {
