@@ -48,6 +48,20 @@ describe('the page', () => {
     expect(screen.getByText('Nothing reached you.')).toBeDefined();
   });
 
+  it('departs along a lane and lands, with the span in the digest', async () => {
+    serve(walkingSkeleton);
+    render(<App />);
+    const depart = await screen.findByRole('button', { name: 'Depart for Thennet Shoals' });
+
+    fireEvent.click(depart);
+
+    expect(
+      await screen.findByText('1 day out of Bellwether Yards, you set down at Thennet Shoals.'),
+    ).toBeDefined();
+    expect(screen.getByRole('heading', { name: 'Thennet Shoals' })).toBeDefined();
+    expect(screen.getByText(/370 credits/)).toBeDefined();
+  });
+
   it('says so when the content set cannot be fetched at all', async () => {
     serve('', false);
     render(<App />);
