@@ -35,5 +35,14 @@ export { isRejected, takeCommand } from './commands';
 export type { Command, CommandResult, Reason } from './commands';
 
 export { view } from './view';
-export type { CreditsView, DigestView, HereView, MenuView, TodayView, View } from './view';
+export type {
+  ChartView,
+  CreditsView,
+  DigestView,
+  HereView,
+  LaneView,
+  MenuView,
+  TodayView,
+  View,
+} from './view';
 export type { CalendarDate } from './calendar';
