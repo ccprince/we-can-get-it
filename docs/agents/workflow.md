@@ -8,32 +8,41 @@ Every ADR in the log landed that way.
 
 ## Sizing a ticket
 
-A ticket is one session's work. What that costs was measured on #10, the largest so far — nine
-acceptance criteria, 1601 insertions across 12 files, landed clean in 41 minutes:
+A ticket is one session's work, and the gate is **files written**. #10 and #9 bracket it:
 
-| Through the end of | Context |
-| --- | --- |
-| Orientation — the ticket, its parent, the ADRs it cites, the code it touches | 110k |
-| Seven TDD slices | 159k |
-| `/code-review`, two agents | 193k |
-| Taking the findings, the PR, the merge | 230k |
+| | #10 | #9 |
+| --- | --- | --- |
+| Acceptance criteria | 10 | 10 |
+| Files written | 12 | 38 |
+| Insertions | 1601 | 3768 |
+| Fit one session, review and PR included | yes, at 229k | no — it would have ended near 274k |
 
-Read the curve, not the peak. **Orientation and shipping are close to fixed** — about 110k before the
-first test is written, about 70k after the last one passes — and the implementation cost **7k a
-slice**. A ticket's own size buys only the middle.
+**A ticket writes at most about twelve source files and sixteen hundred insertions** — #10's shape,
+which landed clean in 41 minutes. Both tickets carried ten criteria, so **criteria count does not
+discriminate**: cap a ticket at **five or six** as the cheap check to run first, but the files are
+what decide. A ticket that crosses content → loader → validator → read model → command → view is a
+vertical slice; keep it thin at each layer, or split it by layer rather than by feature.
+
+Read the curve, not the peak. Across eighteen sessions in this repo the context **floor is 39k** —
+the canon, the skills and the system prompt, before a single file is read — and orientation ends
+between **85k and 138k, median 101k**. Implementation costs **7–11k a slice**. Review, findings, PR
+and merge cost about **70k** after the last slice passes; `/code-review`'s two agents run
+context-fresh on the diff, so the review adds little beyond their reports.
 
 Two things follow:
 
-- **A ticket is too large when its slices will not fit in the middle.** Nine criteria over one pure
-  function fit. Criteria that each want their own content set and seed are cheap and count lightly;
-  criteria that each add a stage the next stage reads are dear.
-- **Splitting is not free — each half pays the fixed cost again.** Two halves of #10 would have run
-  about 155k apiece rather than 115k. Split for headroom, when a ticket would otherwise finish with
-  none left for a wrong turn; not to reduce the total work, which it increases.
+- **A ticket is too large when its slices will not fit in the middle.** Criteria that each want their
+  own content set and seed are cheap and count lightly; criteria that each add a stage the next stage
+  reads are dear — #9's first slice cost 14k because content, loader and validator moved together.
+- **Splitting is not free — each half pays the floor and the orientation again.** #9's two sessions
+  cost 203k and 108k, 311k in all, where #10 went end to end in one at 229k. Split for headroom, when
+  a ticket would otherwise finish with none left for a wrong turn; not to reduce the total work,
+  which it increases.
 
-These numbers are one session read by hand and will go stale as the canon and the skills grow.
-Re-measure rather than trust them: the session transcripts under `~/.claude/projects/` carry the
-token usage per turn, and #32 is the open question of whether that reading is worth an instrument.
+Orientation scales with the repo, so these numbers go stale as the canon grows — the 110k this table
+first recorded held for exactly one ticket. Re-measure rather than trust them: the transcripts under
+`~/.claude/projects/` carry the token usage per turn, and **#32** holds both distributions and the
+reading that produced them.
 
 ## The sequence
 
