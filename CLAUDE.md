@@ -1,9 +1,9 @@
 # we-can-get-it
 
 **We Can Get It For You** — a text space-trading game about finding the right good at the right shop
-for the right buyer. **We Can Get It** is the short form. Nothing is built yet: a two-week prototype
-answered the two questions it was built for and was then discarded on purpose. What survives it is
-two documents.
+for the right buyer. **We Can Get It** is the short form. A two-week prototype answered the two
+questions it was built for and was then discarded on purpose; what survives it is two documents. The
+code starts at the walking skeleton (#7) and is built chunk by chunk, each a playable milestone.
 
 ## The canon
 
@@ -14,6 +14,8 @@ two documents.
 - **`GLOSSARY.md`** — the vocabulary, nearly all of it earned in play. Use these words; don't coin
   synonyms for them.
 - **`docs/adr/`** — decisions. ADR 0003 governs code and should be read before writing any.
+- **`CODING_STANDARDS.md`** — read at review time: where the standards live, which are judgement
+  calls, and which are already checks.
 
 ## No more up-front design documents
 
@@ -28,27 +30,9 @@ question, plus a short write-up of what came of it.
 
 ## Do not re-litigate
 
-The first six were tried, played and recorded, with reasons in findings §3; the rest were settled by a
-design decision and the reasons are in the ADR's rejected alternatives. Read them before reopening one.
-
-1. **Reducing notification load by hiding information.** Tried three ways; all addressed delivery,
-   and the volume came from generation.
-2. **Tuning per-entity event rates.** Rejected with arithmetic in ADR 0001.
-3. **An adaptive change split** that favours whichever side the player has ignored. Rubber-banding.
-4. **Warmth as an invisible price effect.** Comes back, but only with a legible handle (findings §2.3).
-5. **An end screen listing memorable deliveries, under a purely monetary goal.**
-6. **Zero-space goods in a galaxy where everything is wanted.** A bet that cannot be lost.
-7. **A baseline daily burn** — upkeep, food, berth fees the player didn't buy. A slow-acting loan, which
-   is the pressure shape ADR 0004 rejected; the burn is a number the player *chose* (ADR 0005).
-8. **A calendar that only supplies reasons**, with nothing in it learnable in advance. Throws away the
-   best answer available to the requirement that cross-campaign knowledge be the galaxy's grammar rather
-   than its facts; schedules are published and exploitable (ADR 0005).
-9. **A sub-day clock** — hours, or morning and afternoon. A second time unit on every reading surface,
-   for a precision nothing in the design asked for; the day is atomic (ADR 0005).
-
-**Every tuned number from the prototype is void** — the change budget of 4, the watch cap of 5, the
-debt of 1,500, 16 jumps, a hold of 40, 300 starting credits, all of it. They were found at
-prototype scale and none transfer. Quote one only as history, never as a starting point.
+Nine questions are **closed** — six tried in play, three settled by decision — and so is every tuned
+number the prototype found. They are listed with their reasons in **`docs/closed-questions.md`**.
+Read it before reopening a settled question or quoting a prototype number.
 
 ## Architecture
 
@@ -73,6 +57,11 @@ purpose-built content, and new-field defaults in one place.
   was deferred and why, and what is explicitly **closed**. Use `docs/playtests/TEMPLATE.md`.
 
 ## Agent skills
+
+### Finishing a ticket
+
+A ticket ends in an **open PR**, not a commit on `main`; a decision goes straight to `main`. The
+sequence, and how this repo merges, is in `docs/agents/workflow.md`.
 
 ### Issue tracker
 

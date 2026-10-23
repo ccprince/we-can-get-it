@@ -36,6 +36,31 @@ const deniedEngineImports = [
     'The engine is a plain TypeScript library with no I/O and no UI (ADR 0009 decision 2). The page and the harness do the reading; the engine is handed the data.',
 }));
 
+/**
+ * The day index is the one engine value ADR 0005 decision 3 says the player
+ * never reads: "'day 214' is an engine artifact, not something a patron says."
+ * The page is handed both a read model and the campaign, and `day` is reachable
+ * on `TodayView`, `DigestView` and `Campaign` alike, so the denial is on the
+ * reading rather than on any one of them. The page renders the date; the harness
+ * (#8), which is not the page, is what the index is kept in the read model for.
+ *
+ * Reviewed by hand once and found breached in the first commit of the page
+ * (`day {read.today.day}`), which is the shape of constraint ADR 0009 decision 2
+ * already gave a lint rule rather than a standard.
+ */
+const deniedPageReadings = [
+  {
+    selector: 'MemberExpression[property.name="day"]',
+    message:
+      'The player reads the date, never the day index (ADR 0005 decision 3). Render `date`; the index is for the harness.',
+  },
+  {
+    selector: 'ObjectPattern > Property[key.name="day"]',
+    message:
+      'The player reads the date, never the day index (ADR 0005 decision 3). Destructure `date`; the index is for the harness.',
+  },
+];
+
 export default tseslint.config(
   { ignores: ['dist', 'node_modules', 'coverage'] },
   js.configs.recommended,
@@ -59,6 +84,12 @@ export default tseslint.config(
             'Randomness comes from the seeded generator created in startCampaign and threaded explicitly (ADR 0009 decision 3).',
         },
       ],
+    },
+  },
+  {
+    files: ['src/page/**/*.ts', 'src/page/**/*.tsx'],
+    rules: {
+      'no-restricted-syntax': ['error', ...deniedPageReadings],
     },
   },
 );

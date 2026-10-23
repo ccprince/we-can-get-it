@@ -32,7 +32,11 @@ Create a GitHub issue.
 
 ## When a skill says "fetch the relevant ticket"
 
-Read it as in **Read an issue** above.
+Read it as in **Read an issue** above — **and read its parent**. A chunk ticket's spec is incomplete
+on its own: the parent milestone issue holds the agreed signatures, the **Implementation Decisions**,
+**Testing Decisions** and **Out of Scope** sections, and the sibling tickets that own work this one
+must not do. `gh issue view` prints the parent in its `parent:` field. Read the parent first, then
+the ticket's own acceptance criteria.
 
 ## Wayfinding operations
 

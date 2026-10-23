@@ -1,3 +1,23 @@
 #!/usr/bin/env sh
+
+# Ticketed code goes through a branch and a PR; a decision goes straight to main
+# (docs/agents/workflow.md). Every ADR in the log landed on main directly, and
+# every ticket so far came in through a PR, so the guard is on code, not commits.
+if [ "$(git rev-parse --abbrev-ref HEAD)" = "main" ]; then
+  code=$(git diff --cached --name-only --diff-filter=ACMR \
+    -- src tests content package.json package-lock.json tsconfig.json \
+       eslint.config.js vite.config.ts vitest.config.ts index.html \
+       .github .husky)
+  if [ -n "$code" ]; then
+    echo "pre-commit: this commit changes code on main:"
+    echo "$code" | sed 's/^/  /'
+    echo
+    echo "Ticketed work goes through a branch and a PR (docs/agents/workflow.md):"
+    echo "  git branch <name> && git reset --hard origin/main && git checkout <name>"
+    echo "A decision — an ADR, the glossary, the canon — belongs on main; this is not one."
+    exit 1
+  fi
+fi
+
 # The pre-commit hook runs what CI runs (ADR 0009, consequences).
 npm run check
