@@ -1,4 +1,10 @@
 {
+  "bounds": {
+    "tagsPerGood": { "least": 1, "most": 5 },
+    "goodsPerRoleTag": { "least": 2, "most": 8 },
+    "usabilityFloor": 2,
+    "quirkRation": 2
+  },
   "calendar": {
     "daysPerWeek": 6,
     "weekdayNames": [
@@ -28,6 +34,9 @@
       "prose": "A repair yard that outgrew its own harbour and never admitted it. Three gantries, a customs shed with a leaking roof, and a market that keeps its own hours."
     }
   ],
+  "tags": [],
+  "goods": [],
+  "buyers": [],
   "start": {
     "locationId": "bellwether",
     "credits": 180,

@@ -14,7 +14,7 @@ describe('the walking skeleton content set', () => {
 
     expect(result.ok ? [] : result.problems).toEqual([]);
     expect(result.reports).toEqual([
-      { where: 'calendar', what: 'a year is 8 months, 48 weeks, 288 days' },
+      { verdict: 'judge', where: 'calendar', what: 'a year is 8 months, 48 weeks, 288 days' },
     ]);
   });
 

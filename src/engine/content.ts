@@ -37,7 +37,36 @@ export type Start = {
   readonly day: number;
 };
 
+/**
+ * A bound with two ends, both inclusive. Declared by the content set and
+ * enforced by the validator (ADR 0007 decision 15); both ends are expected to
+ * widen as the catalogue grows, which is why they are a config edit rather
+ * than an argument.
+ */
+export type Range = {
+  readonly least: number;
+  readonly most: number;
+};
+
+/**
+ * What a content set declares about its own shape. The engine hardcodes none
+ * of it (ADR 0007 decision 15): what transfers from the prototype is not the
+ * numbers but the reason for the lower bound — a role must be a learnable
+ * pattern, so more than one good.
+ */
+export type Bounds = {
+  /** Tags on one good, the mandatory kind included. */
+  readonly tagsPerGood: Range;
+  /** Goods carrying a tag that any buyer uses as a bonus or a refusal. */
+  readonly goodsPerRoleTag: Range;
+  /** The goods a kind must carry to be **usable** (ADR 0007 decision 5). */
+  readonly usabilityFloor: number;
+  /** The most quirk tags the galaxy may hold (ADR 0007 decision 8). */
+  readonly quirkRation: number;
+};
+
 export type ContentSet = {
+  readonly bounds: Bounds;
   readonly calendar: Calendar;
   readonly locations: readonly Location[];
   readonly start: Start;
