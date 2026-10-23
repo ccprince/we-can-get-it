@@ -1,0 +1,36 @@
+{
+  "calendar": {
+    "daysPerWeek": 6,
+    "weekdayNames": [
+      "Firstday",
+      "Seconday",
+      "Thirdday",
+      "Fourthday",
+      "Fifthday",
+      "Marketday"
+    ],
+    "months": [
+      { "name": "Thessaly", "days": 36 },
+      { "name": "Ambit", "days": 36 },
+      { "name": "Lowtide", "days": 36 },
+      { "name": "Carrick", "days": 36 },
+      { "name": "Hollow", "days": 36 },
+      { "name": "Verity", "days": 36 },
+      { "name": "Spindle", "days": 36 },
+      { "name": "Hightide", "days": 36 }
+    ],
+    "firstYear": 1
+  },
+  "locations": [
+    {
+      "id": "bellwether",
+      "name": "Bellwether Yards",
+      "prose": "A repair yard that outgrew its own harbour and never admitted it. Three gantries, a customs shed with a leaking roof, and a market that keeps its own hours."
+    }
+  ],
+  "start": {
+    "locationId": "bellwether",
+    "credits": 180,
+    "day": 1
+  }
+}
