@@ -1,5 +1,6 @@
 import { daysPerYear } from './calendar';
 import { checkContentSet } from './content-checks';
+import { reportsOn } from './content-reports';
 import {
   tagClasses,
   type Bounds,
@@ -27,7 +28,7 @@ import {
   type Report,
 } from './verdicts';
 
-export type { Finding, Problem, Report } from './verdicts';
+export type { Problem, Report } from './verdicts';
 
 export type LoadResult =
   | { readonly ok: true; readonly content: ContentSet; readonly reports: readonly Report[] }
@@ -79,7 +80,7 @@ export function loadContent(raw: unknown): LoadResult {
   const whole = checkContentSet(content);
   if (whole.length > 0) return { ok: false, problems: [...whole], reports };
 
-  return { ok: true, content, reports };
+  return { ok: true, content, reports: [...reports, ...reportsOn(content)] };
 }
 
 /**

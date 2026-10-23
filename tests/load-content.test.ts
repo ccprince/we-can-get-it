@@ -438,3 +438,112 @@ describe('the content set as a whole', () => {
     ]);
   });
 });
+
+/**
+ * The report is the other verdict: what a writer judges rather than what the
+ * load refuses. It states **distributions and never means** (ADR 0007
+ * decision 5, CLAUDE.md), because eight goods per kind on average while half
+ * the kinds are singletons is the prototype's failure with a better mean.
+ */
+describe('the report', () => {
+  it('states goods per kind as a distribution, and goods per role tag with it', () => {
+    const result = loadContent(
+      aContentSet(
+        aCatalogue({
+          tags: [
+            aTag(),
+            aTag({ id: 'warm', class: 'quality', tells: ['fleece', 'quilted'] }),
+            aTag({ id: 'ore', tells: ['seam', 'crushed'] }),
+          ],
+          goods: [
+            aGood(),
+            aGood({
+              id: 'blanket',
+              name: 'Ship blanket',
+              prose: 'A woven blanket with a fleece lining.',
+              tags: ['warm'],
+            }),
+            aGood({
+              id: 'quilt',
+              name: 'Quilted roll',
+              prose: "A quilted bolt of ship's cloth, woven thick.",
+              tags: ['warm'],
+            }),
+            aGood({
+              id: 'barite',
+              name: 'Barite',
+              prose: 'Crushed out of a shallow seam and barrelled wet.',
+              kind: 'ore',
+            }),
+          ],
+          buyers: [aBuyer({ wants: [aWant(), { predicate: [{ tag: 'ore' }] }] })],
+        }),
+      ),
+    );
+
+    expect(result.reports).toContainEqual({
+      verdict: 'judge',
+      where: 'goods',
+      what: 'goods per kind: 3 goods — cloth; 1 good — ore',
+    });
+    expect(result.reports).toContainEqual({
+      verdict: 'judge',
+      where: 'tags',
+      what: 'goods per role tag: 2 goods — warm',
+    });
+  });
+
+  it('reports a kind below the declared usability floor rather than failing it', () => {
+    const result = loadContent(
+      aContentSet({ ...aCatalogue(), bounds: aBounds({ usabilityFloor: 4 }) }),
+    );
+
+    expect(result.ok ? [] : result.problems).toEqual([]);
+    expect(result.reports).toContainEqual({
+      verdict: 'judge',
+      where: 'tags',
+      what: 'below the usability floor of 4, so no vague want may point at it: cloth, with 3 goods',
+    });
+  });
+
+  it('reports prose missing its tell words rather than failing the load', () => {
+    const result = loadContent(
+      aContentSet(
+        aCatalogue({
+          goods: [
+            aGood(),
+            aGood({
+              id: 'blanket',
+              name: 'Ship blanket',
+              prose: 'A woven blanket, good against a cold watch.',
+              tags: ['warm'],
+            }),
+            aGood({
+              id: 'quilt',
+              name: 'Quilted roll',
+              prose: "A quilted bolt of ship's cloth, woven thick.",
+              tags: ['warm'],
+            }),
+          ],
+        }),
+      ),
+    );
+
+    expect(result.ok ? [] : result.problems).toEqual([]);
+    expect(result.reports).toContainEqual({
+      verdict: 'judge',
+      where: 'goods[1].prose',
+      what: 'carries none of the tells of warm: fleece, quilted',
+    });
+  });
+
+  it('states the whole of its reports and nothing else for a clean catalogue', () => {
+    const result = loadContent(aContentSet(aCatalogue()));
+
+    expect(result.reports).toEqual([
+      { verdict: 'judge', where: 'calendar', what: 'a year is 2 months, 10 weeks, 60 days' },
+      { verdict: 'judge', where: 'goods', what: 'goods per kind: 3 goods — cloth' },
+      { verdict: 'judge', where: 'tags', what: 'goods per role tag: 2 goods — warm' },
+    ]);
+  });
+});
