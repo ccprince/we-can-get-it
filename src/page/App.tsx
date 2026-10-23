@@ -18,69 +18,101 @@ import { seedFromUrl } from './seed';
  * offer, what a day costs and what a date is called all come back from `view`.
  * What the page does is word them.
  */
-type Opening =
+type CampaignState =
   | { readonly state: 'opening' }
+  | { readonly state: 'unreachable'; readonly why: string }
   | { readonly state: 'unloadable'; readonly problems: readonly Problem[] }
   | { readonly state: 'playing'; readonly campaign: Campaign };
 
 export function App() {
-  const [opening, setOpening] = useState<Opening>({ state: 'opening' });
+  const [campaignState, setCampaignState] = useState<CampaignState>({ state: 'opening' });
   const [refusal, setRefusal] = useState<string | null>(null);
 
   useEffect(() => {
     let abandoned = false;
-    void fetchContent().then((result) => {
-      if (abandoned) return;
-      setOpening(
-        result.ok
-          ? { state: 'playing', campaign: startCampaign(result.content, seedFromUrl(location.search)) }
-          : { state: 'unloadable', problems: result.problems },
-      );
-    });
+    void fetchContent()
+      .then((result) => {
+        if (abandoned) return;
+        setCampaignState(
+          result.ok
+            ? {
+                state: 'playing',
+                campaign: startCampaign(result.content, seedFromUrl(location.search)),
+              }
+            : { state: 'unloadable', problems: result.problems },
+        );
+      })
+      .catch((reason: unknown) => {
+        if (abandoned) return;
+        // A content set that cannot be reached is a different failure from one
+        // that will not load, and saying so beats sitting on "opening" forever.
+        setCampaignState({ state: 'unreachable', why: String(reason) });
+      });
     return () => {
       abandoned = true;
     };
   }, []);
 
-  if (opening.state === 'opening') {
-    return <Frame>Opening the campaign…</Frame>;
-  }
+  switch (campaignState.state) {
+    case 'opening':
+      return <Frame>Opening the campaign…</Frame>;
 
-  if (opening.state === 'unloadable') {
-    return (
-      <Frame>
-        <h2 className="text-lg text-rose-300">The content set will not load.</h2>
-        <ul className="mt-3 space-y-1 font-mono text-sm text-rose-200">
-          {opening.problems.map((problem) => (
-            <li key={`${problem.where}: ${problem.what}`}>
-              {problem.where === '' ? 'the content set' : problem.where} — {problem.what}
-            </li>
-          ))}
-        </ul>
-      </Frame>
-    );
-  }
+    case 'unreachable':
+      return (
+        <Frame>
+          <Failure title="The content set could not be fetched." lines={[campaignState.why]} />
+        </Frame>
+      );
 
-  const campaign = opening.campaign;
-  const take = (command: Command) => {
-    const result = takeCommand(campaign, command);
-    if (isRejected(result)) {
-      setRefusal(result.rejected.message);
-      return;
+    case 'unloadable':
+      return (
+        <Frame>
+          <Failure
+            title="The content set will not load."
+            lines={campaignState.problems.map(
+              (problem) =>
+                `${problem.where === '' ? 'the content set' : problem.where} — ${problem.what}`,
+            )}
+          />
+        </Frame>
+      );
+
+    case 'playing': {
+      const campaign = campaignState.campaign;
+      const take = (command: Command) => {
+        const result = takeCommand(campaign, command);
+        if (isRejected(result)) {
+          setRefusal(result.rejected.message);
+          return;
+        }
+        setRefusal(null);
+        setCampaignState({ state: 'playing', campaign: result.campaign });
+      };
+
+      return (
+        <Frame>
+          <CampaignSurfaces
+            view={view(campaign)}
+            seed={campaign.seed}
+            refusal={refusal}
+            onCommand={take}
+          />
+        </Frame>
+      );
     }
-    setRefusal(null);
-    setOpening({ state: 'playing', campaign: result.campaign });
-  };
+  }
+}
 
+function Failure({ title, lines }: { readonly title: string; readonly lines: readonly string[] }) {
   return (
-    <Frame>
-      <CampaignSurfaces
-        view={view(campaign)}
-        seed={campaign.seed}
-        refusal={refusal}
-        onCommand={take}
-      />
-    </Frame>
+    <>
+      <h2 className="text-lg text-rose-300">{title}</h2>
+      <ul className="mt-3 space-y-1 font-mono text-sm text-rose-200">
+        {lines.map((line) => (
+          <li key={line}>{line}</li>
+        ))}
+      </ul>
+    </>
   );
 }
 

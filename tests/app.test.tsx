@@ -48,6 +48,13 @@ describe('the page', () => {
     expect(screen.getByText('Nothing reached you.')).toBeDefined();
   });
 
+  it('says so when the content set cannot be fetched at all', async () => {
+    serve('', false);
+    render(<App />);
+
+    expect(await screen.findByText('The content set could not be fetched.')).toBeDefined();
+  });
+
   it('says plainly when the content set will not load, naming what and where', async () => {
     serve(JSON.stringify({ locations: [] }));
     render(<App />);

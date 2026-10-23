@@ -8,6 +8,14 @@ import { loadedContentSet } from './support/content';
  * depends on is one seed played twice at two settings, and it is worthless the
  * moment the same seed and command sequence stop agreeing (ADR 0003 decision 1,
  * ADR 0009 decision 3).
+ *
+ * Worth being honest about what this can catch today: nothing in the view
+ * derives from the seed yet, because nothing is drawn until the draw (#11).
+ * These assertions therefore hold the shape — the harness's input is a content
+ * set, a seed and a command sequence, and replaying it is the whole of a save —
+ * and they only begin to bite when the galaxy is rolled. The campaign under
+ * them is already immutable, which is the part that would be expensive to
+ * retrofit.
  */
 function play(content: ContentSet, seed: number, commands: readonly Command[]): View {
   let campaign = startCampaign(content, seed);

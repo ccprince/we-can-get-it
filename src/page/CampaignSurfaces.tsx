@@ -11,7 +11,7 @@ import type { Command, View } from '../engine';
  * can do.
  */
 export function CampaignSurfaces({
-  view: read,
+  view,
   seed,
   refusal,
   onCommand,
@@ -24,26 +24,26 @@ export function CampaignSurfaces({
   return (
     <>
       <header className="border-b border-stone-700 pb-4">
-        <h1 className="text-xl text-stone-100">{read.here.name}</h1>
+        <h1 className="text-xl text-stone-100">{view.here.name}</h1>
         <p className="mt-1 text-sm text-stone-400">
-          {read.today.date.label} · day {read.today.day} · {read.credits.credits} credits
+          {view.today.date.label} · {view.credits.credits} credits
         </p>
       </header>
 
-      <p className="mt-4 leading-relaxed text-stone-300">{read.here.prose}</p>
+      <p className="mt-4 leading-relaxed text-stone-300">{view.here.prose}</p>
 
       <section className="mt-8">
         <h2 className="text-xs tracking-widest text-stone-500 uppercase">Digest</h2>
-        {read.digest === null ? (
+        {view.digest === null ? (
           <p className="mt-2 text-stone-500">The day has not ended yet.</p>
         ) : (
           <div className="mt-2">
-            <p className="text-sm text-stone-400">{read.digest.date.label}</p>
-            {read.digest.entries.length === 0 ? (
+            <p className="text-sm text-stone-400">{view.digest.date.label}</p>
+            {view.digest.entries.length === 0 ? (
               <p className="mt-1 text-stone-500">Nothing reached you.</p>
             ) : (
               <ul className="mt-1 space-y-1 text-stone-300">
-                {read.digest.entries.map((entry) => (
+                {view.digest.entries.map((entry) => (
                   <li key={entry.text}>{entry.text}</li>
                 ))}
               </ul>
@@ -55,7 +55,7 @@ export function CampaignSurfaces({
       <section className="mt-8">
         <h2 className="text-xs tracking-widest text-stone-500 uppercase">What you can do</h2>
         <div className="mt-2 flex flex-wrap gap-2">
-          {read.menu.offered.map((command) => (
+          {view.menu.offered.map((command) => (
             <button
               key={command.kind}
               type="button"

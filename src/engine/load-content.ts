@@ -1,3 +1,4 @@
+import { daysPerYear } from './calendar';
 import type { Calendar, ContentSet, Location, Month, Start } from './content';
 
 /**
@@ -80,13 +81,14 @@ function readCalendar(
     return undefined;
   }
 
-  const days = months.reduce((total, month) => total + month.days, 0);
+  const calendar: Calendar = { daysPerWeek, weekdayNames, months, firstYear };
+  const days = daysPerYear(calendar);
   reports.push({
     where: 'calendar',
     what: `a year is ${months.length} months, ${days / daysPerWeek} weeks, ${days} days`,
   });
 
-  return { daysPerWeek, weekdayNames, months, firstYear };
+  return calendar;
 }
 
 function readMonths(

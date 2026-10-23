@@ -40,6 +40,15 @@ describe('the campaign surfaces', () => {
     expect(screen.getByText(/180 credits/)).toBeDefined();
   });
 
+  it('shows the date rather than the day index the engine counts in', () => {
+    // "day 214" is an engine artifact, not something a patron says (ADR 0005
+    // decision 3). The index stays in the read model, where the harness's
+    // per-day rows need it (#8), and off the page.
+    surfaces();
+
+    expect(screen.queryByText(/\bday 1\b/)).toBeNull();
+  });
+
   it('offers what the engine says is on offer, and hands the command back', () => {
     const taken: Command[] = [];
     surfaces({ onCommand: (command) => taken.push(command) });

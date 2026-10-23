@@ -14,7 +14,7 @@ export type Command = { readonly kind: 'wait' };
  * error.
  */
 export type Reason = {
-  readonly code: 'not-a-command' | 'not-on-offer';
+  readonly code: 'not-a-command';
   readonly message: string;
 };
 
@@ -40,30 +40,29 @@ export function offeredCommands(): readonly Command[] {
 }
 
 export function takeCommand(campaign: Campaign, command: Command): CommandResult {
-  const kind = kindOf(command);
-  if (kind === undefined) {
+  if (!isCommand(command)) {
     return { rejected: { code: 'not-a-command', message: 'That is not a command.' } };
   }
-  if (!offeredCommands().some((offered) => offered.kind === kind)) {
-    return {
-      rejected: { code: 'not-on-offer', message: `There is nothing here to ${kind}.` },
-    };
-  }
 
-  // Waiting is ending the day, chosen one day at a time (ADR 0005 decision 7).
-  return { campaign: endTheDay(campaign) };
+  switch (command.kind) {
+    // Waiting is ending the day, chosen one day at a time (ADR 0005 d7).
+    case 'wait':
+      return { campaign: endTheDay(campaign) };
+  }
 }
 
 /**
- * The kind of a command, or nothing if what arrived is not a command at all —
- * which a replayed command sequence from an older engine can be
- * (ADR 0009 decision 11).
+ * Whether what arrived is a command at all. A command sequence reaches the
+ * engine from a save as well as from the page (ADR 0009 decision 11), so the
+ * static type is a claim about the caller rather than a guarantee about the
+ * value. Every command the engine knows is on offer while a location is the
+ * only place to be; refusing a command that exists but is not available here is
+ * what travel (#9) brings.
  */
-function kindOf(command: Command): Command['kind'] | undefined {
+function isCommand(command: Command): boolean {
   const candidate: unknown = command;
-  if (typeof candidate !== 'object' || candidate === null) return undefined;
-  const kind: unknown = (candidate as { kind?: unknown }).kind;
-  return kind === 'wait' ? 'wait' : undefined;
+  if (typeof candidate !== 'object' || candidate === null) return false;
+  return (candidate as { kind?: unknown }).kind === 'wait';
 }
 
 function endTheDay(campaign: Campaign): Campaign {

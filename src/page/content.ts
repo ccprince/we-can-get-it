@@ -9,10 +9,10 @@ import { loadContent, type LoadResult } from '../engine';
  */
 const WALKING_SKELETON = '/walking-skeleton.json';
 
-export async function fetchContent(path: string = WALKING_SKELETON): Promise<LoadResult> {
-  const response = await fetch(path);
+export async function fetchContent(): Promise<LoadResult> {
+  const response = await fetch(WALKING_SKELETON);
   if (!response.ok) {
-    throw new Error(`the content set at ${path} could not be fetched: ${response.status}`);
+    throw new Error(`${WALKING_SKELETON} answered ${response.status}`);
   }
   return loadContent(await response.json());
 }
