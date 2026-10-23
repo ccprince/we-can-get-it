@@ -10,17 +10,22 @@
  */
 import { cleanup, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { startCampaign, view } from '../src/engine';
-import type { Command } from '../src/engine';
+import { isRejected, startCampaign, takeCommand, view } from '../src/engine';
+import type { Campaign, Command, ContentSet } from '../src/engine';
 import { CampaignSurfaces } from '../src/page/CampaignSurfaces';
-import { loadedContentSet } from './support/content';
+import { aGalaxy, aLane, aLocation, aShip, aStart, loadedContentSet } from './support/content';
 
 afterEach(cleanup);
 
 const SEED = 20261022;
 
-function surfaces(options: { readonly onCommand?: (command: Command) => void } = {}) {
-  const campaign = startCampaign(loadedContentSet(), SEED);
+function surfaces(
+  options: {
+    readonly onCommand?: (command: Command) => void;
+    readonly campaign?: Campaign;
+  } = {},
+) {
+  const campaign = options.campaign ?? startCampaign(loadedContentSet(), SEED);
   return render(
     <CampaignSurfaces
       view={view(campaign)}
@@ -76,5 +81,65 @@ describe('the campaign surfaces', () => {
     );
 
     expect(screen.getByText('That is not a command.')).toBeDefined();
+  });
+});
+
+/** Kestrel to Bellwether: distance 12 at speed 4, so three days and 120 credits. */
+function aGalaxyOfTwo(overrides: Record<string, unknown> = {}): ContentSet {
+  return loadedContentSet(
+    aGalaxy({
+      locations: [
+        aLocation(),
+        aLocation({ id: 'bellwether', name: 'Bellwether Yards', prose: 'A repair yard.' }),
+      ],
+      lanes: [aLane({ ends: ['kestrel', 'bellwether'], distance: 12 })],
+      start: aStart({ credits: 500 }),
+      ...overrides,
+    }),
+  );
+}
+
+function flying(content: ContentSet, command: Command): Campaign {
+  const result = takeCommand(startCampaign(content, SEED), command);
+  if (isRejected(result)) throw new Error(result.rejected.message);
+  return result.campaign;
+}
+
+describe('the chart on the page', () => {
+  it('shows each lane with its days, its fare and where it leads', () => {
+    surfaces({ campaign: startCampaign(aGalaxyOfTwo(), SEED) });
+
+    const lane = screen.getByRole('row', { name: /Bellwether Yards/ });
+    expect(lane.textContent).toContain('3 days');
+    expect(lane.textContent).toContain('120');
+  });
+
+  it('shows a lane beyond the ship’s range as unflyable rather than hiding it', () => {
+    const content = aGalaxyOfTwo({ start: aStart({ credits: 500, ship: aShip({ range: 10 }) }) });
+    surfaces({ campaign: startCampaign(content, SEED) });
+
+    expect(screen.getByText(/beyond your range/i)).toBeDefined();
+    expect(screen.queryByRole('button', { name: /Depart for Bellwether Yards/ })).toBeNull();
+  });
+
+  it('departs along a lane, handing the engine’s own command back', () => {
+    const taken: Command[] = [];
+    surfaces({
+      campaign: startCampaign(aGalaxyOfTwo(), SEED),
+      onCommand: (command) => taken.push(command),
+    });
+
+    screen.getByRole('button', { name: /Depart for Bellwether Yards/ }).click();
+
+    expect(taken).toEqual([{ kind: 'depart', toId: 'bellwether' }]);
+  });
+
+  it('says where the player is while underway, and offers no departure', () => {
+    surfaces({ campaign: flying(aGalaxyOfTwo(), { kind: 'depart', toId: 'bellwether' }) });
+
+    expect(screen.getByRole('heading', { name: 'In transit' })).toBeDefined();
+    expect(screen.getByText(/out of Kestrel Reach/)).toBeDefined();
+    expect(screen.getByText(/bound for Bellwether Yards/)).toBeDefined();
+    expect(screen.queryByRole('button', { name: /Depart/ })).toBeNull();
   });
 });

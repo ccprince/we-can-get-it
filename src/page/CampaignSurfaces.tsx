@@ -1,4 +1,4 @@
-import type { Command, View } from '../engine';
+import type { Command, LaneView, View } from '../engine';
 
 /**
  * The campaign's reading surfaces. Everything shown here comes out of one
@@ -44,6 +44,40 @@ export function CampaignSurfaces({
       )}
 
       <section className="mt-8">
+        <h2 className="text-xs tracking-widest text-stone-500 uppercase">The chart</h2>
+        {view.chart.lanes.length === 0 ? (
+          <p className="mt-2 text-stone-500">No lane leaves here.</p>
+        ) : (
+          <table className="mt-2 w-full text-left text-sm">
+            <thead className="text-xs tracking-wide text-stone-500 uppercase">
+              <tr>
+                <th className="py-1 font-normal">Lane</th>
+                <th className="py-1 text-right font-normal">Days</th>
+                <th className="py-1 text-right font-normal">Fare</th>
+                <th className="py-1 font-normal" />
+              </tr>
+            </thead>
+            <tbody>
+              {view.chart.lanes.map((lane) => (
+                <tr key={lane.ends.join('–')} className="border-t border-stone-800">
+                  <td className="py-1.5 text-stone-300">
+                    {lane.ends[0]} – {lane.ends[1]}
+                  </td>
+                  <td className="py-1.5 text-right text-stone-300">
+                    {lane.days === 1 ? '1 day' : `${lane.days} days`}
+                  </td>
+                  <td className="py-1.5 text-right text-stone-300">{lane.fare}</td>
+                  <td className="py-1.5 pl-3">
+                    <Departure lane={lane} onCommand={onCommand} />
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )}
+      </section>
+
+      <section className="mt-8">
         <h2 className="text-xs tracking-widest text-stone-500 uppercase">Digest</h2>
         {view.digest === null ? (
           <p className="mt-2 text-stone-500">The day has not ended yet.</p>
@@ -84,6 +118,38 @@ export function CampaignSurfaces({
         seed {seed}
       </footer>
     </>
+  );
+}
+
+/**
+ * A lane's last column: the departure the engine offers along it, the reason
+ * there is none where the reason is the player's to act on, and nothing at all
+ * for a lane that does not leave from here.
+ *
+ * **Range** is the only gate on the map, and a lane beyond it says so rather
+ * than vanishing: it is a wall with a price on it (ADR 0006 decisions 14, 20).
+ */
+function Departure({
+  lane,
+  onCommand,
+}: {
+  readonly lane: LaneView;
+  readonly onCommand: (command: Command) => void;
+}) {
+  // A lane that leaves from here and offers no departure is one the ship's
+  // range does not reach: in transit no lane has a destination at all.
+  if (lane.destination === null) return null;
+  const depart = lane.depart;
+  if (depart === null) return <span className="text-stone-500">Beyond your range</span>;
+
+  return (
+    <button
+      type="button"
+      onClick={() => onCommand(depart)}
+      className="rounded border border-stone-600 px-2 py-1 text-stone-200 hover:border-stone-400 hover:bg-stone-800"
+    >
+      Depart for {lane.destination}
+    </button>
   );
 }
 
