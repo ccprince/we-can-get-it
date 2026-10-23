@@ -81,7 +81,7 @@ export function departureTo(
     return {
       rejected: {
         code: 'already-underway',
-        message: 'You are underway, and a destination cannot be changed in the black.',
+        message: 'You are underway, and a destination cannot be changed in transit.',
       },
     };
   }
@@ -134,7 +134,7 @@ export function takeCommand(campaign: Campaign, command: Command): CommandResult
  * engine from a save as well as from the page (ADR 0009 decision 11), so the
  * static type is a claim about the caller rather than a guarantee about the
  * value. A command that exists but is not available where the player is — a
- * departure along a lane that is not there, or one taken in the black — is a
+ * departure along a lane that is not there, or one taken in **transit** — is a
  * different refusal, and `departureTo` gives it its own reason.
  */
 function isCommand(command: Command): boolean {

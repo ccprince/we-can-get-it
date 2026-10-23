@@ -21,7 +21,7 @@ export type HereView = {
 };
 
 /**
- * Where the player is, when that is the black between two locations. Transit
+ * Where the player is, when that is **transit** between two locations. Transit
  * is a place like any other for the purposes of a day, and the crossing is
  * played day by day rather than skipped (ADR 0005 decision 10).
  *
@@ -139,18 +139,12 @@ export function view(campaign: Campaign): View {
 }
 
 function chartFor(campaign: Campaign): ChartView {
-  const { lanes, locations, fareRate } = campaign.content;
-  return {
-    lanes: lanes.map((lane) => laneFor(lane, campaign, locations, fareRate)),
-  };
+  return { lanes: campaign.content.lanes.map((lane) => laneFor(lane, campaign)) };
 }
 
-function laneFor(
-  lane: Lane,
-  campaign: Campaign,
-  locations: readonly Location[],
-  fareRate: number,
-): LaneView {
+function laneFor(lane: Lane, campaign: Campaign): LaneView {
+  const { locations, fareRate } = campaign.content;
+
   // In transit there is no "from here": the destination is fixed and no lane
   // on the chart is a departure (ADR 0005 decision 10).
   const destination =

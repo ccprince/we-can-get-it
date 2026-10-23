@@ -37,9 +37,8 @@ export function CampaignSurfaces({
       )}
       {view.transit !== null && (
         <p className="mt-4 leading-relaxed text-stone-300">
-          {view.transit.daysOut === 1 ? 'A day' : `${view.transit.daysOut} days`} out of{' '}
-          {view.transit.from}, bound for {view.transit.destination} with{' '}
-          {view.transit.daysToRun === 1 ? 'a day' : `${view.transit.daysToRun} days`} to run.
+          {days(view.transit.daysOut, 'A day')} out of {view.transit.from}, bound for{' '}
+          {view.transit.destination} with {days(view.transit.daysToRun, 'a day')} to run.
         </p>
       )}
 
@@ -64,7 +63,7 @@ export function CampaignSurfaces({
                     {lane.ends[0]} – {lane.ends[1]}
                   </td>
                   <td className="py-1.5 text-right text-stone-300">
-                    {lane.days === 1 ? '1 day' : `${lane.days} days`}
+                    {days(lane.days, '1 day')}
                   </td>
                   <td className="py-1.5 text-right text-stone-300">{lane.fare}</td>
                   <td className="py-1.5 pl-3">
@@ -122,12 +121,15 @@ export function CampaignSurfaces({
 }
 
 /**
- * A lane's last column: the departure the engine offers along it, the reason
- * there is none where the reason is the player's to act on, and nothing at all
- * for a lane that does not leave from here.
+ * A lane's last column: the departure the engine offers along it, or the reason
+ * there is none where the reason is the player's to act on.
  *
  * **Range** is the only gate on the map, and a lane beyond it says so rather
  * than vanishing: it is a wall with a price on it (ADR 0006 decisions 14, 20).
+ * It says so wherever the lane sits on the chart, which carries the whole
+ * galaxy and not only what leaves from here (decision 5) — so what the ship
+ * cannot reach is readable before the player is standing at its near end, and
+ * in **transit** as well, where only the departures go away.
  */
 function Departure({
   lane,
@@ -136,11 +138,12 @@ function Departure({
   readonly lane: LaneView;
   readonly onCommand: (command: Command) => void;
 }) {
-  // A lane that leaves from here and offers no departure is one the ship's
-  // range does not reach: in transit no lane has a destination at all.
-  if (lane.destination === null) return null;
+  if (!lane.withinRange) return <span className="text-stone-500">Beyond your range</span>;
+
+  // Within range, but no departure along it from where the player stands: a
+  // lane that does not leave from here, or any lane at all while underway.
   const depart = lane.depart;
-  if (depart === null) return <span className="text-stone-500">Beyond your range</span>;
+  if (depart === null) return null;
 
   return (
     <button
@@ -151,6 +154,14 @@ function Departure({
       Depart for {lane.destination}
     </button>
   );
+}
+
+/**
+ * A count of days, worded. The singular reads differently in each place it
+ * lands — mid-sentence, or opening one — so the caller says which it wants.
+ */
+function days(count: number, one: string): string {
+  return count === 1 ? one : `${count} days`;
 }
 
 /** The view words what the engine returns (ADR 0003 decision 4). */

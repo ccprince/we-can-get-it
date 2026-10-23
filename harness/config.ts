@@ -18,7 +18,7 @@ import { readJson } from './files';
  * - `stay` — never departs. The exposure of one location, and the baseline the
  *   other two are read against.
  * - `nearest` — departs along the flyable lane of fewest days, so a run is
- *   many landings and little time in the black.
+ *   many landings and little time in transit.
  * - `farthest` — departs along the flyable lane of most days, so a run is few
  *   landings and long hauls.
  *

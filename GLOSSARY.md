@@ -161,5 +161,8 @@ The top-level parts of the design, used as area names in the issue tracker (over
 
 - **Star Trader** — the first attempt's name, retired with it.
 - **Schlepper** — the prototype's name, retired with it.
+- **in the black** — spacer's slang for **transit**. Slang of this kind belongs in dialogue and
+  nowhere else: not in documentation, not in comments, and not in the names in the code. A character
+  may say it; a doc comment says **transit**.
 
 The game is **We Can Get It For You**; **We Can Get It** is the working short form (overview §1).

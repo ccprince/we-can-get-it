@@ -99,6 +99,28 @@ function aGalaxyOfTwo(overrides: Record<string, unknown> = {}): ContentSet {
   );
 }
 
+/**
+ * Kestrel, Bellwether and a third place, so a lane can fail to touch here. At
+ * range 10 the far lane is out of reach and the near one is not.
+ */
+function aGalaxyOfThree(overrides: Record<string, unknown> = {}): ContentSet {
+  return loadedContentSet(
+    aGalaxy({
+      locations: [
+        aLocation(),
+        aLocation({ id: 'bellwether', name: 'Bellwether Yards', prose: 'A repair yard.' }),
+        aLocation({ id: 'hollow', name: "Grieve's Hollow", prose: 'A cut in a dead moon.' }),
+      ],
+      lanes: [
+        aLane({ ends: ['kestrel', 'bellwether'], distance: 6 }),
+        aLane({ ends: ['bellwether', 'hollow'], distance: 16 }),
+      ],
+      start: aStart({ credits: 500, ship: aShip({ range: 10 }) }),
+      ...overrides,
+    }),
+  );
+}
+
 function flying(content: ContentSet, command: Command): Campaign {
   const result = takeCommand(startCampaign(content, SEED), command);
   if (isRejected(result)) throw new Error(result.rejected.message);
@@ -132,6 +154,22 @@ describe('the chart on the page', () => {
     screen.getByRole('button', { name: /Depart for Bellwether Yards/ }).click();
 
     expect(taken).toEqual([{ kind: 'depart', toId: 'bellwether' }]);
+  });
+
+  it('says a lane is beyond range wherever it sits on the chart, not only from here', () => {
+    // The chart carries the whole galaxy (ADR 0006 decision 5), so what the
+    // ship cannot reach is readable before the player is standing at its end.
+    surfaces({ campaign: startCampaign(aGalaxyOfThree(), SEED) });
+
+    const far = screen.getByRole('row', { name: /Grieve's Hollow/ });
+    expect(far.textContent).toContain('Beyond your range');
+  });
+
+  it('keeps the range reading while underway, and takes only the departures away', () => {
+    surfaces({ campaign: flying(aGalaxyOfThree(), { kind: 'depart', toId: 'bellwether' }) });
+
+    expect(screen.getByText('Beyond your range')).toBeDefined();
+    expect(screen.queryByRole('button', { name: /Depart/ })).toBeNull();
   });
 
   it('says where the player is while underway, and offers no departure', () => {

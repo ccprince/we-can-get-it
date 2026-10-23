@@ -38,7 +38,7 @@ export function touristTaking(route: RouteRule): Policy {
       const departure = departureFor(read, route);
       if (departure !== null) return departure;
 
-      // In the black, and on a day with nowhere to go, the whole of the
+      // In transit, and on a day with nowhere to go, the whole of the
       // itinerary is ending the day (ADR 0005 decision 7).
       const endTheDay = read.menu.offered.find((command) => command.kind === 'wait');
       if (endTheDay === undefined) {

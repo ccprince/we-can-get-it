@@ -33,11 +33,6 @@ export function withinRange(lane: Lane, ship: Ship): boolean {
   return lane.distance <= ship.range;
 }
 
-/** Whether a lane joins the location named, in either direction. */
-export function touches(lane: Lane, locationId: string): boolean {
-  return lane.ends.includes(locationId);
-}
-
 /**
  * Where a lane leads from one of its ends. A lane is symmetric, so the end the
  * player is not at is the destination (ADR 0006 decision 7); a lane that does

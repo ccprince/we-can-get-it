@@ -18,7 +18,7 @@ export type Row = {
   readonly seed: number;
   readonly day: number;
   readonly location: string;
-  /** Whether the day was spent in the black rather than at a landing (#9). */
+  /** Whether the day was spent in **transit** rather than at a landing (#9). */
   readonly inTransit: boolean;
   readonly credits: number;
 };

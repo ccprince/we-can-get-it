@@ -44,7 +44,7 @@ can report.
 | `route` | What the tourist does |
 | --- | --- |
 | `stay` | Never departs. The exposure of one location, and the baseline the others read against. |
-| `nearest` | Departs along the flyable lane of fewest days: many landings, little time in the black. |
+| `nearest` | Departs along the flyable lane of fewest days: many landings, little time in transit. |
 | `farthest` | Departs along the flyable lane of most days: few landings, long hauls. |
 
 All three are stateless reads of the **chart**, because a policy is handed a view and nothing else. A
@@ -69,7 +69,7 @@ The CSV is one row per day per seed per setting, every row carrying its seed so 
 cannot be read as a trend. **Plotting stays outside the instrument.** Its columns are thin because
 little exists yet, and every later ticket in the milestone extends them.
 
-Today: `setting`, `seed`, `day`, `location`, `inTransit`, `credits`. A day in the black is at no
+Today: `setting`, `seed`, `day`, `location`, `inTransit`, `credits`. A day in transit is at no
 location, so `location` names where the ship is **bound** and `inTransit` is what says the day was
 not a landing.
 
