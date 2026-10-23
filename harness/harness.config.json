@@ -4,6 +4,15 @@
   "seedCount": 8,
   "out": "harness/out/tourist.csv",
   "settings": [
-    { "name": "walking-skeleton", "contentPath": "content/walking-skeleton.json" }
+    {
+      "name": "nearest",
+      "contentPath": "content/walking-skeleton.json",
+      "route": "nearest"
+    },
+    {
+      "name": "farthest",
+      "contentPath": "content/walking-skeleton.json",
+      "route": "farthest"
+    }
   ]
 }

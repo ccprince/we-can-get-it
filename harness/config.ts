@@ -11,18 +11,39 @@ import { readJson } from './files';
  */
 
 /**
+ * How the **tourist** moves, which is itself a measurement input: what a
+ * player is exposed to depends on how they move (#6), so it is a knob here
+ * rather than a hardcode in the policy.
+ *
+ * - `stay` — never departs. The exposure of one location, and the baseline the
+ *   other two are read against.
+ * - `nearest` — departs along the flyable lane of fewest days, so a run is
+ *   many landings and little time in the black.
+ * - `farthest` — departs along the flyable lane of most days, so a run is few
+ *   landings and long hauls.
+ *
+ * All three are stateless reads of the chart, because a policy is handed a view
+ * and nothing else. A rule that avoided flying straight back the way it came
+ * would need the policy to remember, which is a later knob if a run asks for
+ * it.
+ */
+export const routeRules = ['stay', 'nearest', 'farthest'] as const;
+
+export type RouteRule = (typeof routeRules)[number];
+
+/**
  * One **setting** the run measures. A setting is isolated from the **draw** by
  * running every setting over the same seeds in one pass, which is the method
  * findings §5.4 asks for: one seed played twice at two settings.
  *
- * Today a setting varies only by its content set, because the content set is
- * where the ratios being tuned live. Later tickets add the knobs they
- * introduce — travel (#9) brings the tourist's route rule, which is itself a
- * measurement input.
+ * A setting varies by its content set, where the ratios being tuned live, and
+ * by the tourist's **route rule** (#9). Later tickets add the knobs they
+ * introduce.
  */
 export type Setting = {
   readonly name: string;
   readonly contentPath: string;
+  readonly route: RouteRule;
 };
 
 export type HarnessConfig = {
@@ -67,6 +88,7 @@ function readSettings(raw: unknown): readonly Setting[] {
     return {
       name: text(entry.name, `${where}.name`),
       contentPath: text(entry.contentPath, `${where}.contentPath`),
+      route: route(entry.route, `${where}.route`),
     };
   });
 }
@@ -88,4 +110,16 @@ function whole(value: unknown, where: string, least: number): number {
   }
   if (value < least) throw new Error(`${where} is ${value}, which is less than ${least}`);
   return value;
+}
+
+/**
+ * The route rule, named rather than defaulted: a measurement taken against a
+ * knob nobody set is a measurement nobody can report.
+ */
+function route(value: unknown, where: string): RouteRule {
+  const named = routeRules.find((rule) => rule === value);
+  if (named === undefined) {
+    throw new Error(`${where} is ${String(value)}, and not one of ${routeRules.join(', ')}`);
+  }
+  return named;
 }
