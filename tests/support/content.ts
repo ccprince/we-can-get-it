@@ -86,3 +86,75 @@ export function loadedContentSet(overrides: RawObject = {}): ContentSet {
   }
   return result.content;
 }
+
+export function aTag(overrides: RawObject = {}): RawObject {
+  return {
+    id: 'cloth',
+    class: 'kind',
+    tells: ['woven', 'bolt'],
+    ...overrides,
+  };
+}
+
+export function aGood(overrides: RawObject = {}): RawObject {
+  return {
+    id: 'silk',
+    name: 'Bolt of silk',
+    prose: 'A bolt of woven silk, cool to the hand and no use at all in a draught.',
+    kind: 'cloth',
+    tags: [],
+    worth: 40,
+    ...overrides,
+  };
+}
+
+/** A want stated as a predicate: a conjunction of terms (ADR 0007 decision 6). */
+export function aWant(overrides: RawObject = {}): RawObject {
+  return {
+    predicate: [{ tag: 'cloth' }, { tag: 'warm' }],
+    ...overrides,
+  };
+}
+
+export function aBuyer(overrides: RawObject = {}): RawObject {
+  return {
+    id: 'ilse',
+    name: 'Ilse Vantry',
+    wants: [aWant()],
+    bonusTags: ['warm'],
+    refusalTags: [],
+    ...overrides,
+  };
+}
+
+/**
+ * A catalogue small enough to read and large enough to satisfy the bounds
+ * `aBounds` declares: `warm` sits on two goods, so it is a learnable pattern
+ * as a role tag, and `cloth` carries three, so it is above the usability
+ * floor. Spread over `aContentSet`, which holds none of it by default — the
+ * trivial content set of #7 has no goods at all.
+ */
+export function aCatalogue(overrides: RawObject = {}): RawObject {
+  return {
+    tags: [aTag(), aTag({ id: 'warm', class: 'quality', tells: ['fleece', 'quilted'] })],
+    goods: [
+      aGood(),
+      aGood({
+        id: 'blanket',
+        name: 'Ship blanket',
+        prose: 'A woven blanket with a fleece lining, sold by the gantry crews.',
+        tags: ['warm'],
+        worth: 25,
+      }),
+      aGood({
+        id: 'quilt',
+        name: 'Quilted roll',
+        prose: "A quilted bolt of ship's cloth, woven thick against a cold watch.",
+        tags: ['warm'],
+        worth: 30,
+      }),
+    ],
+    buyers: [aBuyer()],
+    ...overrides,
+  };
+}

@@ -1,5 +1,17 @@
 import { daysPerYear } from './calendar';
-import type { Bounds, Calendar, ContentSet, Location, Month, Range, Start } from './content';
+import {
+  tagClasses,
+  type Bounds,
+  type Calendar,
+  type ContentSet,
+  type Good,
+  type Location,
+  type Month,
+  type Range,
+  type Start,
+  type Tag,
+  type TagClass,
+} from './content';
 import {
   fails,
   isObject,
@@ -34,18 +46,25 @@ export function loadContent(raw: unknown): LoadResult {
   const bounds = readBounds(raw.bounds, problems);
   const calendar = readCalendar(raw.calendar, problems, reports);
   const locations = readLocations(raw.locations, problems);
+  const tags = readTags(raw.tags, problems);
+  // A good is checked against the tags the content set declares, so a
+  // vocabulary that did not read leaves the catalogue unchecked rather than
+  // failing every good against an empty one.
+  const goods = tags === undefined ? undefined : readGoods(raw.goods, tags, bounds, problems);
   const start = readStart(raw.start, locations ?? [], problems);
 
   if (
     bounds === undefined ||
     calendar === undefined ||
     locations === undefined ||
+    tags === undefined ||
+    goods === undefined ||
     start === undefined ||
     problems.length > 0
   ) {
     return { ok: false, problems, reports };
   }
-  return { ok: true, content: { bounds, calendar, locations, start }, reports };
+  return { ok: true, content: { bounds, calendar, locations, tags, goods, start }, reports };
 }
 
 /**
@@ -209,6 +228,179 @@ function readLocations(raw: unknown, problems: Problem[]): readonly Location[] |
   });
 
   return locations.length === raw.length ? locations : undefined;
+}
+
+function readTags(raw: unknown, problems: Problem[]): readonly Tag[] | undefined {
+  if (!Array.isArray(raw)) {
+    problems.push(fails('tags', 'is missing'));
+    return undefined;
+  }
+
+  const tags: Tag[] = [];
+  const seen = new Set<string>();
+  raw.forEach((entry, index) => {
+    const where = `tags[${index}]`;
+    if (!isObject(entry)) {
+      problems.push(fails(where, 'is not an object'));
+      return;
+    }
+    const id = readText(entry.id, `${where}.id`, problems);
+    const tagClass = readTagClass(entry.class, `${where}.class`, problems);
+    // A tag declared with no tell at all is what *does* fail the load
+    // (ADR 0007 decision 4).
+    const tells = readNonEmptyTexts(entry.tells, `${where}.tells`, problems);
+    if (id === undefined || tagClass === undefined || tells === undefined) return;
+
+    if (seen.has(id)) {
+      problems.push(fails(`${where}.id`, `repeats an id already used: ${id}`));
+      return;
+    }
+    seen.add(id);
+    tags.push({ id, class: tagClass, tells });
+  });
+
+  return tags.length === raw.length ? tags : undefined;
+}
+
+function readTagClass(
+  value: unknown,
+  where: string,
+  problems: Problem[],
+): TagClass | undefined {
+  const named = tagClasses.find((tagClass) => tagClass === value);
+  if (named === undefined) {
+    problems.push(
+      fails(where, `is ${String(value)}, which is not kind, quality, origin or quirk`),
+    );
+    return undefined;
+  }
+  return named;
+}
+
+function readGoods(
+  raw: unknown,
+  tags: readonly Tag[],
+  bounds: Bounds | undefined,
+  problems: Problem[],
+): readonly Good[] | undefined {
+  if (!Array.isArray(raw)) {
+    problems.push(fails('goods', 'is missing'));
+    return undefined;
+  }
+
+  const goods: Good[] = [];
+  const seen = new Set<string>();
+  raw.forEach((entry, index) => {
+    const where = `goods[${index}]`;
+    if (!isObject(entry)) {
+      problems.push(fails(where, 'is not an object'));
+      return;
+    }
+    const id = readText(entry.id, `${where}.id`, problems);
+    const name = readText(entry.name, `${where}.name`, problems);
+    const prose = readText(entry.prose, `${where}.prose`, problems);
+    const kind = readKind(entry.kind, `${where}.kind`, tags, problems);
+    const carried = readCarriedTags(entry.tags, `${where}.tags`, tags, problems);
+    // A good's worth is one authored number (ADR 0007 decision 12).
+    const worth = readInteger(entry.worth, `${where}.worth`, 1, problems);
+    if (
+      id === undefined ||
+      name === undefined ||
+      prose === undefined ||
+      kind === undefined ||
+      carried === undefined ||
+      worth === undefined
+    ) {
+      return;
+    }
+
+    if (seen.has(id)) {
+      problems.push(fails(`${where}.id`, `repeats an id already used: ${id}`));
+      return;
+    }
+    seen.add(id);
+
+    // The kind counts towards the bound: a content set declares its tags per
+    // good as one kind plus so many others (ADR 0007 decisions 15 and 16).
+    const held = carried.length + 1;
+    if (bounds !== undefined && (held < bounds.tagsPerGood.least || held > bounds.tagsPerGood.most)) {
+      problems.push(
+        fails(
+          `${where}.tags`,
+          `carries ${held} tags, and the content set declared ` +
+            `${bounds.tagsPerGood.least} to ${bounds.tagsPerGood.most}`,
+        ),
+      );
+      return;
+    }
+
+    goods.push({ id, name, prose, kind, tags: carried, worth });
+  });
+
+  return goods.length === raw.length ? goods : undefined;
+}
+
+/** The kind is mandatory, and names a tag of class kind (ADR 0007 decision 2). */
+function readKind(
+  value: unknown,
+  where: string,
+  tags: readonly Tag[],
+  problems: Problem[],
+): string | undefined {
+  const id = readText(value, where, problems);
+  if (id === undefined) return undefined;
+
+  const tag = tags.find((candidate) => candidate.id === id);
+  if (tag === undefined) {
+    problems.push(fails(where, `names a tag that does not exist: ${id}`));
+    return undefined;
+  }
+  if (tag.class !== 'kind') {
+    problems.push(fails(where, `names ${id}, which is a ${tag.class} tag and not a kind`));
+    return undefined;
+  }
+  return id;
+}
+
+/**
+ * The quality, origin and quirk tags a good carries. A second kind here is
+ * refused: exactly one kind per good is what makes a breadth list and a slot's
+ * supply set well defined (ADR 0007 decision 2).
+ */
+function readCarriedTags(
+  value: unknown,
+  where: string,
+  tags: readonly Tag[],
+  problems: Problem[],
+): readonly string[] | undefined {
+  if (!Array.isArray(value)) {
+    problems.push(fails(where, 'is missing'));
+    return undefined;
+  }
+
+  const carried: string[] = [];
+  value.forEach((entry, index) => {
+    const at = `${where}[${index}]`;
+    const id = readText(entry, at, problems);
+    if (id === undefined) return;
+
+    const tag = tags.find((candidate) => candidate.id === id);
+    if (tag === undefined) {
+      problems.push(fails(at, `names a tag that does not exist: ${id}`));
+      return;
+    }
+    if (tag.class === 'kind') {
+      problems.push(fails(at, `names the kind ${id}, and a good carries exactly one kind`));
+      return;
+    }
+    if (carried.includes(id)) {
+      problems.push(fails(at, `repeats a tag the good already carries: ${id}`));
+      return;
+    }
+    carried.push(id);
+  });
+
+  return carried.length === value.length ? carried : undefined;
 }
 
 function readStart(

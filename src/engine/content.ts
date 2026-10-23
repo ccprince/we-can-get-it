@@ -38,6 +38,51 @@ export type Start = {
 };
 
 /**
+ * The four classes a tag declares itself as (ADR 0007 decision 1). Making the
+ * class first-class is what makes *goods per usable kind-tag* — the one number
+ * the chunk turns on — a quantity the engine can report rather than a thing in
+ * a writer's head.
+ *
+ * Only a **kind** is public vocabulary; a quality, origin or quirk tag is
+ * named nowhere and is reached only through its **tell** (decision 3).
+ */
+export type TagClass = 'kind' | 'quality' | 'origin' | 'quirk';
+
+export const tagClasses: readonly TagClass[] = ['kind', 'quality', 'origin', 'quirk'];
+
+/** A property of a good that wants match against. A tag means one thing everywhere. */
+export type Tag = {
+  readonly id: string;
+  readonly class: TagClass;
+  /**
+   * The kind of words a good's prose uses to signal this tag — `alcohol` →
+   * brewed, distilled, proof. For every invisible tag the tell *is* the tag,
+   * so every tag declares one (ADR 0007 decision 4).
+   */
+  readonly tells: readonly string[];
+};
+
+/**
+ * A tradeable item in the catalogue. Carries exactly one **kind** tag, any
+ * number of quality, origin and quirk tags within the bound its content set
+ * declares, and one **worth** (ADR 0007 decisions 2 and 12).
+ */
+export type Good = {
+  readonly id: string;
+  readonly name: string;
+  readonly prose: string;
+  /** The id of the good's one kind-tag. */
+  readonly kind: string;
+  /** The ids of its quality, origin and quirk tags. The kind is not among them. */
+  readonly tags: readonly string[];
+  /**
+   * The galaxy-wide anchor an offer is computed against — deliberately not a
+   * tag and not a price (ADR 0007 decision 12).
+   */
+  readonly worth: number;
+};
+
+/**
  * A bound with two ends, both inclusive. Declared by the content set and
  * enforced by the validator (ADR 0007 decision 15); both ends are expected to
  * widen as the catalogue grows, which is why they are a config edit rather
@@ -69,5 +114,7 @@ export type ContentSet = {
   readonly bounds: Bounds;
   readonly calendar: Calendar;
   readonly locations: readonly Location[];
+  readonly tags: readonly Tag[];
+  readonly goods: readonly Good[];
   readonly start: Start;
 };
