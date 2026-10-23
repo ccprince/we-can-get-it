@@ -3,6 +3,8 @@
 **Status:** accepted, 2026-10-22; amended 2026-10-22 by ADR 0005 (decision 19) — *action sequence* is
 renamed **command sequence**, and the engine's entry point is start-a-**campaign**, *run* having been
 retired by ADR 0004. The determinism requirement itself is unchanged.
+The stack this ADR is neutral about is chosen in **ADR 0009**, which changes nothing here and states how
+decision 1's determinism is held in that stack.
 **Context:** `docs/prototype-findings.md` §5.3 (the five choices this decision re-makes), ADR 0001, ADR 0002
 
 ## Context

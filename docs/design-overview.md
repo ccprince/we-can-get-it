@@ -391,6 +391,11 @@ things, in order, with the first three now done:
    campaign sees** and adds the third seed. Nothing in the canon now blocks code.
 5. **Build the first playable milestone against the named question** — a galaxy at real scale with thin demand,
    orders as the backbone, and a content set written to answer how plain and vague wants divide the game — with the
-   measurement harness built first (§5.4).
+   measurement harness built first (§5.4). The stack is **settled**, 2026-10-22: ADR 0009, TypeScript on
+   Node with the engine as a library that a React page, the harness and the tests each import in-process. It
+   decides nothing about the game, but it does fix the contract chunk 8 depends on — every surface renders a
+   read model from one engine query, in converted player-facing values, and the view holds no game state. The
+   harness's own shape — a scripted **tourist** policy, one CSV row per day per seed — is spec-level rather
+   than canon.
 
 Anything that is not one of those is probably a number, and numbers are found by playing.
