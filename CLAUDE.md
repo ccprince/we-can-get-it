@@ -75,8 +75,10 @@ purpose-built content, and new-field defaults in one place.
 
 ### Finishing a ticket
 
-A ticket ends in an **open PR**, not a commit on `main`; a decision goes straight to `main`. How to
-size one, the sequence, and how this repo merges are in `docs/agents/workflow.md`.
+A ticket ends in a **stack of open PRs, one per slice** — the slice is the review unit (ADR 0010),
+reviewed and pushed as its own PR while the session stays whole. A decision goes straight to `main`.
+How to size a ticket, the sequence, the 400-insertion budget and how this repo merges a stack are in
+`docs/agents/workflow.md`.
 
 ### Issue tracker
 
