@@ -22,7 +22,7 @@ export type Leg = {
   readonly toId: string;
   /** Days the leg takes, fixed at departure. */
   readonly days: number;
-  /** Days of it already spent in the black. */
+  /** Days of it already spent in **transit**. */
   readonly daysFlown: number;
 };
 

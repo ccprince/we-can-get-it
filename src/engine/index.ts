@@ -16,11 +16,9 @@ export type {
   Calendar,
   ContentSet,
   Good,
-  Lane,
   Location,
   Month,
   Range,
-  Ship,
   Start,
   Tag,
   TagClass,
@@ -29,7 +27,7 @@ export type {
 } from './content';
 
 export { startCampaign } from './campaign';
-export type { Campaign, Digest, DigestEntry, Leg, Whereabouts } from './campaign';
+export type { Campaign, Digest, DigestEntry } from './campaign';
 
 export { isRejected, takeCommand } from './commands';
 export type { Command, CommandResult, Reason } from './commands';

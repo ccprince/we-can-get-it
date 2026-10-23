@@ -7,7 +7,7 @@ import { aGalaxy, aLane, aLocation, aShip, aStart, loadedContentSet } from './su
  * **Transit is a place, played day by day**: a multi-day haul is not one
  * atomic act that lands the player later, and a **gate** is an on-ramp rather
  * than a teleport (ADR 0005 decision 10, ADR 0006 decision 11). Each day in
- * the black ends with its own **digest**, and the whole span arrives in the
+ * transit ends with its own **digest**, and the whole span arrives in the
  * digest of the day the player lands (ADR 0005 decisions 8 and 11).
  */
 const SEED = 20261022;
@@ -42,7 +42,7 @@ function accepted(campaign: Campaign, ...commands: readonly Command[]): Campaign
 }
 
 describe('a leg flown day by day', () => {
-  it('passes each day in the black with its own digest, and lands on the last', () => {
+  it('passes each day in transit with its own digest, and lands on the last', () => {
     const campaign = startCampaign(aGalaxyOfTwo(), SEED);
 
     const first = view(accepted(campaign, TO_BELLWETHER));
@@ -113,7 +113,7 @@ describe('a leg flown day by day', () => {
 });
 
 describe('the digest of a leg', () => {
-  it('says nothing on a day in the black, where nothing reaches the ship', () => {
+  it('says nothing on a day in transit, where nothing reaches the ship', () => {
     // The player is out of contact: galaxy news does not reach them, and
     // arrives as one span on landing (ADR 0005 decision 11).
     const campaign = startCampaign(aGalaxyOfTwo(), SEED);
