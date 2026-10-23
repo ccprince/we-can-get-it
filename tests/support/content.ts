@@ -41,6 +41,21 @@ export function aStart(overrides: RawObject = {}): RawObject {
     // (CLAUDE.md).
     credits: 180,
     day: 1,
+    ship: aShip(),
+    ...overrides,
+  };
+}
+
+/**
+ * The baseline ship: **speed** is distance per day and **range** the largest
+ * distance it can fly in one leg (ADR 0006 decision 9). Both are placeholders
+ * to be measured, and both are chosen here so `aLane`'s distance is within
+ * range and takes more than one day — the case a test about travel wants.
+ */
+export function aShip(overrides: RawObject = {}): RawObject {
+  return {
+    speed: 4,
+    range: 20,
     ...overrides,
   };
 }
@@ -60,16 +75,49 @@ export function aBounds(overrides: RawObject = {}): RawObject {
   };
 }
 
-/** The trivial content set of #7: one location, no goods. */
+/** The trivial content set of #7: one location, no lanes, no goods. */
 export function aContentSet(overrides: RawObject = {}): RawObject {
   return {
     bounds: aBounds(),
+    // Credits per unit of distance, galaxy-wide (ADR 0006 decision 10). A
+    // placeholder, like every number in a fixture.
+    fareRate: 10,
     calendar: aCalendar(),
     locations: [aLocation()],
+    lanes: [],
     tags: [],
     goods: [],
     buyers: [],
     start: aStart(),
+    ...overrides,
+  };
+}
+
+/** A lane, carrying the one authored number it has (ADR 0006 decision 8). */
+export function aLane(overrides: RawObject = {}): RawObject {
+  return {
+    ends: ['kestrel', 'bellwether'],
+    distance: 12,
+    ...overrides,
+  };
+}
+
+/**
+ * Two locations and the lane between them: the smallest galaxy that can be
+ * flown. Spread over `aContentSet`, which holds one location and no lanes by
+ * default — the trivial content set of #7 goes nowhere.
+ */
+export function aGalaxy(overrides: RawObject = {}): RawObject {
+  return {
+    locations: [
+      aLocation(),
+      aLocation({
+        id: 'bellwether',
+        name: 'Bellwether Yards',
+        prose: 'A repair yard that outgrew its own harbour and never admitted it.',
+      }),
+    ],
+    lanes: [aLane()],
     ...overrides,
   };
 }

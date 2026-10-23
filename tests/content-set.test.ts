@@ -18,7 +18,7 @@ describe('the walking skeleton content set', () => {
     ]);
   });
 
-  it('starts a campaign at one location, with no goods', () => {
+  it('starts a campaign at the location it names, on a chart with lanes to fly', () => {
     const result = loadContent(raw);
     if (!result.ok) throw new Error('the content set did not load');
 

@@ -34,7 +34,7 @@ describe('the page', () => {
 
     expect(await screen.findByRole('heading', { name: 'Bellwether Yards' })).toBeDefined();
     expect(screen.getByText(/Firstday, 1 Thessaly, year 1/)).toBeDefined();
-    expect(screen.getByText(/180 credits/)).toBeDefined();
+    expect(screen.getByText(/400 credits/)).toBeDefined();
   });
 
   it('sends a command to the engine and renders the campaign that comes back', async () => {
