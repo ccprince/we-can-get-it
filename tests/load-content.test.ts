@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { loadContent } from '../src/engine';
 import {
   aBounds,
+  aBuyer,
   aCalendar,
   aCatalogue,
   aContentSet,
@@ -9,6 +10,7 @@ import {
   aLocation,
   aStart,
   aTag,
+  aWant,
 } from './support/content';
 
 describe('loadContent', () => {
@@ -234,5 +236,205 @@ describe('goods', () => {
       where: 'goods[0].tags',
       what: 'carries 2 tags, and the content set declared 1 to 1',
     });
+  });
+});
+
+/**
+ * A want names a conjunction of tag terms, or one good by identity (ADR 0007
+ * decision 6). The validator checks that a named good exists; that it can be
+ * reached in the drawn galaxy is the draw-time pass's job (#27).
+ */
+describe('wants', () => {
+  it('refuses a want naming a good the content set does not hold', () => {
+    const result = loadContent(
+      aContentSet(aCatalogue({ buyers: [aBuyer({ wants: [{ goodId: 'brandy' }] })] })),
+    );
+
+    expect(result.ok).toBe(false);
+    if (result.ok) return;
+    expect(result.problems[0]).toEqual({
+      verdict: 'fails',
+      where: 'buyers[0].wants[0].goodId',
+      what: 'names a good that does not exist: brandy',
+    });
+  });
+
+  it('accepts a want naming a good by identity', () => {
+    const result = loadContent(
+      aContentSet(
+        aCatalogue({
+          buyers: [aBuyer({ wants: [aWant(), { goodId: 'silk' }] })],
+        }),
+      ),
+    );
+
+    expect(result.ok ? [] : result.problems).toEqual([]);
+  });
+
+  it('refuses a want that names neither a predicate nor a good', () => {
+    const result = loadContent(aContentSet(aCatalogue({ buyers: [aBuyer({ wants: [{}] })] })));
+
+    expect(result.ok).toBe(false);
+    if (result.ok) return;
+    expect(result.problems[0]).toEqual({
+      verdict: 'fails',
+      where: 'buyers[0].wants[0]',
+      what: 'names neither a predicate nor a good',
+    });
+  });
+
+  it('refuses a want that names both a predicate and a good', () => {
+    const result = loadContent(
+      aContentSet(
+        aCatalogue({ buyers: [aBuyer({ wants: [aWant({ goodId: 'silk' })] })] }),
+      ),
+    );
+
+    expect(result.ok).toBe(false);
+    if (result.ok) return;
+    expect(result.problems[0]).toEqual({
+      verdict: 'fails',
+      where: 'buyers[0].wants[0]',
+      what: 'names both a predicate and a good, and a want is one or the other',
+    });
+  });
+
+  it('refuses a term naming a tag the content set does not declare', () => {
+    const result = loadContent(
+      aContentSet(
+        aCatalogue({ buyers: [aBuyer({ wants: [aWant({ predicate: [{ tag: 'martian' }] })] })] }),
+      ),
+    );
+
+    expect(result.ok).toBe(false);
+    if (result.ok) return;
+    expect(result.problems[0]).toEqual({
+      verdict: 'fails',
+      where: 'buyers[0].wants[0].predicate[0].tag',
+      what: 'names a tag that does not exist: martian',
+    });
+  });
+
+  it('reads a negated term, since a refusal stated in the want is not the buyer refusing', () => {
+    const result = loadContent(
+      aContentSet(
+        aCatalogue({
+          buyers: [
+            aBuyer({ wants: [aWant({ predicate: [{ tag: 'cloth' }, { tag: 'warm', negated: true }] })] }),
+          ],
+        }),
+      ),
+    );
+
+    expect(result.ok ? [] : result.problems).toEqual([]);
+  });
+});
+
+/**
+ * Bonus and refusal are roles a tag plays at one buyer, not classes of tag
+ * (ADR 0007 decision 7), so content holds them on the buyer — and one buyer
+ * cannot hold the same tag in both roles.
+ */
+describe('the roles a buyer holds a tag in', () => {
+  it('refuses a tag held as both a bonus and a refusal at one buyer', () => {
+    const result = loadContent(
+      aContentSet(aCatalogue({ buyers: [aBuyer({ refusalTags: ['warm'] })] })),
+    );
+
+    expect(result.ok).toBe(false);
+    if (result.ok) return;
+    expect(result.problems[0]).toEqual({
+      verdict: 'fails',
+      where: 'buyers[0].refusalTags[0]',
+      what: 'names warm, which this buyer already pays more for',
+    });
+  });
+});
+
+/**
+ * The checks over the content set as a whole. Each is measured against a bound
+ * the content set declared, never one the engine holds (ADR 0007 decision 15),
+ * and each is a property of the content set *as written* — the same bounds
+ * over the drawn galaxy are the draw-time pass's (#27).
+ */
+describe('the content set as a whole', () => {
+  it('refuses a tag no want uses and no buyer holds in a role', () => {
+    const result = loadContent(
+      aContentSet(
+        aCatalogue({
+          tags: [
+            aTag(),
+            aTag({ id: 'warm', class: 'quality', tells: ['fleece', 'quilted'] }),
+            aTag({ id: 'martian', class: 'origin', tells: ['red dust'] }),
+          ],
+        }),
+      ),
+    );
+
+    expect(result.ok).toBe(false);
+    if (result.ok) return;
+    expect(result.problems).toEqual([
+      {
+        verdict: 'fails',
+        where: 'tags[2]',
+        what: 'martian is used by no want and held in no role, which makes it noise',
+      },
+    ]);
+  });
+
+  it('refuses more quirk tags than the declared ration', () => {
+    const result = loadContent(
+      aContentSet({
+        bounds: aBounds({ quirkRation: 1 }),
+        ...aCatalogue({
+          tags: [
+            aTag(),
+            aTag({ id: 'blue', class: 'quirk', tells: ['blue', 'indigo'] }),
+            aTag({ id: 'gilt', class: 'quirk', tells: ['gilt'] }),
+          ],
+          goods: [
+            aGood({ prose: 'A bolt of woven silk, blue as deep water.', tags: ['blue'] }),
+            aGood({
+              id: 'quilt',
+              name: 'Quilted roll',
+              prose: "A woven bolt of ship's cloth, run through with a gilt thread.",
+              tags: ['gilt'],
+            }),
+          ],
+          buyers: [
+            aBuyer({
+              bonusTags: [],
+              wants: [aWant({ predicate: [{ tag: 'cloth' }] }), { predicate: [{ tag: 'blue' }] }, { predicate: [{ tag: 'gilt' }] }],
+            }),
+          ],
+        }),
+      }),
+    );
+
+    expect(result.ok).toBe(false);
+    if (result.ok) return;
+    expect(result.problems).toEqual([
+      {
+        verdict: 'fails',
+        where: 'tags',
+        what: 'declares 2 quirk tags, and the content set rationed them to 1',
+      },
+    ]);
+  });
+
+  it('refuses a role tag sitting on fewer goods than the declared bound', () => {
+    const result = loadContent(
+      aContentSet({ ...aCatalogue(), bounds: aBounds({ goodsPerRoleTag: { least: 3, most: 8 } }) }),
+    );
+
+    expect(result.ok).toBe(false);
+    if (result.ok) return;
+    expect(result.problems).toEqual([
+      {
+        verdict: 'fails',
+        where: 'tags[1]',
+        what: 'warm is held in a role and sits on 2 goods, and the content set declared 3 to 8',
+      },
+    ]);
   });
 });
