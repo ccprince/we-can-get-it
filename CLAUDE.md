@@ -60,8 +60,8 @@ purpose-built content, and new-field defaults in one place.
 
 ### Finishing a ticket
 
-A ticket ends in an **open PR**, not a commit on `main`; a decision goes straight to `main`. The
-sequence, and how this repo merges, is in `docs/agents/workflow.md`.
+A ticket ends in an **open PR**, not a commit on `main`; a decision goes straight to `main`. How to
+size one, the sequence, and how this repo merges are in `docs/agents/workflow.md`.
 
 ### Issue tracker
 
