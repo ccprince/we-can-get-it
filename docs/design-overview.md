@@ -175,7 +175,7 @@ there had given tags a second customer. The ADR holds eighteen decisions in full
   usable kind-tag*, the one lever findings §2.4 names, is not a computable quantity in a flat vocabulary
   of strings. A good carries **exactly one kind**, and kinds are **flat**. **Kinds are the only public
   class**: a kind may be said on the trade guide, in a commission's breadth list and in a location's
-  character, while quality, origin and quirk are named nowhere and reached only through **tells**.
+  archetype, while quality, origin and quirk are named nowhere and reached only through **tells**.
 - **A kind is *usable*** when it carries a declared floor of goods, and **only a usable kind may be the
   subject of a vague want** — which is what stops the prototype's failure recurring behind a healthy
   mean. The ratio is reported as a distribution.
@@ -194,16 +194,58 @@ there had given tags a second customer. The ADR holds eighteen decisions in full
 - **Every number is either a declared content-set bound or a labelled sizing estimate.** The prototype's
   1–4 tags per good and 2–4 goods per role tag are void as values and kept as reasons; two seeds are
   estimated (six to eight goods per usable kind, twenty to thirty kinds) and the rest is arithmetic.
-- **A location's standing character is an enumerated *character*** declaring the kinds it supplies and
-  demands, which is what a motif slot types against — so ADR 0006's economic grain is two characters'
+- **A location's standing character is an enumerated *archetype*** declaring the kinds it supplies and
+  demands, which is what a motif slot types against — so ADR 0006's economic grain is two archetypes'
   kind sets disagreeing along a lane. The **cross-product tool is the loader in a reporting mode**, one
-  content model with two verdicts: fail for a mistake, report for a writer to judge.
+  content model with two verdicts: fail for a mistake, report for a writer to judge. (ADR 0007 called
+  this an enumerated *character*; ADR 0008 renamed it, because **character** is a person.)
 
 Deliberately left open: **a way to ask questions** — the third part of findings §2.4's fix, which belongs
 to chunk 6 because the thing the player does is call on somebody; whether kinds should stay public;
-whether the character enumeration is the right granularity. **What blocks next is the draw** — how much
-of the galaxy one campaign sees — and it inherits a job: the reserve must satisfy every character the
-motifs demand, at the draw size, with this campaign's hidden locations excluded.
+whether the archetype enumeration is the right granularity.
+
+### 3.5 The draw
+
+**Settled 2026-10-22 in `docs/adr/0008-the-draw.md`.** The last of the four upstream parameters of §5,
+and the last thing between the canon and the first playable milestone. ADR 0007 handed it a job: the
+reserve must satisfy every archetype the motifs demand, at the draw size, with this campaign's hidden
+locations excluded. The ADR holds twenty decisions in full; in brief:
+
+- **The draw is an ordered cascade, and the map goes first** — motifs, locations, kinds, goods, people,
+  patrons, each stage conditioned on the one above. Six independent rolls would produce buyers with no
+  home and ladders that cannot be composed. It is a **single roll at campaign start**: no act, and
+  nothing else, ever adds content afterwards, and **the reserve leaves no trace** inside a campaign —
+  an undrawn location does not exist this time, rather than being unreachable or greyed out.
+- **There is one dial, and it is the motif count.** Motifs are drawn from a reserve of them, may repeat,
+  and **join by lanes rather than sharing locations**, so each keeps its shape and the location count is
+  the sum of those placed — free inside a validated range rather than fixed. A motif shape gets its 2–4
+  instances **across campaigns**, since motifs are the grammar that persists while the facts are redrawn.
+- **The reserve's adequacy is stated per archetype**, never as one draw-to-reserve ratio: enough
+  candidates for the most simultaneous slots of that archetype any legal assembly can demand, plus a
+  surplus. **People are hidden per person**, so a drawn location is still a fresh question about who is
+  there — the prototype's prospecting died because *who is hidden* was fixed by the content. **Goods are
+  hidden within a kind down to its floor, or the kind is dropped entire**, so hiding can never leave a
+  vague want pointed at a kind with one good. Every drawn location carries a floor of people, or it is a
+  dead node with a fare attached.
+- **Patrons are drawn last and the ladder is composed against the galaxy**, not the galaxy fitted to the
+  ladder; the ladder's *shape* is drawn while a rung's *substance* is composed at offer time. Generalised:
+  **what is authored is the voice, and what is composed is the reference** — an introduction is a
+  relationship between two drawn people, which is the rest of the payment on findings §2.5.
+- **Every content bound is a property of the drawn galaxy**, not only of the content set, so the
+  validator gains a draw-time pass; a failed invariant **re-rolls the narrowest pass, bounded**, and a
+  content set that exhausts the bound fails loudly at load rather than starting a broken campaign. The
+  draw lives **inside the engine** as a pure function of content set and seed, so a save carries a seed
+  and never a galaxy — and the loader calls the same function, one code path and two modes.
+- **ADR 0007's figures describe the drawn galaxy**, with the reserves above them, and the usability
+  **floor** is a lower number than the 6–8 **target**. The sizing estimates, in ADR 0007 decision 16's
+  tier: four to six motifs a campaign (the dial), sixteen to twenty-four drawn locations, reserves of
+  order fifty locations and order 10² each of people and goods, about a third of people and goods hidden.
+
+Deliberately left open: how inter-motif lanes are chosen; whether the hidden fractions should differ
+between people and goods; whether dropping a whole kind reads as variety or as a hole; whether the
+per-location people floor should vary by archetype; whether the motif reserve needs weighting. **Nothing
+in the canon now blocks code**: what is next is §6 item 5, the first playable milestone, with the
+measurement harness built first.
 
 ## 4. The chunks
 
@@ -235,8 +277,9 @@ can be flown for nothing; the most-played shape was the **outbound fill at an in
 *that shape is topology* (§2.1), so the graph is sparse and motifs place places on the way deliberately;
 route-shaped sub-goals are designed rather than left to fall out of the map (§2.1), which is what typed
 motif slots are for. What is left here is measurement: the distance scale and the spread between the
-shortest and longest lane, the fare rate, baseline range, speed and hold, the draw size, and how many
-spurs and chokepoints the invariants should demand.
+shortest and longest lane, the fare rate, baseline range, speed and hold, and how many spurs and
+chokepoints the invariants should demand. The draw size is now **ADR 0008**'s one dial — how many motifs
+a campaign is assembled from — and is measured along with them.
 
 **4. Goods and matching.** The catalogue, the tag system, match tiers, and what an offer is worth. **Settled in ADR
 0007**; see §3.4 above. The findings that drove it hold in the result: **an offer is a function of the good's worth
@@ -246,7 +289,9 @@ with no tell fails the load; two-way quality tags, origin tags only where the or
 rationed (§2.4, §5.2) are now classes with rules rather than habits. The prototype's *1–4 tags per good* and *bonus
 and refusal tags on 2–4 goods* are void as numbers and kept as reasons: they become bounds a content set declares,
 and both are expected to widen as the catalogue grows. What is left here is measurement: the two seeds of §5, the
-tier multipliers, the voice premium, the declared bounds, and the size of the character enumeration.
+tier multipliers, the voice premium, the declared bounds, and the size of the archetype enumeration.
+ADR 0008 clarifies that §5's figures describe the **drawn galaxy**, with the reserves above them, and
+that the usability floor is a lower number than the six-to-eight target.
 
 **5. Demand and supply.** Wants, orders and the four want shapes on one side; lots, stock, prices, restocking and the
 stock race on the other. Settled: **an order is the primary transaction and states its price** (§2.1), the
@@ -304,12 +349,17 @@ Unpacked, almost every part of "how big is the galaxy" is derived from something
   Choose a target — say six to eight goods per usable kind-tag — and the catalogue size falls out of how many kinds
   the galaxy wants. **Settled 2026-10-22 in ADR 0007**, which makes *usable* a validated property of a kind so the
   ratio cannot be met on average while half the kinds are singletons, and records both the target and the kind count
-  as **sizing estimates** — void on first measurement.
+  as **sizing estimates** — void on first measurement. ADR 0008 adds that these describe the **drawn galaxy**, so
+  the catalogue held in reserve is larger by the hidden fraction.
 - **How much demand** is set by the thin-demand decision: more goods than wants, so that some goods are wanted by
   nobody at the moment (§2.1). A ratio, not a count.
 - **How many locations** is set by how much of the galaxy one campaign should see, since the galaxy must hold more
   content than one campaign can visit and shuffles what is hidden at campaign start (§2.5, ADR 0004).
+  **Settled 2026-10-22 in ADR 0008**, which makes even this not quite a count: the one dial is how many **motifs**
+  a campaign is assembled from, and the location count falls out of that inside a validated range.
 - **How many people per location** is set by the change budget and by what makes landing somewhere worth the stop.
+  ADR 0008 turns the second half of that into a validated **floor**, checked after the draw, since a location drawn
+  with nobody on it is a dead node with a fare attached to it.
 - **How far apart things are** is set by the time model — route-dependent journey lengths in days, fixed at
   departure (ADR 0005) — and by the decision that a jump can be wasted.
 
@@ -318,11 +368,12 @@ arithmetic one. **Settled 2026-10-22 in ADR 0006**, which also moves one of the 
 things are is now a lane's authored **distance** converted by the ship's **speed**, and how many locations one
 campaign sees is the **draw size** over a reserve.
 
-So the questions actually worth sitting down with are: what is a campaign (§3.1, settled), what does the map look
-like (§3.3, settled), what is the tag structure (§3.4, settled), and how much does one campaign see. **The last is
-what remains.** Scale is arithmetic afterwards — and ADR 0007 decision 16 makes that literal: the chain above runs
-off two estimated seeds, goods per usable kind-tag and the number of kinds, with the catalogue size, the want count
-and the rest falling out of them as arithmetic rather than judgement.
+So the questions actually worth sitting down with were: what is a campaign (§3.1), what does the map look like
+(§3.3), what is the tag structure (§3.4), and how much does one campaign see (§3.5). **All four are settled**, and
+scale is arithmetic afterwards — ADR 0007 decision 16 and ADR 0008 decision 20 make that literal. The chain above
+runs off three estimated seeds: goods per usable kind-tag, the number of kinds, and the motif count, with the
+catalogue size, the want count, the location count and the reserves falling out of them as arithmetic rather than
+judgement. Every one of those seeds is labelled **void on first measurement**, and measurement is §6 item 5.
 
 ---
 
@@ -334,10 +385,10 @@ things, in order, with the first three now done:
 1. ~~**Settle the campaign** (§3).~~ **Done**, 2026-10-22: ADR 0004, the shape of a campaign.
 2. ~~**Settle the time model** (chunk 2).~~ **Done**, 2026-10-22: ADR 0005, the time model.
 3. ~~**Settle the topology** (chunk 3).~~ **Done**, 2026-10-22: ADR 0006, the map.
-4. ~~**Settle the tag structure**, the first of the four upstream parameters in §5.~~ **Done**, 2026-10-22:
-   ADR 0007, the tag structure. It also fixed what the remaining parameters *are*: the catalogue size and the
-   rest of §5's chain are arithmetic over two seeds, so what is left of this item is **how much of the galaxy
-   one campaign sees** — the draw size over the reserve, which ADR 0007 hands a constraint.
+4. ~~**Settle the four upstream parameters in §5.**~~ **Done**, 2026-10-22: ADR 0007, the tag structure,
+   which also fixed what the remaining parameters *are* — the catalogue size and the rest of §5's chain are
+   arithmetic over its two seeds — and ADR 0008, the draw, which settles **how much of the galaxy one
+   campaign sees** and adds the third seed. Nothing in the canon now blocks code.
 5. **Build the first playable milestone against the named question** — a galaxy at real scale with thin demand,
    orders as the backbone, and a content set written to answer how plain and vague wants divide the game — with the
    measurement harness built first (§5.4).
