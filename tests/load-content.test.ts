@@ -131,7 +131,9 @@ describe('the declared bounds', () => {
 describe('tells', () => {
   it('refuses a tag that declares no tell', () => {
     const result = loadContent(
-      aContentSet(aCatalogue({ tags: [aTag({ tells: [] }), aTag({ id: 'warm', class: 'quality' })] })),
+      aContentSet(
+        aCatalogue({ tags: [aTag({ tells: [] }), aTag({ id: 'warm', class: 'quality' })] }),
+      ),
     );
 
     expect(result.ok).toBe(false);
@@ -320,7 +322,9 @@ describe('wants', () => {
       aContentSet(
         aCatalogue({
           buyers: [
-            aBuyer({ wants: [aWant({ predicate: [{ tag: 'cloth' }, { tag: 'warm', negated: true }] })] }),
+            aBuyer({
+              wants: [aWant({ predicate: [{ tag: 'cloth' }, { tag: 'warm', negated: true }] })],
+            }),
           ],
         }),
       ),
@@ -404,7 +408,11 @@ describe('the content set as a whole', () => {
           buyers: [
             aBuyer({
               bonusTags: [],
-              wants: [aWant({ predicate: [{ tag: 'cloth' }] }), { predicate: [{ tag: 'blue' }] }, { predicate: [{ tag: 'gilt' }] }],
+              wants: [
+                aWant({ predicate: [{ tag: 'cloth' }] }),
+                { predicate: [{ tag: 'blue' }] },
+                { predicate: [{ tag: 'gilt' }] },
+              ],
             }),
           ],
         }),

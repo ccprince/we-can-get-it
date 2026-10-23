@@ -18,7 +18,12 @@ import { judge, type Report } from './verdicts';
  * cross-product report (#28), which formats what this returns.
  */
 export function reportsOn(content: ContentSet): readonly Report[] {
-  return [...goodsPerKind(content), ...goodsPerRoleTag(content), ...usability(content), ...tells(content)];
+  return [
+    ...goodsPerKind(content),
+    ...goodsPerRoleTag(content),
+    ...usability(content),
+    ...tells(content),
+  ];
 }
 
 /** The chunk's headline number, and the one the lever of findings §2.4 moves. */
@@ -55,7 +60,8 @@ function usability(content: ContentSet): readonly Report[] {
   return [
     judge(
       'tags',
-      `below the usability floor of ${floor}, so no vague want may point at it: ${named.join('; ')}`,
+      `below the usability floor of ${floor}, so no vague want may point at it: ` +
+        named.join('; '),
     ),
   ];
 }

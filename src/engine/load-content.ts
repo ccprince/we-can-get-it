@@ -3,6 +3,7 @@ import { checkContentSet } from './content-checks';
 import { reportsOn } from './content-reports';
 import {
   tagClasses,
+  within,
   type Bounds,
   type Buyer,
   type Calendar,
@@ -339,12 +340,12 @@ function readGoods(
     // The kind counts towards the bound: a content set declares its tags per
     // good as one kind plus so many others (ADR 0007 decisions 15 and 16).
     const held = carried.length + 1;
-    if (bounds !== undefined && (held < bounds.tagsPerGood.least || held > bounds.tagsPerGood.most)) {
+    if (bounds !== undefined && !within(held, bounds.tagsPerGood)) {
+      const { least, most } = bounds.tagsPerGood;
       problems.push(
         fails(
           `${where}.tags`,
-          `carries ${held} tags, and the content set declared ` +
-            `${bounds.tagsPerGood.least} to ${bounds.tagsPerGood.most}`,
+          `carries ${held} tags, and the content set declared ${least} to ${most}`,
         ),
       );
       return;
