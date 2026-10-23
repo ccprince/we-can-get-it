@@ -9,8 +9,22 @@
  *   view(campaign)               -> View
  */
 export { loadContent } from './load-content';
-export type { Finding, LoadResult, Problem, Report } from './load-content';
-export type { Calendar, ContentSet, Location, Month, Start } from './content';
+export type { LoadResult, Problem, Report } from './load-content';
+export type {
+  Bounds,
+  Buyer,
+  Calendar,
+  ContentSet,
+  Good,
+  Location,
+  Month,
+  Range,
+  Start,
+  Tag,
+  TagClass,
+  Term,
+  Want,
+} from './content';
 
 export { startCampaign } from './campaign';
 export type { Campaign, Digest, DigestEntry } from './campaign';

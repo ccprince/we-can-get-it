@@ -9,8 +9,8 @@
  * So the two are **structurally** distinct rather than told apart by which
  * array they land in: each carries the verdict it is, which makes a
  * copy-pasted suspicion in `problems` a compiler error rather than a silently
- * failed load, and lets the cross-product report list them together without
- * losing which is which.
+ * failed load, and will let the cross-product report (#28) list the two
+ * together without losing which is which.
  */
 
 /** A content mistake, named by what it is and where it is. Fails the load. */
@@ -26,9 +26,6 @@ export type Report = {
   readonly where: string;
   readonly what: string;
 };
-
-/** Either verdict, for a surface that lists them together. */
-export type Finding = Problem | Report;
 
 export function fails(where: string, what: string): Problem {
   return { verdict: 'fails', where, what };
