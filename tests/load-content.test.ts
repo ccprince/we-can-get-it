@@ -1,6 +1,15 @@
 import { describe, expect, it } from 'vitest';
 import { loadContent } from '../src/engine';
-import { aBounds, aCalendar, aContentSet, aLocation, aStart } from './support/content';
+import {
+  aBounds,
+  aCalendar,
+  aCatalogue,
+  aContentSet,
+  aGood,
+  aLocation,
+  aStart,
+  aTag,
+} from './support/content';
 
 describe('loadContent', () => {
   it('accepts a trivial content set: one location, no goods', () => {
@@ -49,6 +58,7 @@ describe('loadContent', () => {
     expect(result.problems.map((problem) => problem.where)).toEqual([
       'bounds',
       'calendar',
+      'tags',
       'start',
     ]);
   });
@@ -106,5 +116,123 @@ describe('the declared bounds', () => {
         what: 'runs from 4 down to 2, which is no range at all',
       },
     ]);
+  });
+});
+
+/**
+ * For every invisible tag the **tell** is the tag (ADR 0007 decision 4). A tag
+ * declared with no tell at all fails; prose missing its tell words is reported
+ * for a writer to judge, because a writer finding a better word than the tag
+ * table predicted is the normal case, and failing it would train writers to
+ * pad prose with keywords.
+ */
+describe('tells', () => {
+  it('refuses a tag that declares no tell', () => {
+    const result = loadContent(
+      aContentSet(aCatalogue({ tags: [aTag({ tells: [] }), aTag({ id: 'warm', class: 'quality' })] })),
+    );
+
+    expect(result.ok).toBe(false);
+    if (result.ok) return;
+    expect(result.problems).toEqual([
+      { verdict: 'fails', where: 'tags[0].tells', what: 'is missing or empty' },
+    ]);
+  });
+
+  it('refuses a tag that declares no class the four know', () => {
+    const result = loadContent(aContentSet(aCatalogue({ tags: [aTag({ class: 'sort' })] })));
+
+    expect(result.ok).toBe(false);
+    if (result.ok) return;
+    expect(result.problems[0]).toEqual({
+      verdict: 'fails',
+      where: 'tags[0].class',
+      what: 'is sort, which is not kind, quality, origin or quirk',
+    });
+  });
+
+  it('accepts a catalogue whose prose carries the tells of every tag it holds', () => {
+    const result = loadContent(aContentSet(aCatalogue()));
+
+    expect(result.ok ? [] : result.problems).toEqual([]);
+  });
+});
+
+/**
+ * A good carries exactly one kind-tag, mandatory and flat, and one authored
+ * **worth** (ADR 0007 decisions 2 and 12). Exactly one kind is what makes "a
+ * good belongs somewhere" true by construction.
+ */
+describe('goods', () => {
+  it('refuses a good whose kind names a tag of another class', () => {
+    const result = loadContent(aContentSet(aCatalogue({ goods: [aGood({ kind: 'warm' })] })));
+
+    expect(result.ok).toBe(false);
+    if (result.ok) return;
+    expect(result.problems[0]).toEqual({
+      verdict: 'fails',
+      where: 'goods[0].kind',
+      what: 'names warm, which is a quality tag and not a kind',
+    });
+  });
+
+  it('refuses a good carrying a second kind among its other tags', () => {
+    const result = loadContent(
+      aContentSet(
+        aCatalogue({
+          tags: [aTag(), aTag({ id: 'ore', tells: ['seam'] })],
+          goods: [aGood({ tags: ['ore'] })],
+        }),
+      ),
+    );
+
+    expect(result.ok).toBe(false);
+    if (result.ok) return;
+    expect(result.problems[0]).toEqual({
+      verdict: 'fails',
+      where: 'goods[0].tags[0]',
+      what: 'names the kind ore, and a good carries exactly one kind',
+    });
+  });
+
+  it('refuses a good with no worth', () => {
+    const result = loadContent(aContentSet(aCatalogue({ goods: [aGood({ worth: undefined })] })));
+
+    expect(result.ok).toBe(false);
+    if (result.ok) return;
+    expect(result.problems[0]).toEqual({
+      verdict: 'fails',
+      where: 'goods[0].worth',
+      what: 'is missing or not a whole number',
+    });
+  });
+
+  it('refuses a good naming a tag the content set does not declare', () => {
+    const result = loadContent(aContentSet(aCatalogue({ goods: [aGood({ tags: ['martian'] })] })));
+
+    expect(result.ok).toBe(false);
+    if (result.ok) return;
+    expect(result.problems[0]).toEqual({
+      verdict: 'fails',
+      where: 'goods[0].tags[0]',
+      what: 'names a tag that does not exist: martian',
+    });
+  });
+
+  it('refuses a good carrying more tags than the content set declared', () => {
+    const result = loadContent(
+      aContentSet({
+        ...aCatalogue({ goods: [aGood({ tags: ['warm'] })] }),
+        bounds: aBounds({ tagsPerGood: { least: 1, most: 1 } }),
+      }),
+    );
+
+    expect(result.ok).toBe(false);
+    if (result.ok) return;
+    expect(result.problems[0]).toEqual({
+      verdict: 'fails',
+      where: 'goods[0].tags',
+      what: 'carries 2 tags, and the content set declared 1 to 1',
+    });
   });
 });
