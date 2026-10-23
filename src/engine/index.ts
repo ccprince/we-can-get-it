@@ -29,7 +29,7 @@ export type {
 } from './content';
 
 export { startCampaign } from './campaign';
-export type { Campaign, Digest, DigestEntry } from './campaign';
+export type { Campaign, Digest, DigestEntry, Leg, Whereabouts } from './campaign';
 
 export { isRejected, takeCommand } from './commands';
 export type { Command, CommandResult, Reason } from './commands';
@@ -43,6 +43,7 @@ export type {
   LaneView,
   MenuView,
   TodayView,
+  TransitView,
   View,
 } from './view';
 export type { CalendarDate } from './calendar';

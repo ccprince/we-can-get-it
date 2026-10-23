@@ -32,7 +32,9 @@ export function rowFor(setting: string, seed: number, read: View): Row {
     setting,
     seed,
     day: read.today.day,
-    location: read.here.name,
+    // In transit the player is at no location, so the row names where they are
+    // bound; the in-transit flag is what says it was not a landing (#9).
+    location: read.here?.name ?? read.transit?.destination ?? 'nowhere',
     credits: read.credits.credits,
   };
 }

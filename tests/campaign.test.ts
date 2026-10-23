@@ -75,6 +75,6 @@ describe('startCampaign', () => {
       start: aStart({ locationId: 'ladder' }),
     });
 
-    expect(view(startCampaign(content, SEED)).here.name).toBe("Jacob's Ladder");
+    expect(view(startCampaign(content, SEED)).here?.name).toBe("Jacob's Ladder");
   });
 });
