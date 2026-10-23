@@ -24,13 +24,24 @@ export function CampaignSurfaces({
   return (
     <>
       <header className="border-b border-stone-700 pb-4">
-        <h1 className="text-xl text-stone-100">{view.here.name}</h1>
+        <h1 className="text-xl text-stone-100">
+          {view.here === null ? 'In transit' : view.here.name}
+        </h1>
         <p className="mt-1 text-sm text-stone-400">
           {view.today.date.label} · {view.credits.credits} credits
         </p>
       </header>
 
-      <p className="mt-4 leading-relaxed text-stone-300">{view.here.prose}</p>
+      {view.here !== null && (
+        <p className="mt-4 leading-relaxed text-stone-300">{view.here.prose}</p>
+      )}
+      {view.transit !== null && (
+        <p className="mt-4 leading-relaxed text-stone-300">
+          {view.transit.daysOut === 1 ? 'A day' : `${view.transit.daysOut} days`} out of{' '}
+          {view.transit.from}, bound for {view.transit.destination} with{' '}
+          {view.transit.daysToRun === 1 ? 'a day' : `${view.transit.daysToRun} days`} to run.
+        </p>
+      )}
 
       <section className="mt-8">
         <h2 className="text-xs tracking-widest text-stone-500 uppercase">Digest</h2>
@@ -81,5 +92,10 @@ function wordCommand(command: Command): string {
   switch (command.kind) {
     case 'wait':
       return 'End the day';
+
+    // A departure is worded on the chart, where the lane is named and its days
+    // and fare are read beside it; the menu never carries one (#9).
+    case 'depart':
+      return 'Depart';
   }
 }

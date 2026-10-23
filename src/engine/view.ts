@@ -1,6 +1,6 @@
 import { dateOf, type CalendarDate } from './calendar';
 import type { Campaign, DigestEntry } from './campaign';
-import { offeredCommands, type Command } from './commands';
+import { departureTo, offeredCommands, type Command } from './commands';
 import type { Lane, Location } from './content';
 import { daysToFly, fareToFly, otherEnd, withinRange } from './map';
 
@@ -14,10 +14,25 @@ import { daysToFly, fareToFly, otherEnd, withinRange } from './map';
  * makes what is measured what a player could have seen.
  */
 
-/** Where the player is. */
+/** Where the player is, when that is a **location**. Null in **transit**. */
 export type HereView = {
   readonly name: string;
   readonly prose: string;
+};
+
+/**
+ * Where the player is, when that is the black between two locations. Transit
+ * is a place like any other for the purposes of a day, and the crossing is
+ * played day by day rather than skipped (ADR 0005 decision 10).
+ *
+ * The days are converted for the player: how long they have been out, and how
+ * much of the **leg** is left to run.
+ */
+export type TransitView = {
+  readonly from: string;
+  readonly destination: string;
+  readonly daysOut: number;
+  readonly daysToRun: number;
 };
 
 /** The day, as an index the engine counts in and the date the player reads. */
@@ -55,6 +70,12 @@ export type LaneView = {
   readonly fare: number;
   /** Whether this ship's range reaches it at all. */
   readonly withinRange: boolean;
+  /**
+   * The command that departs along it from here, or null when it is not a
+   * departure the player can take: a lane that does not leave from here, one
+   * beyond **range**, or any lane at all while underway.
+   */
+  readonly depart: Command | null;
 };
 
 /**
@@ -76,7 +97,9 @@ export type MenuView = {
 };
 
 export type View = {
-  readonly here: HereView;
+  /** Exactly one of these two is null: the player is in one place or the other. */
+  readonly here: HereView | null;
+  readonly transit: TransitView | null;
   readonly chart: ChartView;
   readonly today: TodayView;
   readonly credits: CreditsView;
@@ -86,15 +109,22 @@ export type View = {
 
 export function view(campaign: Campaign): View {
   const { calendar, locations } = campaign.content;
-  const here = locations.find((location) => location.id === campaign.locationId);
-  if (here === undefined) {
-    throw new Error(
-      `the campaign is at ${campaign.locationId}, which the content set does not hold`,
-    );
-  }
+  const where = campaign.where;
 
   return {
-    here: { name: here.name, prose: here.prose },
+    here:
+      where.kind === 'at'
+        ? hereFor(locations, where.locationId)
+        : null,
+    transit:
+      where.kind === 'in-transit'
+        ? {
+            from: nameOf(locations, where.leg.fromId),
+            destination: nameOf(locations, where.leg.toId),
+            daysOut: where.leg.daysFlown,
+            daysToRun: where.leg.days - where.leg.daysFlown,
+          }
+        : null,
     chart: chartFor(campaign),
     today: { day: campaign.day, date: dateOf(calendar, campaign.day) },
     credits: { credits: campaign.credits },
@@ -110,6 +140,14 @@ export function view(campaign: Campaign): View {
   };
 }
 
+function hereFor(locations: readonly Location[], locationId: string): HereView {
+  const here = locations.find((location) => location.id === locationId);
+  if (here === undefined) {
+    throw new Error(`the campaign is at ${locationId}, which the content set does not hold`);
+  }
+  return { name: here.name, prose: here.prose };
+}
+
 function chartFor(campaign: Campaign): ChartView {
   const { lanes, locations, fareRate } = campaign.content;
   return {
@@ -123,14 +161,28 @@ function laneFor(
   locations: readonly Location[],
   fareRate: number,
 ): LaneView {
-  const destination = otherEnd(lane, campaign.locationId);
+  // In transit there is no "from here": the destination is fixed and no lane
+  // on the chart is a departure (ADR 0005 decision 10).
+  const destination =
+    campaign.where.kind === 'at' ? otherEnd(lane, campaign.where.locationId) : null;
+
   return {
     ends: [nameOf(locations, lane.ends[0]), nameOf(locations, lane.ends[1])],
     destination: destination === null ? null : nameOf(locations, destination),
     days: daysToFly(lane, campaign.ship),
     fare: fareToFly(lane, fareRate),
     withinRange: withinRange(lane, campaign.ship),
+    depart: destination === null ? null : departFor(campaign, destination),
   };
+}
+
+/**
+ * The departure along this lane, or null when the rules refuse it — the same
+ * reading `takeCommand` makes, so the chart cannot offer what the engine would
+ * not take (`departureTo`).
+ */
+function departFor(campaign: Campaign, toId: string): Command | null {
+  return 'rejected' in departureTo(campaign, toId) ? null : { kind: 'depart', toId };
 }
 
 /** Every lane end names a location the loader has already checked exists. */

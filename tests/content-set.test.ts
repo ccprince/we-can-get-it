@@ -22,6 +22,6 @@ describe('the walking skeleton content set', () => {
     const result = loadContent(raw);
     if (!result.ok) throw new Error('the content set did not load');
 
-    expect(view(startCampaign(result.content, 20261022)).here.name).toBe('Bellwether Yards');
+    expect(view(startCampaign(result.content, 20261022)).here?.name).toBe('Bellwether Yards');
   });
 });
