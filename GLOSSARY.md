@@ -116,6 +116,15 @@ tracked quantity, a refuelling chore, or anything that competes with the **hold*
 | **steady want** | A standing want that does not expire; the prototype's dump buyers had them (findings §2.4, ADR 0001). |
 | **wording** | How a want reaches the player. **Own** is the character's voice, earned by calling on them; **plain** is the composed form that arrives by landing where they live; **withheld** is the retired prototype state (ADR 0002). |
 
+## The content pipeline
+
+| Term | Meaning |
+| --- | --- |
+| **validator** | What refuses a content mistake at **load**, so an error surfaces before a campaign rather than during one. Two passes inside the one load: a **load-time pass** over the content set as written, and a **draw-time pass** over the **drawn galaxy**, because nearly every bound is a property of what was drawn and not only of the **reserve** it came from. Both are kept and a failure in either fails the load — including a **draw** that exhausted its bounded re-roll, which fails at load naming the invariant that would not pass. It issues two verdicts and never conflates them: a **problem** and a **report** (ADR 0003, ADR 0007, ADR 0008). |
+| **problem** | A content mistake, named by what it is and where it is. A problem **fails** the load. The engine hardcodes no bound a problem is measured against: a content set declares its own — tags per good, goods per role tag, the usability floor, the quirk ration — and the validator enforces what was declared (ADR 0003, ADR 0007). |
+| **report** | Something for a writer to judge, and never a reason to fail a load. Prose missing its **tell** words is the type case: a writer finding a better word is the normal case, and failing it would train writers to pad prose with keywords. A report states a **distribution** and never a mean (ADR 0007). |
+| **cross-product report** | The surface a writer reads to see what they have actually written rather than what they meant to: which **archetypes** can fill which **slots**, where tags and **wording** disagree, **overridden** pairings, and distributions. **Not a second tool** — a reporting mode of the one loader and the one **draw** — because tags and wording will disagree and nobody will catch it by reading at scale (findings §2.4, ADR 0007, ADR 0008). |
+
 ## People
 
 | Term | Meaning |
