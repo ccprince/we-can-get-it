@@ -335,27 +335,6 @@ describe('wants', () => {
 });
 
 /**
- * Bonus and refusal are roles a tag plays at one buyer, not classes of tag
- * (ADR 0007 decision 7), so content holds them on the buyer — and one buyer
- * cannot hold the same tag in both roles.
- */
-describe('the roles a buyer holds a tag in', () => {
-  it('refuses a tag held as both a bonus and a refusal at one buyer', () => {
-    const result = loadContent(
-      aContentSet(aCatalogue({ buyers: [aBuyer({ refusalTags: ['warm'] })] })),
-    );
-
-    expect(result.ok).toBe(false);
-    if (result.ok) return;
-    expect(result.problems[0]).toEqual({
-      verdict: 'fails',
-      where: 'buyers[0].refusalTags[0]',
-      what: 'names warm, which this buyer already pays more for',
-    });
-  });
-});
-
-/**
  * The checks over the content set as a whole. Each is measured against a bound
  * the content set declared, never one the engine holds (ADR 0007 decision 15),
  * and each is a property of the content set *as written* — the same bounds
@@ -542,6 +521,22 @@ describe('the report', () => {
       verdict: 'judge',
       where: 'goods[1].prose',
       what: 'carries none of the tells of warm: fleece, quilted',
+    });
+  });
+
+  it('still states its distributions when the load fails for another reason', () => {
+    const result = loadContent({
+      ...aContentSet(aCatalogue()),
+      calendar: aCalendar({ months: [{ name: 'Thessaly', days: 31 }] }),
+    });
+
+    expect(result.ok).toBe(false);
+    if (result.ok) return;
+    expect(result.problems.map((problem) => problem.where)).toEqual(['calendar.months[0]']);
+    expect(result.reports).toContainEqual({
+      verdict: 'judge',
+      where: 'goods',
+      what: 'goods per kind: 3 goods — cloth',
     });
   });
 

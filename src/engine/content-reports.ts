@@ -1,5 +1,4 @@
-import { goodsCarrying } from './content-checks';
-import type { ContentSet, Tag } from './content';
+import { goodsCarrying, roleTags, type ContentSet, type Tag } from './content';
 import { judge, type Report } from './verdicts';
 
 /**
@@ -17,29 +16,30 @@ import { judge, type Report } from './verdicts';
  * are the draw's to report, and the surface a writer reads them on is the
  * cross-product report (#28), which formats what this returns.
  */
-export function reportsOn(content: ContentSet): readonly Report[] {
+export function reportsOn(subject: Subject): readonly Report[] {
   return [
-    ...goodsPerKind(content),
-    ...goodsPerRoleTag(content),
-    ...usability(content),
-    ...tells(content),
+    ...goodsPerKind(subject),
+    ...goodsPerRoleTag(subject),
+    ...usability(subject),
+    ...tells(subject),
   ];
 }
 
+/** What these reports read; see the same note on the checks. */
+type Subject = Pick<ContentSet, 'bounds' | 'tags' | 'goods' | 'buyers'>;
+
 /** The chunk's headline number, and the one the lever of findings §2.4 moves. */
-function goodsPerKind(content: ContentSet): readonly Report[] {
-  const kinds = content.tags.filter((tag) => tag.class === 'kind');
+function goodsPerKind(subject: Subject): readonly Report[] {
+  const kinds = subject.tags.filter((tag) => tag.class === 'kind');
   if (kinds.length === 0) return [];
-  return [judge('goods', `goods per kind: ${distribution(content, kinds)}`)];
+  return [judge('goods', `goods per kind: ${distribution(subject, kinds)}`)];
 }
 
-function goodsPerRoleTag(content: ContentSet): readonly Report[] {
-  const roles = new Set(
-    content.buyers.flatMap((buyer) => [...buyer.bonusTags, ...buyer.refusalTags]),
-  );
-  const held = content.tags.filter((tag) => roles.has(tag.id));
+function goodsPerRoleTag(subject: Subject): readonly Report[] {
+  const roles = roleTags(subject);
+  const held = subject.tags.filter((tag) => roles.has(tag.id));
   if (held.length === 0) return [];
-  return [judge('tags', `goods per role tag: ${distribution(content, held)}`)];
+  return [judge('tags', `goods per role tag: ${distribution(subject, held)}`)];
 }
 
 /**
@@ -48,11 +48,11 @@ function goodsPerRoleTag(content: ContentSet): readonly Report[] {
  * refused is a **vague** want pointed at one, which is checked against the
  * drawn galaxy rather than here (ADR 0007 decision 5, #16).
  */
-function usability(content: ContentSet): readonly Report[] {
-  const floor = content.bounds.usabilityFloor;
-  const below = content.tags
+function usability(subject: Subject): readonly Report[] {
+  const floor = subject.bounds.usabilityFloor;
+  const below = subject.tags
     .filter((tag) => tag.class === 'kind')
-    .map((tag) => ({ tag, goods: goodsCarrying(content, tag).length }))
+    .map((tag) => ({ tag, goods: goodsCarrying(subject, tag.id) }))
     .filter((counted) => counted.goods < floor);
   if (below.length === 0) return [];
 
@@ -76,37 +76,39 @@ function usability(content: ContentSet): readonly Report[] {
  * The converse — prose carrying the tells of a tag the good does *not* hold —
  * belongs to the cross-product report (#28).
  */
-function tells(content: ContentSet): readonly Report[] {
-  return content.goods.flatMap((good, index) => {
+function tells(subject: Subject): readonly Report[] {
+  return subject.goods.flatMap((good, index) => {
     const prose = good.prose.toLowerCase();
-    return [good.kind, ...good.tags].flatMap((id) => {
-      const tag = content.tags.find((candidate) => candidate.id === id);
-      if (tag === undefined) return [];
-      if (tag.tells.some((tell) => prose.includes(tell.toLowerCase()))) return [];
-      return [
+    const carried = subject.tags.filter(
+      (tag) => tag.id === good.kind || good.tags.includes(tag.id),
+    );
+    return carried
+      .filter((tag) => !tag.tells.some((tell) => prose.includes(tell.toLowerCase())))
+      .map((tag) =>
         judge(
           `goods[${index}].prose`,
           `carries none of the tells of ${tag.id}: ${tag.tells.join(', ')}`,
         ),
-      ];
-    });
+      );
   });
 }
 
 /**
- * Tags grouped by how many goods carry each, widest group first — a
- * distribution, so a pile of singletons cannot hide behind a healthy average.
+ * Tags grouped by how many goods carry each, widest group first and each group
+ * ordered by tag id — a distribution, so a pile of singletons cannot hide
+ * behind a healthy average, and an explicit sort rather than the order the
+ * content happened to be written in (ADR 0009 decision 3).
  */
-function distribution(content: ContentSet, tags: readonly Tag[]): string {
+function distribution(subject: Subject, tags: readonly Tag[]): string {
   const counted = new Map<number, string[]>();
   for (const tag of tags) {
-    const sits = goodsCarrying(content, tag).length;
+    const sits = goodsCarrying(subject, tag.id);
     counted.set(sits, [...(counted.get(sits) ?? []), tag.id]);
   }
 
   return [...counted.entries()]
     .sort(([one], [other]) => other - one)
-    .map(([sits, named]) => `${goods(sits)} — ${named.join(', ')}`)
+    .map(([sits, named]) => `${goods(sits)} — ${[...named].sort().join(', ')}`)
     .join('; ');
 }
 
