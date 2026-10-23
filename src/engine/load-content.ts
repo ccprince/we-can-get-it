@@ -1,7 +1,9 @@
 import { daysPerYear } from './calendar';
+import { checkContentSet } from './content-checks';
 import {
   tagClasses,
   type Bounds,
+  type Buyer,
   type Calendar,
   type ContentSet,
   type Good,
@@ -11,6 +13,8 @@ import {
   type Start,
   type Tag,
   type TagClass,
+  type Term,
+  type Want,
 } from './content';
 import {
   fails,
@@ -51,6 +55,10 @@ export function loadContent(raw: unknown): LoadResult {
   // vocabulary that did not read leaves the catalogue unchecked rather than
   // failing every good against an empty one.
   const goods = tags === undefined ? undefined : readGoods(raw.goods, tags, bounds, problems);
+  const buyers =
+    tags === undefined || goods === undefined
+      ? undefined
+      : readBuyers(raw.buyers, tags, goods, problems);
   const start = readStart(raw.start, locations ?? [], problems);
 
   if (
@@ -59,12 +67,19 @@ export function loadContent(raw: unknown): LoadResult {
     locations === undefined ||
     tags === undefined ||
     goods === undefined ||
+    buyers === undefined ||
     start === undefined ||
     problems.length > 0
   ) {
     return { ok: false, problems, reports };
   }
-  return { ok: true, content: { bounds, calendar, locations, tags, goods, start }, reports };
+  // The whole-set checks run over a content set whose every node read
+  // cleanly, because a tag that did not read cannot be counted.
+  const content: ContentSet = { bounds, calendar, locations, tags, goods, buyers, start };
+  const whole = checkContentSet(content);
+  if (whole.length > 0) return { ok: false, problems: [...whole], reports };
+
+  return { ok: true, content, reports };
 }
 
 /**
@@ -401,6 +416,188 @@ function readCarriedTags(
   });
 
   return carried.length === value.length ? carried : undefined;
+}
+
+function readBuyers(
+  raw: unknown,
+  tags: readonly Tag[],
+  goods: readonly Good[],
+  problems: Problem[],
+): readonly Buyer[] | undefined {
+  if (!Array.isArray(raw)) {
+    problems.push(fails('buyers', 'is missing'));
+    return undefined;
+  }
+
+  const buyers: Buyer[] = [];
+  const seen = new Set<string>();
+  raw.forEach((entry, index) => {
+    const where = `buyers[${index}]`;
+    if (!isObject(entry)) {
+      problems.push(fails(where, 'is not an object'));
+      return;
+    }
+    const id = readText(entry.id, `${where}.id`, problems);
+    const name = readText(entry.name, `${where}.name`, problems);
+    const wants = readWants(entry.wants, `${where}.wants`, tags, goods, problems);
+    const bonusTags = readRoleTags(entry.bonusTags, `${where}.bonusTags`, tags, [], problems);
+    const refusalTags = readRoleTags(
+      entry.refusalTags,
+      `${where}.refusalTags`,
+      tags,
+      bonusTags ?? [],
+      problems,
+    );
+    if (
+      id === undefined ||
+      name === undefined ||
+      wants === undefined ||
+      bonusTags === undefined ||
+      refusalTags === undefined
+    ) {
+      return;
+    }
+
+    if (seen.has(id)) {
+      problems.push(fails(`${where}.id`, `repeats an id already used: ${id}`));
+      return;
+    }
+    seen.add(id);
+    buyers.push({ id, name, wants, bonusTags, refusalTags });
+  });
+
+  return buyers.length === raw.length ? buyers : undefined;
+}
+
+function readWants(
+  raw: unknown,
+  where: string,
+  tags: readonly Tag[],
+  goods: readonly Good[],
+  problems: Problem[],
+): readonly Want[] | undefined {
+  if (!Array.isArray(raw) || raw.length === 0) {
+    // A buyer is someone who wants something, so one with no wants is noise.
+    problems.push(fails(where, 'is missing or empty'));
+    return undefined;
+  }
+
+  const wants: Want[] = [];
+  raw.forEach((entry, index) => {
+    const want = readWant(entry, `${where}[${index}]`, tags, goods, problems);
+    if (want !== undefined) wants.push(want);
+  });
+
+  return wants.length === raw.length ? wants : undefined;
+}
+
+function readWant(
+  raw: unknown,
+  where: string,
+  tags: readonly Tag[],
+  goods: readonly Good[],
+  problems: Problem[],
+): Want | undefined {
+  if (!isObject(raw)) {
+    problems.push(fails(where, 'is not an object'));
+    return undefined;
+  }
+
+  const statesPredicate = raw.predicate !== undefined;
+  const namesGood = raw.goodId !== undefined;
+  if (statesPredicate && namesGood) {
+    problems.push(
+      fails(where, 'names both a predicate and a good, and a want is one or the other'),
+    );
+    return undefined;
+  }
+  if (!statesPredicate && !namesGood) {
+    problems.push(fails(where, 'names neither a predicate nor a good'));
+    return undefined;
+  }
+
+  if (namesGood) {
+    const goodId = readText(raw.goodId, `${where}.goodId`, problems);
+    if (goodId === undefined) return undefined;
+    if (!goods.some((good) => good.id === goodId)) {
+      problems.push(fails(`${where}.goodId`, `names a good that does not exist: ${goodId}`));
+      return undefined;
+    }
+    return { goodId };
+  }
+
+  const predicate = readPredicate(raw.predicate, `${where}.predicate`, tags, problems);
+  return predicate === undefined ? undefined : { predicate };
+}
+
+function readPredicate(
+  raw: unknown,
+  where: string,
+  tags: readonly Tag[],
+  problems: Problem[],
+): readonly Term[] | undefined {
+  if (!Array.isArray(raw) || raw.length === 0) {
+    problems.push(fails(where, 'is missing or empty'));
+    return undefined;
+  }
+
+  const terms: Term[] = [];
+  raw.forEach((entry, index) => {
+    const at = `${where}[${index}]`;
+    if (!isObject(entry)) {
+      problems.push(fails(at, 'is not an object'));
+      return;
+    }
+    const tag = readText(entry.tag, `${at}.tag`, problems);
+    if (tag === undefined) return;
+    if (!tags.some((candidate) => candidate.id === tag)) {
+      problems.push(fails(`${at}.tag`, `names a tag that does not exist: ${tag}`));
+      return;
+    }
+    if (entry.negated !== undefined && typeof entry.negated !== 'boolean') {
+      problems.push(fails(`${at}.negated`, 'is not yes or no'));
+      return;
+    }
+    terms.push({ tag, negated: entry.negated === true });
+  });
+
+  return terms.length === raw.length ? terms : undefined;
+}
+
+/**
+ * The tags a buyer holds in one role. A tag held in both roles at one buyer is
+ * a contradiction rather than the two-way ideal of findings §2.4, which is one
+ * tag as a bonus at one buyer and a refusal at *another*.
+ */
+function readRoleTags(
+  raw: unknown,
+  where: string,
+  tags: readonly Tag[],
+  otherRole: readonly string[],
+  problems: Problem[],
+): readonly string[] | undefined {
+  if (!Array.isArray(raw)) {
+    problems.push(fails(where, 'is missing'));
+    return undefined;
+  }
+
+  const held: string[] = [];
+  raw.forEach((entry, index) => {
+    const at = `${where}[${index}]`;
+    const id = readText(entry, at, problems);
+    if (id === undefined) return;
+    if (!tags.some((candidate) => candidate.id === id)) {
+      problems.push(fails(at, `names a tag that does not exist: ${id}`));
+      return;
+    }
+    if (otherRole.includes(id)) {
+      problems.push(fails(at, `names ${id}, which this buyer already pays more for`));
+      return;
+    }
+    held.push(id);
+  });
+
+  return held.length === raw.length ? held : undefined;
 }
 
 function readStart(

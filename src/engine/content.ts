@@ -83,6 +83,42 @@ export type Good = {
 };
 
 /**
+ * One term of a want's predicate: a tag, or a negated tag. Negation stays
+ * because a refusal stated in the **want** differs from one attached to the
+ * buyer — "something warm, but god not another fur" is the want, not the
+ * person (ADR 0007 decision 6).
+ */
+export type Term = {
+  readonly tag: string;
+  readonly negated: boolean;
+};
+
+/**
+ * Something a buyer is after: a conjunction of terms, or one good by identity.
+ * There is no disjunction — a want for "brandy or whisky" is a want for the
+ * kind above them, which is what flat kinds with many goods each are for
+ * (ADR 0007 decision 6).
+ */
+export type Want =
+  | { readonly predicate: readonly Term[] }
+  | { readonly goodId: string };
+
+/**
+ * Someone who wants something. **Bonus** and **refusal** are roles this buyer
+ * holds a tag in rather than classes of tag, so they live here (ADR 0007
+ * decision 7).
+ */
+export type Buyer = {
+  readonly id: string;
+  readonly name: string;
+  readonly wants: readonly Want[];
+  /** Tags this buyer pays more for. */
+  readonly bonusTags: readonly string[];
+  /** Tags that make this buyer say no. */
+  readonly refusalTags: readonly string[];
+};
+
+/**
  * A bound with two ends, both inclusive. Declared by the content set and
  * enforced by the validator (ADR 0007 decision 15); both ends are expected to
  * widen as the catalogue grows, which is why they are a config edit rather
@@ -116,5 +152,6 @@ export type ContentSet = {
   readonly locations: readonly Location[];
   readonly tags: readonly Tag[];
   readonly goods: readonly Good[];
+  readonly buyers: readonly Buyer[];
   readonly start: Start;
 };
