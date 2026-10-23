@@ -18,6 +18,8 @@ export type Row = {
   readonly seed: number;
   readonly day: number;
   readonly location: string;
+  /** Whether the day was spent in the black rather than at a landing (#9). */
+  readonly inTransit: boolean;
   readonly credits: number;
 };
 
@@ -33,13 +35,14 @@ export function rowFor(setting: string, seed: number, read: View): Row {
     seed,
     day: read.today.day,
     // In transit the player is at no location, so the row names where they are
-    // bound; the in-transit flag is what says it was not a landing (#9).
+    // bound and the flag beside it says the day was not a landing.
     location: read.here?.name ?? read.transit?.destination ?? 'nowhere',
+    inTransit: read.here === null,
     credits: read.credits.credits,
   };
 }
 
-const COLUMNS = ['setting', 'seed', 'day', 'location', 'credits'] as const;
+const COLUMNS = ['setting', 'seed', 'day', 'location', 'inTransit', 'credits'] as const;
 
 /**
  * The CSV, with nothing in it that varies between two runs of the same config:
@@ -55,8 +58,8 @@ export function toCsv(rows: readonly Row[]): string {
   return `${lines.join('\n')}\n`;
 }
 
-function field(value: string | number): string {
-  if (typeof value === 'number') return String(value);
+function field(value: string | number | boolean): string {
+  if (typeof value !== 'string') return String(value);
   if (!/[",\n\r]/.test(value)) return value;
   return `"${value.replaceAll('"', '""')}"`;
 }

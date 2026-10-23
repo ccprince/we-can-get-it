@@ -24,16 +24,32 @@ up. A run is `seedCount` seeds from `firstSeed`, each played for `days` days, ag
   "seedCount": 8,
   "out": "harness/out/tourist.csv",
   "settings": [
-    { "name": "as-written", "contentPath": "content/walking-skeleton.json" },
-    { "name": "richer", "contentPath": "content/richer.json" }
+    { "name": "nearest", "contentPath": "content/walking-skeleton.json", "route": "nearest" },
+    { "name": "farthest", "contentPath": "content/walking-skeleton.json", "route": "farthest" }
   ]
 }
 ```
 
 **Two settings in one pass is the method, not a convenience.** Every setting is run over the same
 seeds, so a setting's effect is read as a diff and is isolated from the **draw** — one seed played
-twice at two settings. Today a setting varies only by its content set, because that is where the
-ratios being tuned live; later tickets add the knobs they introduce.
+twice at two settings. A setting varies by its content set, where the ratios being tuned live, and by
+the tourist's **route rule**; later tickets add the knobs they introduce.
+
+### `route`, the tourist's route rule
+
+How the tourist moves is a knob and not a hardcode, because what a player is exposed to depends on
+how they move (#6). It must be named: a measurement taken against a knob nobody set is one nobody
+can report.
+
+| `route` | What the tourist does |
+| --- | --- |
+| `stay` | Never departs. The exposure of one location, and the baseline the others read against. |
+| `nearest` | Departs along the flyable lane of fewest days: many landings, little time in the black. |
+| `farthest` | Departs along the flyable lane of most days: few landings, long hauls. |
+
+All three are stateless reads of the **chart**, because a policy is handed a view and nothing else. A
+rule that would not fly straight back the way it came needs the policy to remember where it has been,
+which is a later knob if a run asks for one.
 
 **Every number in the config is a knob, and none of them is a finding.** What a run concludes belongs
 in a play-test write-up (`docs/playtests/TEMPLATE.md`), not here.
@@ -43,12 +59,19 @@ in a play-test write-up (`docs/playtests/TEMPLATE.md`), not here.
 A policy is `chooseCommand(view) -> command` and receives **exactly the read models the page renders**
 — no campaign, no content set, no privileged read of the galaxy. That is what makes the curves a
 record of what a player could have been exposed to rather than a census of the content. The **tourist**
-is the first policy: it reads everything available and ends the day, without trading, so the first
-curves carry no economic competence.
+is the first policy: it reads everything available and flies, without trading, so the first curves
+carry no economic competence. It takes its departures from the **chart** and leaves alone a **fare**
+it cannot pay, since the engine refuses one and a refused command stops the run — so a run with no
+income in it (trade is #14 onwards) ends with the tourist grounded wherever its credits ran out,
+which is the shape to expect rather than a fault.
 
 The CSV is one row per day per seed per setting, every row carrying its seed so that one odd galaxy
 cannot be read as a trend. **Plotting stays outside the instrument.** Its columns are thin because
 little exists yet, and every later ticket in the milestone extends them.
+
+Today: `setting`, `seed`, `day`, `location`, `inTransit`, `credits`. A day in the black is at no
+location, so `location` names where the ship is **bound** and `inTransit` is what says the day was
+not a landing.
 
 ## Why it has no tests
 

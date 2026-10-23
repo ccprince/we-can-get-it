@@ -5,7 +5,7 @@ import type { ContentSet } from '../src/engine';
 import { readConfig, seedsOf, type HarnessConfig, type Setting } from './config';
 import { readJson } from './files';
 import { rowFor, toCsv, type Row } from './csv';
-import { tourist, type Policy } from './policy';
+import { touristTaking, type Policy } from './policy';
 
 /**
  * The measurement harness: a separate Node entry point with its own config,
@@ -37,23 +37,24 @@ const DEFAULT_CONFIG = 'harness/harness.config.json';
 type LoadedSetting = {
   readonly setting: Setting;
   readonly content: ContentSet;
+  /** The tourist as this setting's **route rule** has it (#9). */
+  readonly policy: Policy;
 };
 
 function main(): void {
   const configPath = process.argv[2] ?? DEFAULT_CONFIG;
   const config = readConfig(configPath);
-  const policy = tourist;
 
   // Every content set is loaded up front, so a content mistake stops the run
   // before any of it is measured. Never a measurement against a silently
   // patched galaxy (ADR 0003 decision 3).
   const loaded = config.settings.map(load);
 
-  const rows = measure(config, loaded, policy);
+  const rows = measure(config, loaded);
   write(config.out, toCsv(rows));
 
   console.log(
-    `${policy.name}: ${many(seedsOf(config).length, 'seed')} × ${many(config.settings.length, 'setting')}` +
+    `tourist: ${many(seedsOf(config).length, 'seed')} × ${many(config.settings.length, 'setting')}` +
       ` × ${many(config.days, 'day')} = ${many(rows.length, 'row')} -> ${config.out}`,
   );
 }
@@ -78,7 +79,7 @@ function load(setting: Setting): LoadedSetting {
       ),
     );
   }
-  return { setting, content: loaded.content };
+  return { setting, content: loaded.content, policy: touristTaking(setting.route) };
 }
 
 /**
@@ -86,15 +87,11 @@ function load(setting: Setting): LoadedSetting {
  * the comparison the method asks for is one seed at two settings, and that
  * wants to be a short diff rather than a join.
  */
-function measure(
-  config: HarnessConfig,
-  loaded: readonly LoadedSetting[],
-  policy: Policy,
-): readonly Row[] {
+function measure(config: HarnessConfig, loaded: readonly LoadedSetting[]): readonly Row[] {
   const rows: Row[] = [];
   for (const seed of seedsOf(config)) {
     for (const setting of loaded) {
-      rows.push(...measureCampaign(setting, seed, config.days, policy));
+      rows.push(...measureCampaign(setting, seed, config.days));
     }
   }
   return rows;
@@ -109,13 +106,8 @@ function measure(
  * taken — so `days` days give `days` rows, each one a day somebody lived through
  * rather than the state they left behind.
  */
-function measureCampaign(
-  loaded: LoadedSetting,
-  seed: number,
-  days: number,
-  policy: Policy,
-): readonly Row[] {
-  const { setting, content } = loaded;
+function measureCampaign(loaded: LoadedSetting, seed: number, days: number): readonly Row[] {
+  const { setting, content, policy } = loaded;
   const rows: Row[] = [];
   let campaign = startCampaign(content, seed);
 
