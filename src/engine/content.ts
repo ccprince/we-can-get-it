@@ -30,11 +30,35 @@ export type Location = {
   readonly prose: string;
 };
 
+/**
+ * The baseline ship, in the two of its three independent purchases the map
+ * feels: **speed** is **distance** per day and **range** the largest distance
+ * it can fly in one **leg** (ADR 0006 decision 9). The **hold** is the third,
+ * and is #14's. Ship upgrades are outside this milestone, so the ship a
+ * campaign opens with is the ship it has.
+ */
+export type Ship = {
+  readonly speed: number;
+  readonly range: number;
+};
+
 /** Where and when a campaign opens, and what the player opens it with. */
 export type Start = {
   readonly locationId: string;
   readonly credits: number;
   readonly day: number;
+  readonly ship: Ship;
+};
+
+/**
+ * The only way between the two **locations** it joins (ADR 0006 decision 1).
+ * Symmetric — one cost, the same both ways (decision 7) — and carrying one
+ * authored number, its **distance**, from which days and **fare** are both
+ * derived (decision 8).
+ */
+export type Lane = {
+  readonly ends: readonly [string, string];
+  readonly distance: number;
 };
 
 /**
@@ -168,8 +192,15 @@ export type Bounds = {
 
 export type ContentSet = {
   readonly bounds: Bounds;
+  /**
+   * The one galaxy-wide rate a **fare** is the **distance** times (ADR 0006
+   * decision 10). Authored per-lane tariffs and regional rates were rejected
+   * there, so there is exactly one of these in a galaxy.
+   */
+  readonly fareRate: number;
   readonly calendar: Calendar;
   readonly locations: readonly Location[];
+  readonly lanes: readonly Lane[];
   readonly tags: readonly Tag[];
   readonly goods: readonly Good[];
   readonly buyers: readonly Buyer[];

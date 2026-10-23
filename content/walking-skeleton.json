@@ -1,10 +1,17 @@
 {
   "bounds": {
-    "tagsPerGood": { "least": 1, "most": 5 },
-    "goodsPerRoleTag": { "least": 2, "most": 8 },
+    "tagsPerGood": {
+      "least": 1,
+      "most": 5
+    },
+    "goodsPerRoleTag": {
+      "least": 2,
+      "most": 8
+    },
     "usabilityFloor": 2,
     "quirkRation": 2
   },
+  "fareRate": 10,
   "calendar": {
     "daysPerWeek": 6,
     "weekdayNames": [
@@ -16,14 +23,38 @@
       "Marketday"
     ],
     "months": [
-      { "name": "Thessaly", "days": 36 },
-      { "name": "Ambit", "days": 36 },
-      { "name": "Lowtide", "days": 36 },
-      { "name": "Carrick", "days": 36 },
-      { "name": "Hollow", "days": 36 },
-      { "name": "Verity", "days": 36 },
-      { "name": "Spindle", "days": 36 },
-      { "name": "Hightide", "days": 36 }
+      {
+        "name": "Thessaly",
+        "days": 36
+      },
+      {
+        "name": "Ambit",
+        "days": 36
+      },
+      {
+        "name": "Lowtide",
+        "days": 36
+      },
+      {
+        "name": "Carrick",
+        "days": 36
+      },
+      {
+        "name": "Hollow",
+        "days": 36
+      },
+      {
+        "name": "Verity",
+        "days": 36
+      },
+      {
+        "name": "Spindle",
+        "days": 36
+      },
+      {
+        "name": "Hightide",
+        "days": 36
+      }
     ],
     "firstYear": 1
   },
@@ -32,6 +63,75 @@
       "id": "bellwether",
       "name": "Bellwether Yards",
       "prose": "A repair yard that outgrew its own harbour and never admitted it. Three gantries, a customs shed with a leaking roof, and a market that keeps its own hours."
+    },
+    {
+      "id": "kestrel",
+      "name": "Kestrel Reach",
+      "prose": "A yard town that has outlived three owners and kept all their paperwork. The gate crews here know the hour you arrived and will mention it."
+    },
+    {
+      "id": "shoals",
+      "name": "Thennet Shoals",
+      "prose": "A day out and already a different trade: tenders, tank farms, and a strip of chandlers who buy anything that will fit through a hatch."
+    },
+    {
+      "id": "caravel",
+      "name": "Caravel Station",
+      "prose": "A ring of warehouses around a gate that never closes, where everything stops on its way somewhere better. Nobody is from here."
+    },
+    {
+      "id": "hollow",
+      "name": "Grieve's Hollow",
+      "prose": "A cut in a dead moon with one gate and no second way out. What comes up out of the Hollow leaves the way it arrived, or not at all."
+    },
+    {
+      "id": "lament",
+      "name": "Lamentation",
+      "prose": "Far enough out that the chart draws it apart from everything, and spoken of at Caravel the way people speak of weather in a country they have never visited."
+    }
+  ],
+  "lanes": [
+    {
+      "ends": [
+        "bellwether",
+        "kestrel"
+      ],
+      "distance": 6
+    },
+    {
+      "ends": [
+        "bellwether",
+        "shoals"
+      ],
+      "distance": 3
+    },
+    {
+      "ends": [
+        "bellwether",
+        "caravel"
+      ],
+      "distance": 11
+    },
+    {
+      "ends": [
+        "shoals",
+        "caravel"
+      ],
+      "distance": 9
+    },
+    {
+      "ends": [
+        "kestrel",
+        "hollow"
+      ],
+      "distance": 16
+    },
+    {
+      "ends": [
+        "caravel",
+        "lament"
+      ],
+      "distance": 26
     }
   ],
   "tags": [],
@@ -39,7 +139,11 @@
   "buyers": [],
   "start": {
     "locationId": "bellwether",
-    "credits": 180,
-    "day": 1
+    "credits": 400,
+    "day": 1,
+    "ship": {
+      "speed": 4,
+      "range": 20
+    }
   }
 }

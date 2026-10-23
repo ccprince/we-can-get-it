@@ -9,9 +9,11 @@ import {
   type Calendar,
   type ContentSet,
   type Good,
+  type Lane,
   type Location,
   type Month,
   type Range,
+  type Ship,
   type Start,
   type Tag,
   type TagClass,
@@ -51,8 +53,14 @@ export function loadContent(raw: unknown): LoadResult {
   }
 
   const bounds = readBounds(raw.bounds, problems);
+  // One galaxy-wide rate, declared by the content set because the engine holds
+  // no number of its own (ADR 0006 decision 10, ADR 0007 decision 15).
+  const fareRate = readInteger(raw.fareRate, 'fareRate', 1, problems);
   const calendar = readCalendar(raw.calendar, problems, reports);
   const locations = readLocations(raw.locations, problems);
+  // A lane names the locations it joins, so a chart that did not read leaves
+  // the lanes unread rather than failing every one of them against nothing.
+  const lanes = locations === undefined ? undefined : readLanes(raw.lanes, locations, problems);
   const tags = readTags(raw.tags, problems);
   // A good is checked against the tags the content set declares, so a
   // vocabulary that did not read leaves the catalogue unchecked rather than
@@ -76,8 +84,10 @@ export function loadContent(raw: unknown): LoadResult {
 
   if (
     bounds === undefined ||
+    fareRate === undefined ||
     calendar === undefined ||
     locations === undefined ||
+    lanes === undefined ||
     tags === undefined ||
     goods === undefined ||
     buyers === undefined ||
@@ -89,7 +99,7 @@ export function loadContent(raw: unknown): LoadResult {
 
   return {
     ok: true,
-    content: { bounds, calendar, locations, tags, goods, buyers, start },
+    content: { bounds, fareRate, calendar, locations, lanes, tags, goods, buyers, start },
     reports,
   };
 }
@@ -243,6 +253,96 @@ function readLocations(raw: unknown, problems: Problem[]): readonly Location[] |
     return undefined;
   }
   return locations;
+}
+
+/**
+ * The lanes, which are the whole of travel: a lane is the only way between the
+ * two locations it joins, and travel is along lanes and nowhere else (ADR 0006
+ * decision 1). A galaxy with no lanes in it is legal — the trivial content set
+ * of #7 is one location and goes nowhere — and whether the drawn map is
+ * **connected at baseline range** is the draw-time pass's check (#12).
+ */
+function readLanes(
+  raw: unknown,
+  locations: readonly Location[],
+  problems: Problem[],
+): readonly Lane[] | undefined {
+  if (!Array.isArray(raw)) {
+    problems.push(fails('lanes', 'is missing'));
+    return undefined;
+  }
+
+  const lanes: Lane[] = [];
+  const joined = new Set<string>();
+  raw.forEach((entry, index) => {
+    const where = `lanes[${index}]`;
+    if (!isObject(entry)) {
+      problems.push(fails(where, 'is not an object'));
+      return;
+    }
+    const ends = readEnds(entry.ends, `${where}.ends`, locations, problems);
+    // The one authored number a lane carries (ADR 0006 decision 8). A lane of
+    // no distance would be the zero-day hop decision 6 rejects.
+    const distance = readInteger(entry.distance, `${where}.distance`, 1, problems);
+    if (ends === undefined || distance === undefined) return;
+
+    // One cost, the same both ways (ADR 0006 decision 7), so a lane authored
+    // the other way round is the same lane twice and the pair is held in a
+    // fixed order to catch it.
+    const pair = [...ends].sort().join(' ');
+    if (joined.has(pair)) {
+      problems.push(
+        fails(
+          `${where}.ends`,
+          `joins ${ends[0]} and ${ends[1]}, which a lane already joins: a lane is symmetric`,
+        ),
+      );
+      return;
+    }
+    joined.add(pair);
+    lanes.push({ ends, distance });
+  });
+
+  return lanes.length === raw.length ? lanes : undefined;
+}
+
+function readEnds(
+  value: unknown,
+  where: string,
+  locations: readonly Location[],
+  problems: Problem[],
+): readonly [string, string] | undefined {
+  if (!Array.isArray(value) || value.length !== 2) {
+    problems.push(fails(where, 'does not name the two locations the lane joins'));
+    return undefined;
+  }
+
+  const from = readKnownLocation(value[0], `${where}[0]`, locations, problems);
+  const to = readKnownLocation(value[1], `${where}[1]`, locations, problems);
+  if (from === undefined || to === undefined) return undefined;
+
+  if (from === to) {
+    problems.push(fails(where, `joins ${from} to itself, and a lane joins two locations`));
+    return undefined;
+  }
+  return [from, to];
+}
+
+/** A location id naming a location the content set holds. */
+function readKnownLocation(
+  value: unknown,
+  where: string,
+  locations: readonly Location[],
+  problems: Problem[],
+): string | undefined {
+  const id = readText(value, where, problems);
+  if (id === undefined) return undefined;
+
+  if (!locations.some((location) => location.id === id)) {
+    problems.push(fails(where, `names a location that does not exist: ${id}`));
+    return undefined;
+  }
+  return id;
 }
 
 function readTags(raw: unknown, problems: Problem[]): readonly Tag[] | undefined {
@@ -537,18 +637,36 @@ function readStart(
     return undefined;
   }
 
-  const locationId = readText(raw.locationId, 'start.locationId', problems);
+  const locationId = readKnownLocation(raw.locationId, 'start.locationId', locations, problems);
   // Credits are whole numbers, engine-wide (ADR 0009 decision 3).
   const credits = readInteger(raw.credits, 'start.credits', 0, problems);
   const day = readInteger(raw.day, 'start.day', 1, problems);
+  const ship = readShip(raw.ship, 'start.ship', problems);
 
-  if (locationId !== undefined && !locations.some((location) => location.id === locationId)) {
-    problems.push(
-      fails('start.locationId', `names a location that does not exist: ${locationId}`),
-    );
+  if (
+    locationId === undefined ||
+    credits === undefined ||
+    day === undefined ||
+    ship === undefined
+  ) {
+    return undefined;
+  }
+  return { locationId, credits, day, ship };
+}
+
+/**
+ * The ship the campaign opens with. Both numbers are the content set's, since
+ * the engine hardcodes none (ADR 0007 decision 15): a ship with no speed could
+ * not convert a distance into days, and one with no range could fly nothing.
+ */
+function readShip(raw: unknown, where: string, problems: Problem[]): Ship | undefined {
+  if (!isObject(raw)) {
+    problems.push(fails(where, 'is missing'));
     return undefined;
   }
 
-  if (locationId === undefined || credits === undefined || day === undefined) return undefined;
-  return { locationId, credits, day };
+  const speed = readInteger(raw.speed, `${where}.speed`, 1, problems);
+  const range = readInteger(raw.range, `${where}.range`, 1, problems);
+  if (speed === undefined || range === undefined) return undefined;
+  return { speed, range };
 }

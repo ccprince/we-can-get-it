@@ -6,7 +6,9 @@ import {
   aCalendar,
   aCatalogue,
   aContentSet,
+  aGalaxy,
   aGood,
+  aLane,
   aLocation,
   aStart,
   aTag,
@@ -59,7 +61,9 @@ describe('loadContent', () => {
     if (result.ok) return;
     expect(result.problems.map((problem) => problem.where)).toEqual([
       'bounds',
+      'fareRate',
       'calendar',
+      'lanes',
       'tags',
       'start',
     ]);
@@ -547,6 +551,98 @@ describe('the report', () => {
       { verdict: 'judge', where: 'calendar', what: 'a year is 2 months, 10 weeks, 60 days' },
       { verdict: 'judge', where: 'goods', what: 'goods per kind: 3 goods — cloth' },
       { verdict: 'judge', where: 'tags', what: 'goods per role tag: 2 goods — warm' },
+    ]);
+  });
+});
+
+describe('the map as content', () => {
+  it('reads lanes joining the locations the content set holds', () => {
+    const result = loadContent(aContentSet(aGalaxy()));
+
+    expect(result.ok ? [] : result.problems).toEqual([]);
+  });
+
+  it('refuses a lane naming a location the content set does not hold', () => {
+    const result = loadContent(
+      aContentSet(aGalaxy({ lanes: [aLane({ ends: ['kestrel', 'nowhere'] })] })),
+    );
+
+    expect(result.ok).toBe(false);
+    if (result.ok) return;
+    expect(result.problems).toEqual([
+      {
+        verdict: 'fails',
+        where: 'lanes[0].ends[1]',
+        what: 'names a location that does not exist: nowhere',
+      },
+    ]);
+  });
+
+  it('refuses a lane from a location to itself, since a lane joins two of them', () => {
+    const result = loadContent(
+      aContentSet(aGalaxy({ lanes: [aLane({ ends: ['kestrel', 'kestrel'] })] })),
+    );
+
+    expect(result.ok).toBe(false);
+    if (result.ok) return;
+    expect(result.problems).toEqual([
+      {
+        verdict: 'fails',
+        where: 'lanes[0].ends',
+        what: 'joins kestrel to itself, and a lane joins two locations',
+      },
+    ]);
+  });
+
+  it('refuses a second lane between the same two locations, flown the other way round', () => {
+    const result = loadContent(
+      aContentSet(
+        aGalaxy({
+          lanes: [aLane(), aLane({ ends: ['bellwether', 'kestrel'], distance: 9 })],
+        }),
+      ),
+    );
+
+    expect(result.ok).toBe(false);
+    if (result.ok) return;
+    expect(result.problems).toEqual([
+      {
+        verdict: 'fails',
+        where: 'lanes[1].ends',
+        what: 'joins bellwether and kestrel, which a lane already joins: a lane is symmetric',
+      },
+    ]);
+  });
+
+  it('refuses a lane carrying no distance, which is the one number it has', () => {
+    const result = loadContent(aContentSet(aGalaxy({ lanes: [aLane({ distance: 0 })] })));
+
+    expect(result.ok).toBe(false);
+    if (result.ok) return;
+    expect(result.problems).toEqual([
+      { verdict: 'fails', where: 'lanes[0].distance', what: 'is 0, which is less than 1' },
+    ]);
+  });
+
+  it('refuses a ship with no speed to convert a distance into days', () => {
+    const result = loadContent(
+      aContentSet(aGalaxy({ start: aStart({ ship: { speed: 0, range: 20 } }) })),
+    );
+
+    expect(result.ok).toBe(false);
+    if (result.ok) return;
+    expect(result.problems).toEqual([
+      { verdict: 'fails', where: 'start.ship.speed', what: 'is 0, which is less than 1' },
+    ]);
+  });
+
+  it('refuses a content set with no fare rate, since the engine holds no rate of its own', () => {
+    const result = loadContent(aContentSet(aGalaxy({ fareRate: undefined })));
+
+    expect(result.ok).toBe(false);
+    if (result.ok) return;
+    expect(result.problems).toEqual([
+      { verdict: 'fails', where: 'fareRate', what: 'is missing or not a whole number' },
     ]);
   });
 });

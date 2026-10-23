@@ -25,12 +25,14 @@ checks are the draw-time pass's (#12, #27). Both are kept.
 ```jsonc
 {
   "bounds": { ... },      // what this content set declares about its own shape
+  "fareRate": 10,         // credits per unit of distance, galaxy-wide (ADR 0006)
   "calendar": { ... },    // one galaxy-wide reckoning (ADR 0005)
   "locations": [ ... ],   // places on the chart
+  "lanes": [ ... ],       // what joins them, and the only way between them
   "tags": [ ... ],        // the vocabulary wants match against
   "goods": [ ... ],       // the catalogue
   "buyers": [ ... ],      // who wants what
-  "start": { ... }        // where and when a campaign opens
+  "start": { ... }        // where and when a campaign opens, and in what ship
 }
 ```
 
@@ -48,6 +50,39 @@ argument, and both ends of both ranges are expected to widen as it grows.
 | `quirkRation` | The most **quirk** tags the galaxy may hold. Above it, the load fails. |
 
 A range is `{ "least": n, "most": n }`, both ends inclusive.
+
+### `lanes`
+
+A **lane** is the only way between the two **locations** it joins (ADR 0006 decision 1), and it
+carries one authored number, its **distance** (decision 8):
+
+```jsonc
+{ "ends": ["bellwether", "kestrel"], "distance": 6 }
+```
+
+Both ends must name locations the content set holds, and they must differ: a lane joins *two*
+locations, and a zero-day hop is rejected outright (decision 6). A lane is **symmetric** — one cost,
+the same both ways (decision 7) — so a second lane between the same pair, in either order, fails the
+load. Days and **fare** are derived, never authored: `ceil(distance / speed)` with a floor of one
+day, and `distance × fareRate` in credits.
+
+A galaxy with no lanes is legal, because a content set may hold one location and go nowhere. Whether
+a *drawn* map is **connected at baseline range**, has its chokepoints and spurs, and satisfies the
+start-node guarantee are the draw-time pass's checks (#12), not this file's.
+
+### `fareRate`
+
+The one galaxy-wide rate a **fare** is the **distance** times (ADR 0006 decision 10). There is
+exactly one, because authored per-lane tariffs and regional rates were rejected there: a surcharge on
+a particular gate is an **event**, not geography (decision 13).
+
+### `start`
+
+Where and when a campaign opens, and what the player opens it with: `locationId`, `credits`, the
+`day` the first digest is dated, and the baseline `ship`. A ship declares its `speed` — **distance**
+per day — and its `range`, the largest distance it can fly in one **leg** (ADR 0006 decision 9). The
+**hold** is the third of the three independent purchases and is not here yet (#14); ship upgrades are
+outside this milestone, so the ship a campaign opens with is the ship it has.
 
 ### `tags`
 
@@ -87,9 +122,16 @@ galaxy is the draw-time pass's check (#27).
 
 ## `walking-skeleton.json`
 
-The trivial content set of #7 — one location, no goods — which exists to prove the path through
-every layer and nothing else. It declares bounds, and holds an empty vocabulary, catalogue and cast.
-The content set written to answer the milestone's question is #22.
+The content set the page hand-plays and the harness measures, grown one ticket at a time until #22
+writes the one that answers the milestone's question. It began as the trivial content set of #7 — one
+location, no goods — which existed to prove the path through every layer and nothing else.
+
+It now holds **six locations and six lanes**, hand-written rather than assembled from **motifs**,
+which is #11. The shape is deliberate and is there to be read in hand-play: a start with three
+neighbours, a ring through Thennet Shoals and Caravel Station that offers a long way round, a
+**spur** at Grieve's Hollow that must be flown out and back, and one lane out to Lamentation that is
+**beyond baseline range** — the wall with a price on it (ADR 0006 decision 14). The vocabulary,
+catalogue and cast are still empty.
 
 **Every number in here is a placeholder, and evidence of nothing.** The week, month and year
 lengths, the starting credits, the starting day and every declared bound are all measurements this
