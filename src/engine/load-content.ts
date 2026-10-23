@@ -22,6 +22,7 @@ import {
   fails,
   isObject,
   judge,
+  readEach,
   readInteger,
   readNonEmptyTexts,
   readText,
@@ -63,6 +64,16 @@ export function loadContent(raw: unknown): LoadResult {
       : readBuyers(raw.buyers, tags, goods, problems);
   const start = readStart(raw.start, locations ?? [], problems);
 
+  // The whole-set checks and the distributions read the vocabulary, the
+  // catalogue, the cast and the bounds, and nothing else — so a content set
+  // whose calendar or chart would not read still gets both, which is the half
+  // of a writer's output they would otherwise lose to a typo elsewhere.
+  if (bounds !== undefined && tags !== undefined && goods !== undefined && buyers !== undefined) {
+    const subject = { bounds, tags, goods, buyers };
+    problems.push(...checkContentSet(subject));
+    reports.push(...reportsOn(subject));
+  }
+
   if (
     bounds === undefined ||
     calendar === undefined ||
@@ -75,13 +86,12 @@ export function loadContent(raw: unknown): LoadResult {
   ) {
     return { ok: false, problems, reports };
   }
-  // The whole-set checks run over a content set whose every node read
-  // cleanly, because a tag that did not read cannot be counted.
-  const content: ContentSet = { bounds, calendar, locations, tags, goods, buyers, start };
-  const whole = checkContentSet(content);
-  if (whole.length > 0) return { ok: false, problems: [...whole], reports };
 
-  return { ok: true, content, reports: [...reports, ...reportsOn(content)] };
+  return {
+    ok: true,
+    content: { bounds, calendar, locations, tags, goods, buyers, start },
+    reports,
+  };
 }
 
 /**
@@ -218,65 +228,33 @@ function readMonths(
 }
 
 function readLocations(raw: unknown, problems: Problem[]): readonly Location[] | undefined {
-  if (!Array.isArray(raw) || raw.length === 0) {
-    problems.push(fails('locations', 'names no locations'));
-    return undefined;
-  }
-
-  const locations: Location[] = [];
-  const seen = new Set<string>();
-  raw.forEach((entry, index) => {
-    const where = `locations[${index}]`;
-    if (!isObject(entry)) {
-      problems.push(fails(where, 'is not an object'));
-      return;
-    }
+  const locations = readEach(raw, 'locations', problems, (entry, where) => {
     const id = readText(entry.id, `${where}.id`, problems);
     const name = readText(entry.name, `${where}.name`, problems);
     const prose = readText(entry.prose, `${where}.prose`, problems);
-    if (id === undefined || name === undefined || prose === undefined) return;
-
-    if (seen.has(id)) {
-      problems.push(fails(`${where}.id`, `repeats an id already used: ${id}`));
-      return;
-    }
-    seen.add(id);
-    locations.push({ id, name, prose });
+    if (id === undefined || name === undefined || prose === undefined) return undefined;
+    return { id, name, prose };
   });
 
-  return locations.length === raw.length ? locations : undefined;
+  // A campaign opens somewhere, so an empty chart is a mistake rather than a
+  // content set with nothing in it yet.
+  if (locations !== undefined && locations.length === 0) {
+    problems.push(fails('locations', 'names no locations'));
+    return undefined;
+  }
+  return locations;
 }
 
 function readTags(raw: unknown, problems: Problem[]): readonly Tag[] | undefined {
-  if (!Array.isArray(raw)) {
-    problems.push(fails('tags', 'is missing'));
-    return undefined;
-  }
-
-  const tags: Tag[] = [];
-  const seen = new Set<string>();
-  raw.forEach((entry, index) => {
-    const where = `tags[${index}]`;
-    if (!isObject(entry)) {
-      problems.push(fails(where, 'is not an object'));
-      return;
-    }
+  return readEach(raw, 'tags', problems, (entry, where) => {
     const id = readText(entry.id, `${where}.id`, problems);
     const tagClass = readTagClass(entry.class, `${where}.class`, problems);
     // A tag declared with no tell at all is what *does* fail the load
     // (ADR 0007 decision 4).
     const tells = readNonEmptyTexts(entry.tells, `${where}.tells`, problems);
-    if (id === undefined || tagClass === undefined || tells === undefined) return;
-
-    if (seen.has(id)) {
-      problems.push(fails(`${where}.id`, `repeats an id already used: ${id}`));
-      return;
-    }
-    seen.add(id);
-    tags.push({ id, class: tagClass, tells });
+    if (id === undefined || tagClass === undefined || tells === undefined) return undefined;
+    return { id, class: tagClass, tells };
   });
-
-  return tags.length === raw.length ? tags : undefined;
 }
 
 function readTagClass(
@@ -300,19 +278,7 @@ function readGoods(
   bounds: Bounds | undefined,
   problems: Problem[],
 ): readonly Good[] | undefined {
-  if (!Array.isArray(raw)) {
-    problems.push(fails('goods', 'is missing'));
-    return undefined;
-  }
-
-  const goods: Good[] = [];
-  const seen = new Set<string>();
-  raw.forEach((entry, index) => {
-    const where = `goods[${index}]`;
-    if (!isObject(entry)) {
-      problems.push(fails(where, 'is not an object'));
-      return;
-    }
+  return readEach(raw, 'goods', problems, (entry, where) => {
     const id = readText(entry.id, `${where}.id`, problems);
     const name = readText(entry.name, `${where}.name`, problems);
     const prose = readText(entry.prose, `${where}.prose`, problems);
@@ -328,14 +294,8 @@ function readGoods(
       carried === undefined ||
       worth === undefined
     ) {
-      return;
+      return undefined;
     }
-
-    if (seen.has(id)) {
-      problems.push(fails(`${where}.id`, `repeats an id already used: ${id}`));
-      return;
-    }
-    seen.add(id);
 
     // The kind counts towards the bound: a content set declares its tags per
     // good as one kind plus so many others (ADR 0007 decisions 15 and 16).
@@ -348,13 +308,29 @@ function readGoods(
           `carries ${held} tags, and the content set declared ${least} to ${most}`,
         ),
       );
-      return;
+      return undefined;
     }
 
-    goods.push({ id, name, prose, kind, tags: carried, worth });
+    return { id, name, prose, kind, tags: carried, worth };
   });
+}
 
-  return goods.length === raw.length ? goods : undefined;
+/** A tag id naming a tag the content set declares. */
+function readKnownTag(
+  value: unknown,
+  where: string,
+  tags: readonly Tag[],
+  problems: Problem[],
+): Tag | undefined {
+  const id = readText(value, where, problems);
+  if (id === undefined) return undefined;
+
+  const tag = tags.find((candidate) => candidate.id === id);
+  if (tag === undefined) {
+    problems.push(fails(where, `names a tag that does not exist: ${id}`));
+    return undefined;
+  }
+  return tag;
 }
 
 /** The kind is mandatory, and names a tag of class kind (ADR 0007 decision 2). */
@@ -364,19 +340,14 @@ function readKind(
   tags: readonly Tag[],
   problems: Problem[],
 ): string | undefined {
-  const id = readText(value, where, problems);
-  if (id === undefined) return undefined;
+  const tag = readKnownTag(value, where, tags, problems);
+  if (tag === undefined) return undefined;
 
-  const tag = tags.find((candidate) => candidate.id === id);
-  if (tag === undefined) {
-    problems.push(fails(where, `names a tag that does not exist: ${id}`));
-    return undefined;
-  }
   if (tag.class !== 'kind') {
-    problems.push(fails(where, `names ${id}, which is a ${tag.class} tag and not a kind`));
+    problems.push(fails(where, `names ${tag.id}, which is a ${tag.class} tag and not a kind`));
     return undefined;
   }
-  return id;
+  return tag.id;
 }
 
 /**
@@ -398,23 +369,18 @@ function readCarriedTags(
   const carried: string[] = [];
   value.forEach((entry, index) => {
     const at = `${where}[${index}]`;
-    const id = readText(entry, at, problems);
-    if (id === undefined) return;
+    const tag = readKnownTag(entry, at, tags, problems);
+    if (tag === undefined) return;
 
-    const tag = tags.find((candidate) => candidate.id === id);
-    if (tag === undefined) {
-      problems.push(fails(at, `names a tag that does not exist: ${id}`));
-      return;
-    }
     if (tag.class === 'kind') {
-      problems.push(fails(at, `names the kind ${id}, and a good carries exactly one kind`));
+      problems.push(fails(at, `names the kind ${tag.id}, and a good carries exactly one kind`));
       return;
     }
-    if (carried.includes(id)) {
-      problems.push(fails(at, `repeats a tag the good already carries: ${id}`));
+    if (carried.includes(tag.id)) {
+      problems.push(fails(at, `repeats a tag the good already carries: ${tag.id}`));
       return;
     }
-    carried.push(id);
+    carried.push(tag.id);
   });
 
   return carried.length === value.length ? carried : undefined;
@@ -426,30 +392,12 @@ function readBuyers(
   goods: readonly Good[],
   problems: Problem[],
 ): readonly Buyer[] | undefined {
-  if (!Array.isArray(raw)) {
-    problems.push(fails('buyers', 'is missing'));
-    return undefined;
-  }
-
-  const buyers: Buyer[] = [];
-  const seen = new Set<string>();
-  raw.forEach((entry, index) => {
-    const where = `buyers[${index}]`;
-    if (!isObject(entry)) {
-      problems.push(fails(where, 'is not an object'));
-      return;
-    }
+  return readEach(raw, 'buyers', problems, (entry, where) => {
     const id = readText(entry.id, `${where}.id`, problems);
     const name = readText(entry.name, `${where}.name`, problems);
     const wants = readWants(entry.wants, `${where}.wants`, tags, goods, problems);
-    const bonusTags = readRoleTags(entry.bonusTags, `${where}.bonusTags`, tags, [], problems);
-    const refusalTags = readRoleTags(
-      entry.refusalTags,
-      `${where}.refusalTags`,
-      tags,
-      bonusTags ?? [],
-      problems,
-    );
+    const bonusTags = readRoleTags(entry.bonusTags, `${where}.bonusTags`, tags, problems);
+    const refusalTags = readRoleTags(entry.refusalTags, `${where}.refusalTags`, tags, problems);
     if (
       id === undefined ||
       name === undefined ||
@@ -457,18 +405,10 @@ function readBuyers(
       bonusTags === undefined ||
       refusalTags === undefined
     ) {
-      return;
+      return undefined;
     }
-
-    if (seen.has(id)) {
-      problems.push(fails(`${where}.id`, `repeats an id already used: ${id}`));
-      return;
-    }
-    seen.add(id);
-    buyers.push({ id, name, wants, bonusTags, refusalTags });
+    return { id, name, wants, bonusTags, refusalTags };
   });
-
-  return buyers.length === raw.length ? buyers : undefined;
 }
 
 function readWants(
@@ -550,32 +490,27 @@ function readPredicate(
       problems.push(fails(at, 'is not an object'));
       return;
     }
-    const tag = readText(entry.tag, `${at}.tag`, problems);
+    const tag = readKnownTag(entry.tag, `${at}.tag`, tags, problems);
     if (tag === undefined) return;
-    if (!tags.some((candidate) => candidate.id === tag)) {
-      problems.push(fails(`${at}.tag`, `names a tag that does not exist: ${tag}`));
-      return;
-    }
     if (entry.negated !== undefined && typeof entry.negated !== 'boolean') {
       problems.push(fails(`${at}.negated`, 'is not yes or no'));
       return;
     }
-    terms.push({ tag, negated: entry.negated === true });
+    terms.push({ tag: tag.id, negated: entry.negated === true });
   });
 
   return terms.length === raw.length ? terms : undefined;
 }
 
 /**
- * The tags a buyer holds in one role. A tag held in both roles at one buyer is
- * a contradiction rather than the two-way ideal of findings §2.4, which is one
- * tag as a bonus at one buyer and a refusal at *another*.
+ * The tags a buyer holds in one role. How widely a role tag must be spread is
+ * a bound over the whole content set rather than anything this buyer can
+ * answer, so it is checked there (ADR 0007 decision 7).
  */
 function readRoleTags(
   raw: unknown,
   where: string,
   tags: readonly Tag[],
-  otherRole: readonly string[],
   problems: Problem[],
 ): readonly string[] | undefined {
   if (!Array.isArray(raw)) {
@@ -585,18 +520,8 @@ function readRoleTags(
 
   const held: string[] = [];
   raw.forEach((entry, index) => {
-    const at = `${where}[${index}]`;
-    const id = readText(entry, at, problems);
-    if (id === undefined) return;
-    if (!tags.some((candidate) => candidate.id === id)) {
-      problems.push(fails(at, `names a tag that does not exist: ${id}`));
-      return;
-    }
-    if (otherRole.includes(id)) {
-      problems.push(fails(at, `names ${id}, which this buyer already pays more for`));
-      return;
-    }
-    held.push(id);
+    const tag = readKnownTag(entry, `${where}[${index}]`, tags, problems);
+    if (tag !== undefined) held.push(tag.id);
   });
 
   return held.length === raw.length ? held : undefined;

@@ -80,3 +80,46 @@ export function readInteger(
   }
   return value;
 }
+
+/**
+ * One list of entities, each with an id of its own. Every such list in a
+ * content set reads the same way — an object per entry, an id nothing else has
+ * used, and all of them or none of them — so the shape is written once here
+ * and each list supplies only what makes it itself.
+ *
+ * All or nothing matters: half a list read is a list a later check would
+ * measure against bounds, which is how a count comes out wrong for a reason
+ * nobody can see.
+ */
+export function readEach<T extends { readonly id: string }>(
+  raw: unknown,
+  where: string,
+  problems: Problem[],
+  readOne: (entry: Record<string, unknown>, where: string) => T | undefined,
+): readonly T[] | undefined {
+  if (!Array.isArray(raw)) {
+    problems.push(fails(where, 'is missing'));
+    return undefined;
+  }
+
+  const read: T[] = [];
+  const seen = new Set<string>();
+  raw.forEach((entry, index) => {
+    const at = `${where}[${index}]`;
+    if (!isObject(entry)) {
+      problems.push(fails(at, 'is not an object'));
+      return;
+    }
+    const one = readOne(entry, at);
+    if (one === undefined) return;
+
+    if (seen.has(one.id)) {
+      problems.push(fails(`${at}.id`, `repeats an id already used: ${one.id}`));
+      return;
+    }
+    seen.add(one.id);
+    read.push(one);
+  });
+
+  return read.length === raw.length ? read : undefined;
+}

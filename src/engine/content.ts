@@ -135,6 +135,21 @@ export function within(count: number, range: Range): boolean {
 }
 
 /**
+ * The tags any buyer holds as a **bonus** or a **refusal**. A role is a
+ * property of a buyer's relationship to a tag rather than a class of tag
+ * (ADR 0007 decision 7), so this is the only way to ask which tags are in a
+ * role at all — which both the spread bound and its distribution need.
+ */
+export function roleTags(content: Pick<ContentSet, 'buyers'>): ReadonlySet<string> {
+  return new Set(content.buyers.flatMap((buyer) => [...buyer.bonusTags, ...buyer.refusalTags]));
+}
+
+/** How many goods carry a tag, whether as their one kind or among the rest. */
+export function goodsCarrying(content: Pick<ContentSet, 'goods'>, tagId: string): number {
+  return content.goods.filter((good) => good.kind === tagId || good.tags.includes(tagId)).length;
+}
+
+/**
  * What a content set declares about its own shape. The engine hardcodes none
  * of it (ADR 0007 decision 15): what transfers from the prototype is not the
  * numbers but the reason for the lower bound — a role must be a learnable

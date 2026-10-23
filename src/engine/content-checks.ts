@@ -1,4 +1,4 @@
-import { within, type ContentSet, type Tag } from './content';
+import { goodsCarrying, roleTags, within, type ContentSet } from './content';
 import { fails, type Problem } from './verdicts';
 
 /**
@@ -11,31 +11,36 @@ import { fails, type Problem } from './verdicts';
  * *as written* — the same bounds over the **drawn galaxy** are the draw-time
  * pass's job, and both are kept (#27, ADR 0008 decision 16).
  */
-export function checkContentSet(content: ContentSet): readonly Problem[] {
-  return [...unusedTags(content), ...quirkRation(content), ...roleTagSpread(content)];
+export function checkContentSet(subject: Subject): readonly Problem[] {
+  return [...unusedTags(subject), ...quirkRation(subject), ...roleTagSpread(subject)];
 }
+
+/**
+ * What these checks read, which is narrower than a whole content set on
+ * purpose: the calendar and the map are nothing to do with them, so a content
+ * set whose calendar did not read still gets everything here.
+ */
+type Subject = Pick<ContentSet, 'bounds' | 'tags' | 'goods' | 'buyers'>;
 
 /**
  * A tag no want anywhere uses fails the load: findings §2.4's "tags no buyer
  * uses are noise", now checkable (ADR 0007 decision 4). A tag a buyer holds as
- * a bonus or a refusal is used — the role *is* a use (decision 7) — so an
- * origin tag no want and no buyer reaches for is exactly the case the check is
- * for, which is how "only where the origin makes a difference" stops being
- * advice.
+ * a bonus or a refusal is used — the role *is* a use (decision 7), and failing
+ * a tag somebody actively pays more for would be a false alarm — so what the
+ * check catches is a tag nobody reaches for at all, which is how "only where
+ * the origin makes a difference" stops being advice.
  */
-function unusedTags(content: ContentSet): readonly Problem[] {
-  const used = new Set<string>();
-  for (const buyer of content.buyers) {
+function unusedTags(subject: Subject): readonly Problem[] {
+  const used = new Set(roleTags(subject));
+  for (const buyer of subject.buyers) {
     for (const want of buyer.wants) {
       if ('predicate' in want) {
         for (const term of want.predicate) used.add(term.tag);
       }
     }
-    for (const id of buyer.bonusTags) used.add(id);
-    for (const id of buyer.refusalTags) used.add(id);
   }
 
-  return content.tags.flatMap((tag, index) =>
+  return subject.tags.flatMap((tag, index) =>
     used.has(tag.id)
       ? []
       : [
@@ -51,14 +56,14 @@ function unusedTags(content: ContentSet): readonly Problem[] {
  * What makes a quirk idiosyncratic is that one buyer cares about it, so the
  * ration is on the *number of quirk tags* in the galaxy (ADR 0007 decision 8).
  */
-function quirkRation(content: ContentSet): readonly Problem[] {
-  const quirks = content.tags.filter((tag) => tag.class === 'quirk').length;
-  if (quirks <= content.bounds.quirkRation) return [];
+function quirkRation(subject: Subject): readonly Problem[] {
+  const quirks = subject.tags.filter((tag) => tag.class === 'quirk').length;
+  if (quirks <= subject.bounds.quirkRation) return [];
   return [
     fails(
       'tags',
       `declares ${quirks} quirk tags, and the content set rationed them to ` +
-        `${content.bounds.quirkRation}`,
+        `${subject.bounds.quirkRation}`,
     ),
   ];
 }
@@ -69,16 +74,14 @@ function quirkRation(content: ContentSet): readonly Problem[] {
  * them the hole through which unlearnable content enters (ADR 0007 decisions 7
  * and 8). A tag used only as a plain kind is exempt.
  */
-function roleTagSpread(content: ContentSet): readonly Problem[] {
-  const { least, most } = content.bounds.goodsPerRoleTag;
-  const roles = new Set(
-    content.buyers.flatMap((buyer) => [...buyer.bonusTags, ...buyer.refusalTags]),
-  );
+function roleTagSpread(subject: Subject): readonly Problem[] {
+  const roles = roleTags(subject);
+  const { least, most } = subject.bounds.goodsPerRoleTag;
 
-  return content.tags.flatMap((tag, index) => {
+  return subject.tags.flatMap((tag, index) => {
     if (!roles.has(tag.id)) return [];
-    const sits = goodsCarrying(content, tag).length;
-    if (within(sits, content.bounds.goodsPerRoleTag)) return [];
+    const sits = goodsCarrying(subject, tag.id);
+    if (within(sits, subject.bounds.goodsPerRoleTag)) return [];
     return [
       fails(
         `tags[${index}]`,
@@ -87,11 +90,4 @@ function roleTagSpread(content: ContentSet): readonly Problem[] {
       ),
     ];
   });
-}
-
-/** The goods carrying a tag, whether as their one kind or among the rest. */
-export function goodsCarrying(content: ContentSet, tag: Tag): readonly string[] {
-  return content.goods
-    .filter((good) => good.kind === tag.id || good.tags.includes(tag.id))
-    .map((good) => good.id);
 }
