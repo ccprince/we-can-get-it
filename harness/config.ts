@@ -1,4 +1,4 @@
-import { readFileSync } from 'node:fs';
+import { readJson } from './files';
 
 /**
  * The harness's own config, read from its own file (ADR 0009 decision 5). It is
@@ -41,7 +41,7 @@ export type HarnessConfig = {
  * measurement.
  */
 export function readConfig(path: string): HarnessConfig {
-  const raw: unknown = JSON.parse(read(path));
+  const raw: unknown = readJson(path, 'there is no run to make');
   if (!isObject(raw)) throw new Error(`${path} is not an object`);
 
   return {
@@ -66,18 +66,9 @@ function readSettings(raw: unknown): readonly Setting[] {
     if (!isObject(entry)) throw new Error(`${where} is not an object`);
     return {
       name: text(entry.name, `${where}.name`),
-      contentPath: text(entry.content, `${where}.content`),
+      contentPath: text(entry.contentPath, `${where}.contentPath`),
     };
   });
-}
-
-/** Named rather than left to ENOENT: a mistyped config path is the likeliest error here. */
-function read(path: string): string {
-  try {
-    return readFileSync(path, 'utf8');
-  } catch {
-    throw new Error(`${path} cannot be read, so there is no run to make`);
-  }
 }
 
 function isObject(value: unknown): value is Record<string, unknown> {
