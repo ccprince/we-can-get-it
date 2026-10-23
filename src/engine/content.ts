@@ -129,6 +129,11 @@ export type Range = {
   readonly most: number;
 };
 
+/** Whether a count sits inside a declared bound, both ends included. */
+export function within(count: number, range: Range): boolean {
+  return count >= range.least && count <= range.most;
+}
+
 /**
  * What a content set declares about its own shape. The engine hardcodes none
  * of it (ADR 0007 decision 15): what transfers from the prototype is not the

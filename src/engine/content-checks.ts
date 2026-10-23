@@ -1,4 +1,4 @@
-import type { ContentSet, Tag } from './content';
+import { within, type ContentSet, type Tag } from './content';
 import { fails, type Problem } from './verdicts';
 
 /**
@@ -71,12 +71,14 @@ function quirkRation(content: ContentSet): readonly Problem[] {
  */
 function roleTagSpread(content: ContentSet): readonly Problem[] {
   const { least, most } = content.bounds.goodsPerRoleTag;
-  const roles = new Set(content.buyers.flatMap((buyer) => [...buyer.bonusTags, ...buyer.refusalTags]));
+  const roles = new Set(
+    content.buyers.flatMap((buyer) => [...buyer.bonusTags, ...buyer.refusalTags]),
+  );
 
   return content.tags.flatMap((tag, index) => {
     if (!roles.has(tag.id)) return [];
     const sits = goodsCarrying(content, tag).length;
-    if (sits >= least && sits <= most) return [];
+    if (within(sits, content.bounds.goodsPerRoleTag)) return [];
     return [
       fails(
         `tags[${index}]`,
