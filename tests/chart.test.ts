@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { startCampaign, view } from '../src/engine';
-import type { ContentSet } from '../src/engine';
+import type { ContentSet, LocationView } from '../src/engine';
 import { aGalaxy, aMotifLane, aLocation, aShip, aStart, loadedContentSet } from './support/content';
 
 /**
@@ -99,10 +99,12 @@ describe('the chart', () => {
     expect(chart.lanes[1]?.destination).toBeNull();
   });
 
-  it('names every location the draw placed', () => {
+  it('names every location the draw placed, in the order of their ids', () => {
+    // The draw placed Kestrel first; by id it is third. What the player reads
+    // never follows the order the draw happened to place things in (ADR 0009).
     const chart = chartAt(aFourPlaceGalaxy());
 
-    expect(namesOf(chart.locations)).toEqual([
+    expect(chart.locations.map((location) => location.name)).toEqual([
       'Bellwether Yards',
       "Grieve's Hollow",
       'Kestrel Reach',
@@ -137,6 +139,6 @@ describe('the chart', () => {
 });
 
 /** The names on the chart, sorted: the order the engine gives them means nothing. */
-function namesOf(locations: readonly { readonly name: string }[]): readonly string[] {
+function namesOf(locations: readonly LocationView[]): readonly string[] {
   return locations.map((location) => location.name).sort();
 }

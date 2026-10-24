@@ -183,7 +183,7 @@ describe('the chart on the page', () => {
     });
     surfaces({ campaign: startCampaign(content, SEED) });
 
-    const places = screen.getByRole('list', { name: 'Places' });
+    const places = screen.getByRole('list', { name: 'Locations' });
     expect(places.textContent).toContain('Kestrel Reach');
     expect(places.textContent).toContain('Caravel Station');
     expect(screen.getByText('No lanes are charted.')).toBeDefined();
