@@ -11,6 +11,9 @@ import {
   aGood,
   aLane,
   aLocation,
+  aMotif,
+  aMotifLane,
+  aSlot,
   aStart,
   aTag,
   aWant,
@@ -647,7 +650,59 @@ describe('the map as content', () => {
   });
 });
 
-describe('the dial the draw is set by, and what a location is', () => {
+describe('the motifs the map is assembled from', () => {
+  it('refuses a content set with no motifs, since the map is assembled from them', () => {
+    const result = loadContent(aContentSet({ motifs: [] }));
+
+    expect(result.ok).toBe(false);
+    if (result.ok) return;
+    expect(result.problems).toEqual([
+      {
+        verdict: 'fails',
+        where: 'motifs',
+        what: 'names no motifs for the map to be assembled from',
+      },
+    ]);
+  });
+
+  it('refuses a motif with no slots, since it would place no locations', () => {
+    const result = loadContent(aContentSet({ motifs: [aMotif({ slots: [], lanes: [] })] }));
+
+    expect(result.ok).toBe(false);
+    if (result.ok) return;
+    expect(result.problems).toEqual([
+      {
+        verdict: 'fails',
+        where: 'motifs[0].slots',
+        what: 'has no slots, so it would place no locations',
+      },
+    ]);
+  });
+
+  it('accepts a slot that is deliberately untyped, which anything may fill', () => {
+    // The occasional illogical place, so a region's grammar has exceptions in
+    // it (ADR 0006 decision 4).
+    const result = loadContent(aContentSet({ motifs: [aMotif({ slots: [aSlot()] })] }));
+
+    expect(result.ok ? [] : result.problems).toEqual([]);
+  });
+
+  it('refuses a slot typed by an archetype the content set does not enumerate', () => {
+    const result = loadContent(
+      aContentSet({ motifs: [aMotif({ slots: [aSlot({ archetype: 'cathedral' })] })] }),
+    );
+
+    expect(result.ok).toBe(false);
+    if (result.ok) return;
+    expect(result.problems).toEqual([
+      {
+        verdict: 'fails',
+        where: 'motifs[0].slots[0].archetype',
+        what: 'names an archetype that does not exist: cathedral',
+      },
+    ]);
+  });
+
   it('refuses a location authored with an archetype the content set does not enumerate', () => {
     const result = loadContent(aContentSet({ locations: [aLocation({ archetype: 'cathedral' })] }));
 
@@ -669,6 +724,51 @@ describe('the dial the draw is set by, and what a location is', () => {
     ]);
   });
 
+  it('refuses a motif lane naming a slot that motif does not hold', () => {
+    // Motifs join by inter-motif lanes the assembly adds, never by naming each
+    // other's slots (ADR 0008 decision 6).
+    const result = loadContent(
+      aContentSet({
+        motifs: [
+          aMotif({
+            slots: [aSlot(), aSlot({ id: 'pit' })],
+            lanes: [aMotifLane({ ends: ['berth', 'gate'] })],
+          }),
+        ],
+      }),
+    );
+
+    expect(result.ok).toBe(false);
+    if (result.ok) return;
+    expect(result.problems).toEqual([
+      {
+        verdict: 'fails',
+        where: 'motifs[0].lanes[0].ends[1]',
+        what: 'names a slot this motif does not hold: gate',
+      },
+    ]);
+  });
+
+  it('refuses a motif lane from a slot to itself', () => {
+    const result = loadContent(
+      aContentSet({
+        motifs: [aMotif({ lanes: [aMotifLane({ ends: ['berth', 'berth'] })] })],
+      }),
+    );
+
+    expect(result.ok).toBe(false);
+    if (result.ok) return;
+    expect(result.problems).toEqual([
+      {
+        verdict: 'fails',
+        where: 'motifs[0].lanes[0].ends',
+        what: 'joins berth to itself, and a lane joins two slots',
+      },
+    ]);
+  });
+});
+
+describe('the dial the draw is set by', () => {
   it('refuses a content set that declares no draw, since the engine holds no dial', () => {
     const result = loadContent(aContentSet({ draw: undefined }));
 

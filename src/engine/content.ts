@@ -41,6 +41,43 @@ export type Location = {
 };
 
 /**
+ * A hole in a **motif**, typed by an **archetype** and filled from the reserve
+ * at campaign start. `archetype` is null for a slot that is deliberately
+ * **untyped**, which accepts any location at all — so that a region's grammar
+ * has exceptions in it (ADR 0006 decision 4).
+ */
+export type Slot = {
+  /** Unique within its motif, and what the motif's own lanes name. */
+  readonly id: string;
+  readonly archetype: string | null;
+};
+
+/**
+ * A lane inside a **motif**, joining two of its **slots** rather than two
+ * locations: which locations it ends up joining is the assembly's answer. It
+ * carries a **distance** like any other lane (ADR 0006 decision 8).
+ */
+export type MotifLane = {
+  readonly ends: readonly [string, string];
+  readonly distance: number;
+};
+
+/**
+ * An authored fragment of topology with typed **slots** (ADR 0006 decision 3).
+ * Drawn from a reserve larger than one campaign uses, and a motif **may appear
+ * more than once** in one assembly, so what is authored here is a shape and not
+ * a region (ADR 0008 decision 7).
+ *
+ * Motifs join by **lanes** and never by sharing a location, which is why a
+ * motif's lanes name its own slots and nothing outside it (decision 6).
+ */
+export type Motif = {
+  readonly id: string;
+  readonly slots: readonly Slot[];
+  readonly lanes: readonly MotifLane[];
+};
+
+/**
  * The baseline ship, in the two of its three independent purchases the map
  * feels: **speed** is **distance** per day and **range** the largest distance
  * it can fly in one **leg** (ADR 0006 decision 9). The **hold** is the third,
@@ -236,6 +273,8 @@ export type ContentSet = {
    * which is #33; the name alone is what the slot reads.
    */
   readonly archetypes: readonly string[];
+  /** The **motif reserve**, larger than one campaign assembles from. */
+  readonly motifs: readonly Motif[];
   /** The **location reserve**, of which one campaign draws a part. */
   readonly locations: readonly Location[];
   readonly lanes: readonly Lane[];

@@ -59,6 +59,73 @@
     }
   },
   "archetypes": ["extractor", "processor", "market"],
+  "motifs": [
+    {
+      "id": "pair",
+      "slots": [
+        {
+          "id": "hub",
+          "archetype": "market"
+        },
+        {
+          "id": "outpost",
+          "archetype": null
+        }
+      ],
+      "lanes": [
+        {
+          "ends": ["hub", "outpost"],
+          "distance": 6
+        }
+      ]
+    },
+    {
+      "id": "spur",
+      "slots": [
+        {
+          "id": "junction",
+          "archetype": "processor"
+        },
+        {
+          "id": "dead-end",
+          "archetype": "extractor"
+        }
+      ],
+      "lanes": [
+        {
+          "ends": ["junction", "dead-end"],
+          "distance": 16
+        }
+      ]
+    },
+    {
+      "id": "chain",
+      "slots": [
+        {
+          "id": "gate",
+          "archetype": "market"
+        },
+        {
+          "id": "middle",
+          "archetype": null
+        },
+        {
+          "id": "far",
+          "archetype": "extractor"
+        }
+      ],
+      "lanes": [
+        {
+          "ends": ["gate", "middle"],
+          "distance": 3
+        },
+        {
+          "ends": ["middle", "far"],
+          "distance": 11
+        }
+      ]
+    }
+  ],
   "locations": [
     {
       "id": "bellwether",

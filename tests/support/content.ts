@@ -36,6 +36,41 @@ export function aLocation(overrides: RawObject = {}): RawObject {
 }
 
 /**
+ * A **slot**, which is **untyped** by default: ADR 0006 decision 4 allows one
+ * deliberately, and a fixture about something else should not have to think
+ * about what fills its map. A test about typing states the archetype it means.
+ */
+export function aSlot(overrides: RawObject = {}): RawObject {
+  return {
+    id: 'berth',
+    archetype: null,
+    ...overrides,
+  };
+}
+
+/** A lane inside a **motif**, joining two of its slots. */
+export function aMotifLane(overrides: RawObject = {}): RawObject {
+  return {
+    ends: ['berth', 'pit'],
+    distance: 6,
+    ...overrides,
+  };
+}
+
+/**
+ * The smallest **motif** there is: one slot and no lanes, which is the fragment
+ * the trivial content set of #7 assembles its one-place galaxy from.
+ */
+export function aMotif(overrides: RawObject = {}): RawObject {
+  return {
+    id: 'lone-berth',
+    slots: [aSlot()],
+    lanes: [],
+    ...overrides,
+  };
+}
+
+/**
  * What a content set declares about its own **draw**: the **motif count**,
  * which is the one dial (ADR 0008 decision 5), and how far apart the motifs it
  * places are strung. Both are placeholders to be measured.
@@ -100,6 +135,7 @@ export function aContentSet(overrides: RawObject = {}): RawObject {
     // The short enumerated list a location is authored with and a slot types
     // against (ADR 0007 decision 17, ADR 0008 decision 1).
     archetypes: ['market', 'extractor', 'processor'],
+    motifs: [aMotif()],
     draw: aDraw(),
     locations: [aLocation()],
     lanes: [],
@@ -133,6 +169,13 @@ export function aGalaxy(overrides: RawObject = {}): RawObject {
         id: 'bellwether',
         name: 'Bellwether Yards',
         prose: 'A repair yard that outgrew its own harbour and never admitted it.',
+      }),
+    ],
+    motifs: [
+      aMotif({
+        id: 'berth-and-pit',
+        slots: [aSlot(), aSlot({ id: 'pit' })],
+        lanes: [aMotifLane()],
       }),
     ],
     lanes: [aLane()],

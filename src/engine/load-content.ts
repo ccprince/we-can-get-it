@@ -12,9 +12,12 @@ import {
   type Good,
   type Lane,
   type Location,
+  type Motif,
+  type MotifLane,
   type Month,
   type Range,
   type Ship,
+  type Slot,
   type Start,
   type Tag,
   type TagClass,
@@ -64,11 +67,13 @@ export function loadContent(raw: unknown): LoadResult {
   const calendar = readCalendar(raw.calendar, problems, reports);
   const draw = readDraw(raw.draw, problems);
   const archetypes = readArchetypes(raw.archetypes, problems);
-  // A location is authored with an archetype, so an enumeration that did not
-  // read leaves the locations unchecked rather than failing every one of them
-  // against nothing.
+  // A location is authored with an archetype and a slot types against one, so
+  // an enumeration that did not read leaves both unchecked rather than failing
+  // every location and every slot against nothing.
   const locations =
     archetypes === undefined ? undefined : readLocations(raw.locations, archetypes, problems);
+  const motifs =
+    archetypes === undefined ? undefined : readMotifs(raw.motifs, archetypes, problems);
   // A lane names the locations it joins, so a chart that did not read leaves
   // the lanes unread rather than failing every one of them against nothing.
   const lanes = locations === undefined ? undefined : readLanes(raw.lanes, locations, problems);
@@ -99,6 +104,7 @@ export function loadContent(raw: unknown): LoadResult {
     fareRate === undefined ||
     calendar === undefined ||
     archetypes === undefined ||
+    motifs === undefined ||
     locations === undefined ||
     lanes === undefined ||
     tags === undefined ||
@@ -118,6 +124,7 @@ export function loadContent(raw: unknown): LoadResult {
       fareRate,
       calendar,
       archetypes,
+      motifs,
       locations,
       lanes,
       tags,
@@ -449,6 +456,149 @@ function readKnownArchetype(
     return undefined;
   }
   return name;
+}
+
+/**
+ * The motif reserve, from which the map is assembled (ADR 0006 decision 3). A
+ * content set with no motifs in it has nothing to assemble a map from, so an
+ * empty reserve is a mistake rather than a galaxy with nothing in it yet.
+ *
+ * Whether the location reserve can actually **fill** every slot of every motif
+ * is a different and later question, checked before any draw by #12.
+ */
+function readMotifs(
+  raw: unknown,
+  archetypes: readonly string[],
+  problems: Problem[],
+): readonly Motif[] | undefined {
+  const motifs = readEach(raw, 'motifs', problems, (entry, where) => {
+    const id = readText(entry.id, `${where}.id`, problems);
+    const slots = readSlots(entry.slots, `${where}.slots`, archetypes, problems);
+    // A motif's lanes name its own slots, so slots that did not read leave the
+    // lanes unread rather than failing every one of them against nothing.
+    const lanes =
+      slots === undefined
+        ? undefined
+        : readMotifLanes(entry.lanes, `${where}.lanes`, slots, problems);
+    if (id === undefined || slots === undefined || lanes === undefined) return undefined;
+    return { id, slots, lanes };
+  });
+
+  if (motifs !== undefined && motifs.length === 0) {
+    problems.push(fails('motifs', 'names no motifs for the map to be assembled from'));
+    return undefined;
+  }
+  return motifs;
+}
+
+/** A motif's slots. A motif with none of them would place no locations. */
+function readSlots(
+  raw: unknown,
+  where: string,
+  archetypes: readonly string[],
+  problems: Problem[],
+): readonly Slot[] | undefined {
+  const slots = readEach(raw, where, problems, (entry, at) => {
+    const id = readText(entry.id, `${at}.id`, problems);
+    // Null is the untyped slot ADR 0006 decision 4 allows deliberately, and is
+    // told apart from an archetype nobody declared.
+    const archetype =
+      entry.archetype === null
+        ? null
+        : readKnownArchetype(entry.archetype, `${at}.archetype`, archetypes, problems);
+    if (id === undefined || archetype === undefined) return undefined;
+    return { id, archetype };
+  });
+
+  if (slots !== undefined && slots.length === 0) {
+    problems.push(fails(where, 'has no slots, so it would place no locations'));
+    return undefined;
+  }
+  return slots;
+}
+
+/**
+ * The lanes inside one motif, each joining two of that motif's own slots. A
+ * lane reaching outside the motif is refused: motifs join by **inter-motif
+ * lanes** the assembly adds, never by naming each other (ADR 0008 decision 6).
+ */
+function readMotifLanes(
+  raw: unknown,
+  where: string,
+  slots: readonly Slot[],
+  problems: Problem[],
+): readonly MotifLane[] | undefined {
+  if (!Array.isArray(raw)) {
+    problems.push(fails(where, 'is missing'));
+    return undefined;
+  }
+
+  const lanes: MotifLane[] = [];
+  const joined = new Set<string>();
+  raw.forEach((entry, index) => {
+    const at = `${where}[${index}]`;
+    if (!isObject(entry)) {
+      problems.push(fails(at, 'is not an object'));
+      return;
+    }
+    const ends = readSlotEnds(entry.ends, `${at}.ends`, slots, problems);
+    const distance = readInteger(entry.distance, `${at}.distance`, 1, problems);
+    if (ends === undefined || distance === undefined) return;
+
+    const pair = [...ends].sort().join(' ');
+    if (joined.has(pair)) {
+      problems.push(
+        fails(
+          `${at}.ends`,
+          `joins ${ends[0]} and ${ends[1]}, which a lane already joins: a lane is symmetric`,
+        ),
+      );
+      return;
+    }
+    joined.add(pair);
+    lanes.push({ ends, distance });
+  });
+
+  return lanes.length === raw.length ? lanes : undefined;
+}
+
+function readSlotEnds(
+  value: unknown,
+  where: string,
+  slots: readonly Slot[],
+  problems: Problem[],
+): readonly [string, string] | undefined {
+  if (!Array.isArray(value) || value.length !== 2) {
+    problems.push(fails(where, 'does not name the two slots the lane joins'));
+    return undefined;
+  }
+
+  const from = readKnownSlot(value[0], `${where}[0]`, slots, problems);
+  const to = readKnownSlot(value[1], `${where}[1]`, slots, problems);
+  if (from === undefined || to === undefined) return undefined;
+
+  if (from === to) {
+    problems.push(fails(where, `joins ${from} to itself, and a lane joins two slots`));
+    return undefined;
+  }
+  return [from, to];
+}
+
+/** A slot id naming a slot of the motif the lane belongs to. */
+function readKnownSlot(
+  value: unknown,
+  where: string,
+  slots: readonly Slot[],
+  problems: Problem[],
+): string | undefined {
+  const id = readText(value, where, problems);
+  if (id === undefined) return undefined;
+
+  if (!slots.some((slot) => slot.id === id)) {
+    problems.push(fails(where, `names a slot this motif does not hold: ${id}`));
+    return undefined;
+  }
+  return id;
 }
 
 function readTags(raw: unknown, problems: Problem[]): readonly Tag[] | undefined {
