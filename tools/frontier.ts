@@ -81,19 +81,22 @@ function fetchParent(number: number): Parent {
 
 /** Refuse to answer from a truncated page rather than answer wrongly. */
 function assertComplete(parent: Parent): void {
-  if (parent.subIssues.totalCount > parent.subIssues.nodes.length) {
-    throw new Error(
-      `#${parent.number} has ${parent.subIssues.totalCount} sub-issues; ` +
-        `this script reads only the first ${MAX_CHILDREN}.`,
-    );
-  }
+  assertPage(parent.subIssues, `#${parent.number}`, 'sub-issues', MAX_CHILDREN);
   for (const child of parent.subIssues.nodes) {
-    if (child.blockedBy.totalCount > child.blockedBy.nodes.length) {
-      throw new Error(
-        `#${child.number} has ${child.blockedBy.totalCount} blockers; ` +
-          `this script reads only the first ${MAX_BLOCKERS}.`,
-      );
-    }
+    assertPage(child.blockedBy, `#${child.number}`, 'blockers', MAX_BLOCKERS);
+  }
+}
+
+function assertPage(
+  page: { readonly totalCount: number; readonly nodes: readonly unknown[] },
+  owner: string,
+  what: string,
+  max: number,
+): void {
+  if (page.totalCount > page.nodes.length) {
+    throw new Error(
+      `${owner} has ${page.totalCount} ${what}; this script reads only the first ${max}.`,
+    );
   }
 }
 
@@ -130,17 +133,14 @@ function graphLines(parent: Parent, frontier: readonly Child[]): string[] {
   const inside = new Set(children.map((child) => child.number));
   const free = new Set(frontier.map((child) => child.number));
 
-  const outside: IssueRef[] = [];
-  const seenOutside = new Set<number>();
+  // Keyed by number; a Map keeps first-seen order, so the output is stable.
+  const outside = new Map<number, IssueRef>();
   const edges: string[] = [];
   for (const child of children) {
     for (const blocker of child.blockedBy.nodes) {
       const isOutside = !inside.has(blocker.number);
       if (isOutside && blocker.state === 'CLOSED') continue;
-      if (isOutside && !seenOutside.has(blocker.number)) {
-        seenOutside.add(blocker.number);
-        outside.push(blocker);
-      }
+      if (isOutside) outside.set(blocker.number, blocker);
       edges.push(`  ${nodeId(blocker)} --> ${nodeId(child)}`);
     }
   }
@@ -156,7 +156,7 @@ function graphLines(parent: Parent, frontier: readonly Child[]): string[] {
     '  classDef open fill:#fff,stroke:#333',
     '  classDef outside fill:#fff4d6,stroke:#c08a00,stroke-dasharray:4 3',
     ...children.map((child) => `  ${nodeId(child)}[${label(child)}]:::${styleOf(child)}`),
-    ...outside.map((blocker) => `  ${nodeId(blocker)}[${label(blocker)}]:::outside`),
+    ...[...outside.values()].map((blocker) => `  ${nodeId(blocker)}[${label(blocker)}]:::outside`),
     ...edges,
     '```',
   ];
