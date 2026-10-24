@@ -1,0 +1,10 @@
+dist
+node_modules
+coverage
+package-lock.json
+
+# The canon is prose, hand-wrapped at 100 by its author. Prettier pads every
+# Markdown table to aligned columns — 428 changed lines across the docs, and
+# padded rows that run past 100 themselves, since table padding ignores
+# printWidth. Both incidents behind #31 were TypeScript; this stays on code.
+*.md
