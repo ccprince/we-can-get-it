@@ -115,8 +115,8 @@ function frontierLines(frontier: readonly Child[]): string[] {
 }
 
 /** Mermaid reads `#name;` as an entity and `"` as the end of a label. */
-function label(issue: IssueRef): string {
-  const text = `#${issue.number} ${issue.title}`;
+function label(issue: IssueRef, mark = ''): string {
+  const text = `${mark}#${issue.number} ${issue.title}`;
   return `"${text.replaceAll('#', '#35;').replaceAll('"', '#quot;')}"`;
 }
 
@@ -127,7 +127,13 @@ function nodeId(issue: IssueRef): string {
 /**
  * Every child is a node, edgeless ones included; every edge into a child is
  * drawn, closed blockers included. A blocker from outside the parent is drawn
- * only while it is open, in its own style.
+ * only while it is open, in its own style and a slanted box, since it is the odd
+ * one out.
+ *
+ * Open work is dark and closed work pale, so what remains is the heaviest thing
+ * in the diagram; a closed ticket is checked off. Every style sets its own text
+ * colour, so the diagram reads on GitHub's light and dark themes alike. Chosen
+ * from a styles prototype; see #46.
  */
 function graphLines(parent: Parent, frontier: readonly Child[]): string[] {
   const children = parent.subIssues.nodes;
@@ -151,12 +157,19 @@ function graphLines(parent: Parent, frontier: readonly Child[]): string[] {
 
   return [
     'graph TD',
-    '  classDef closed fill:#e5e5e5,stroke:#999,color:#777',
-    '  classDef frontier fill:#d6f5d6,stroke:#2e8b2e,stroke-width:2px',
-    '  classDef open fill:#fff,stroke:#333',
-    '  classDef outside fill:#fff4d6,stroke:#c08a00,stroke-dasharray:4 3',
-    ...children.map((child) => `  ${nodeId(child)}[${label(child)}]:::${styleOf(child)}`),
-    ...[...outside.values()].map((blocker) => `  ${nodeId(blocker)}[${label(blocker)}]:::outside`),
+    '  classDef closed fill:#f6f8fa,stroke:#afb8c1,color:#57606a',
+    '  classDef frontier fill:#0969da,stroke:#033d8b,color:#ffffff,' +
+      'stroke-width:3px,font-weight:600',
+    '  classDef open fill:#24292f,stroke:#000000,color:#ffffff',
+    '  classDef outside fill:#8250df,stroke:#512a97,color:#ffffff,stroke-dasharray:6 4',
+    ...children.map((child) => {
+      const style = styleOf(child);
+      const mark = style === 'closed' ? '✓ ' : '';
+      return `  ${nodeId(child)}[${label(child, mark)}]:::${style}`;
+    }),
+    ...[...outside.values()].map(
+      (blocker) => `  ${nodeId(blocker)}[/${label(blocker)}/]:::outside`,
+    ),
     ...edges,
   ];
 }
