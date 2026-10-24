@@ -8,6 +8,7 @@ import { execFileSync } from 'node:child_process';
  *
  *   npm run frontier -- 6            — the frontier of #6
  *   npm run frontier -- 6 --graph    — and a Mermaid diagram of its dependency edges
+ *   npm run frontier -- 6 --graph-only — the diagram alone, unfenced, for piping to a viewer
  *
  * Everything comes from one GraphQL call to the native sub-issue and dependency
  * edges, through `gh` so that `gh` owns auth and the repository. The output is
@@ -149,8 +150,7 @@ function graphLines(parent: Parent, frontier: readonly Child[]): string[] {
     child.state === 'CLOSED' ? 'closed' : free.has(child.number) ? 'frontier' : 'open';
 
   return [
-    '```mermaid',
-    'graph LR',
+    'graph TD',
     '  classDef closed fill:#e5e5e5,stroke:#999,color:#777',
     '  classDef frontier fill:#d6f5d6,stroke:#2e8b2e,stroke-width:2px',
     '  classDef open fill:#fff,stroke:#333',
@@ -158,36 +158,56 @@ function graphLines(parent: Parent, frontier: readonly Child[]): string[] {
     ...children.map((child) => `  ${nodeId(child)}[${label(child)}]:::${styleOf(child)}`),
     ...[...outside.values()].map((blocker) => `  ${nodeId(blocker)}[${label(blocker)}]:::outside`),
     ...edges,
-    '```',
   ];
 }
 
-function parseArgs(argv: readonly string[]): { readonly number: number; readonly graph: boolean } {
-  const graph = argv.includes('--graph');
-  const rest = argv.filter((arg) => arg !== '--graph');
-  const number = Number(rest[0]?.replace(/^#/, ''));
-  if (rest.length !== 1 || !Number.isInteger(number) || number <= 0) {
-    throw new Error('Usage: npm run frontier -- <parent issue number> [--graph]');
-  }
-  return { number, graph };
+/** Fenced, so it pastes into a GitHub comment and renders. */
+function fenced(lines: readonly string[]): string[] {
+  return ['```mermaid', ...lines, '```'];
 }
 
+/**
+ * `list` is the frontier alone; `graph` adds the fenced diagram; `graph-only`
+ * prints the diagram unfenced and nothing else, so it can be piped to a viewer.
+ */
+type Mode = 'list' | 'graph' | 'graph-only';
+
+const FLAGS: Readonly<Record<string, Mode>> = { '--graph': 'graph', '--graph-only': 'graph-only' };
+
+function parseArgs(argv: readonly string[]): { readonly number: number; readonly mode: Mode } {
+  const flags = argv.filter((arg) => arg.startsWith('--'));
+  const rest = argv.filter((arg) => !arg.startsWith('--'));
+  const number = Number(rest[0]?.replace(/^#/, ''));
+  const mode = flags.length === 0 ? 'list' : FLAGS[flags[0] ?? ''];
+  if (flags.length > 1 || mode === undefined) throw new Error(USAGE);
+  if (rest.length !== 1 || !Number.isInteger(number) || number <= 0) throw new Error(USAGE);
+  return { number, mode };
+}
+
+const USAGE = 'Usage: npm run frontier -- <parent issue number> [--graph | --graph-only]';
+
 function main(): void {
-  const { number, graph } = parseArgs(process.argv.slice(2));
+  const { number, mode } = parseArgs(process.argv.slice(2));
   const parent = fetchParent(number);
 
   if (parent.subIssues.totalCount === 0) {
-    console.log(`#${parent.number} has no sub-issues.`);
+    // On stderr when piping, so a viewer is handed nothing rather than prose.
+    const say = mode === 'graph-only' ? console.error : console.log;
+    say(`#${parent.number} has no sub-issues.`);
     return;
   }
   assertComplete(parent);
 
   const frontier = parent.subIssues.nodes.filter(isFree);
+  if (mode === 'graph-only') {
+    console.log(graphLines(parent, frontier).join('\n'));
+    return;
+  }
   const lines =
     frontier.length > 0
       ? frontierLines(frontier)
       : [`#${parent.number} has no free children: each is closed, blocked or assigned.`];
-  if (graph) lines.push('', ...graphLines(parent, frontier));
+  if (mode === 'graph') lines.push('', ...fenced(graphLines(parent, frontier)));
   console.log(lines.join('\n'));
 }
 
