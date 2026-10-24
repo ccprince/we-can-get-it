@@ -1,4 +1,6 @@
 import type { ContentSet, Ship } from './content';
+import { draw } from './draw';
+import type { DrawnGalaxy } from './galaxy';
 import { rngFromSeed, type Rng } from './rng';
 
 /** An entry in a day's digest: one piece of change that reached the player. */
@@ -44,6 +46,12 @@ export type Whereabouts =
  */
 export type Campaign = {
   readonly content: ContentSet;
+  /**
+   * This campaign's galaxy, rolled from the seed at the start and fixed for the
+   * campaign's whole length: nothing enters it afterwards (ADR 0008 decision
+   * 3). Everywhere the player can be is a location in here.
+   */
+  readonly galaxy: DrawnGalaxy;
   readonly seed: number;
   readonly rng: Rng;
   readonly day: number;
@@ -61,12 +69,18 @@ export type Campaign = {
 };
 
 export function startCampaign(content: ContentSet, seed: number): Campaign {
+  // The seed arrives here and nowhere else, and the draw is the first thing it
+  // is spent on: the campaign begins at a location the draw placed, so the
+  // generator the campaign carries is the one the draw left behind.
+  const [galaxy, rng] = draw(content, rngFromSeed(seed));
+
   return {
     content,
+    galaxy,
     seed,
-    rng: rngFromSeed(seed),
+    rng,
     day: content.start.day,
-    where: { kind: 'at', locationId: content.start.locationId },
+    where: { kind: 'at', locationId: galaxy.startId },
     credits: content.start.credits,
     ship: content.start.ship,
     digest: null,
