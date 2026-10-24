@@ -29,7 +29,6 @@ export type {
 
 export { startCampaign } from './campaign';
 export type { Campaign, Digest, DigestEntry } from './campaign';
-export type { DrawnGalaxy, PlacedMotif } from './galaxy';
 
 export { isRejected, takeCommand } from './commands';
 export type { Command, CommandResult, Reason } from './commands';

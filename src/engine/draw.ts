@@ -14,6 +14,13 @@ import type { Rng } from './rng';
  * decision 1). The generator is threaded in and out rather than held, like
  * every other draw from it.
  *
+ * Decision 18 writes the signature `(content set, seed) -> drawn galaxy`; this
+ * takes the generator the seed makes, because a seed is turned into one at the
+ * single place a seed enters the engine (`startCampaign`, ADR 0009 decision 3)
+ * and the draw has no business doing it twice. **Reporting mode** calls this
+ * same function and makes its generator the same way — one code path, two
+ * modes, which is the part of decision 18 that matters.
+ *
  * The map goes first and everything later is conditioned on what it has fixed
  * (decision 2). Assembling it from motifs is #11's next slice; **kinds, goods
  * and people** are #33, and **patrons** are chunk 6.
@@ -24,7 +31,6 @@ export function draw(content: ContentSet, rng: Rng): readonly [DrawnGalaxy, Rng]
       locations: content.locations,
       lanes: content.lanes,
       startId: content.start.locationId,
-      motifs: [],
     },
     rng,
   ];

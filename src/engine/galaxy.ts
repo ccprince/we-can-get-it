@@ -13,22 +13,10 @@ import type { Lane, Location } from './content';
 export type DrawnGalaxy = {
   /** The locations placed, in the order the draw placed them. */
   readonly locations: readonly Location[];
-  /** Every lane in the galaxy: a motif's own lanes, and the ones joining motifs. */
+  /** Every lane in the galaxy, whoever laid it down. */
   readonly lanes: readonly Lane[];
   /** Where the campaign opens, which is a location the draw placed. */
   readonly startId: string;
-  /** Which **motif** each placed location belongs to (ADR 0008 decision 6). */
-  readonly motifs: readonly PlacedMotif[];
-};
-
-/**
- * A **motif** as this campaign placed it: which motif was drawn, and the
- * locations drawn into its **slots**, in slot order. A motif may be placed more
- * than once, so this is an instance and not the motif (ADR 0008 decision 7).
- */
-export type PlacedMotif = {
-  readonly motifId: string;
-  readonly locationIds: readonly string[];
 };
 
 /**
