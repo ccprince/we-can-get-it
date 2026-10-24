@@ -62,9 +62,7 @@ export function CampaignSurfaces({
                   <td className="py-1.5 text-stone-300">
                     {lane.ends[0]} – {lane.ends[1]}
                   </td>
-                  <td className="py-1.5 text-right text-stone-300">
-                    {days(lane.days, '1 day')}
-                  </td>
+                  <td className="py-1.5 text-right text-stone-300">{days(lane.days, '1 day')}</td>
                   <td className="py-1.5 text-right text-stone-300">{lane.fare}</td>
                   <td className="py-1.5 pl-3">
                     <Departure lane={lane} onCommand={onCommand} />

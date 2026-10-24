@@ -112,8 +112,7 @@ export function view(campaign: Campaign): View {
   const where = campaign.where;
 
   return {
-    here:
-      where.kind === 'at' ? hereAt(locations, where.locationId) : null,
+    here: where.kind === 'at' ? hereAt(locations, where.locationId) : null,
     transit:
       where.kind === 'in-transit'
         ? {

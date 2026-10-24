@@ -71,7 +71,10 @@ describe('startCampaign', () => {
 
   it('starts where the content set says when the galaxy holds more than one place', () => {
     const content = loadedContentSet({
-      locations: [aLocation(), aLocation({ id: 'ladder', name: 'Jacob\'s Ladder', prose: 'A gantry.' })],
+      locations: [
+        aLocation(),
+        aLocation({ id: 'ladder', name: "Jacob's Ladder", prose: 'A gantry.' }),
+      ],
       start: aStart({ locationId: 'ladder' }),
     });
 

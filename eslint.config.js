@@ -8,15 +8,25 @@ import globals from 'globals';
  * "exactly the constraint that erodes quietly".
  */
 const deniedEngineGlobals = [
-  { name: 'fetch', message: 'The engine does no I/O (ADR 0009 decision 2). Content is handed to it.' },
+  {
+    name: 'fetch',
+    message: 'The engine does no I/O (ADR 0009 decision 2). Content is handed to it.',
+  },
   { name: 'XMLHttpRequest', message: 'The engine does no I/O (ADR 0009 decision 2).' },
   { name: 'WebSocket', message: 'The engine does no I/O (ADR 0009 decision 2).' },
-  { name: 'Date', message: 'The engine never reads the clock (ADR 0009 decision 3). Time is the day index.' },
+  {
+    name: 'Date',
+    message: 'The engine never reads the clock (ADR 0009 decision 3). Time is the day index.',
+  },
   { name: 'performance', message: 'The engine never reads the clock (ADR 0009 decision 3).' },
   { name: 'document', message: 'The engine has no UI (ADR 0003 decision 1).' },
   { name: 'window', message: 'The engine has no UI (ADR 0003 decision 1).' },
   { name: 'navigator', message: 'The engine has no UI (ADR 0003 decision 1).' },
-  { name: 'localStorage', message: 'The engine has no UI and no I/O (ADR 0009 decision 2). A save is a seed and a command sequence, held by the page.' },
+  {
+    name: 'localStorage',
+    message:
+      'The engine has no UI and no I/O (ADR 0009 decision 2). A save is a seed and a command sequence, held by the page.',
+  },
   { name: 'sessionStorage', message: 'The engine has no UI and no I/O (ADR 0009 decision 2).' },
   { name: 'process', message: 'The engine does no I/O (ADR 0009 decision 2).' },
   { name: 'require', message: 'The engine does no I/O (ADR 0009 decision 2).' },
@@ -24,12 +34,22 @@ const deniedEngineGlobals = [
 ];
 
 const deniedEngineImports = [
-  'fs', 'node:fs', 'fs/promises', 'node:fs/promises',
-  'path', 'node:path',
-  'os', 'node:os',
-  'http', 'node:http', 'https', 'node:https',
-  'crypto', 'node:crypto',
-  'react', 'react-dom',
+  'fs',
+  'node:fs',
+  'fs/promises',
+  'node:fs/promises',
+  'path',
+  'node:path',
+  'os',
+  'node:os',
+  'http',
+  'node:http',
+  'https',
+  'node:https',
+  'crypto',
+  'node:crypto',
+  'react',
+  'react-dom',
 ].map((name) => ({
   name,
   message:

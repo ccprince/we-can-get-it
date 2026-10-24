@@ -74,9 +74,10 @@ function load(setting: Setting): LoadedSetting {
   if (!loaded.ok) {
     const named = loaded.problems.map((problem) => `  ${problem.where}: ${problem.what}`);
     throw new Error(
-      [`${setting.contentPath} will not load, so ${setting.name} cannot be measured:`, ...named].join(
-        '\n',
-      ),
+      [
+        `${setting.contentPath} will not load, so ${setting.name} cannot be measured:`,
+        ...named,
+      ].join('\n'),
     );
   }
   return { setting, content: loaded.content, policy: touristTaking(setting.route) };

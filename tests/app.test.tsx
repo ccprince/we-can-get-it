@@ -20,9 +20,7 @@ afterEach(() => {
 });
 
 function serve(body: string, ok = true) {
-  vi.stubGlobal('fetch', () =>
-    Promise.resolve(new Response(body, { status: ok ? 200 : 404 })),
-  );
+  vi.stubGlobal('fetch', () => Promise.resolve(new Response(body, { status: ok ? 200 : 404 })));
 }
 
 const walkingSkeleton = readFileSync('content/walking-skeleton.json', 'utf8');

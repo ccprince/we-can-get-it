@@ -123,9 +123,7 @@ export type Term = {
  * kind above them, which is what flat kinds with many goods each are for
  * (ADR 0007 decision 6).
  */
-export type Want =
-  | { readonly predicate: readonly Term[] }
-  | { readonly goodId: string };
+export type Want = { readonly predicate: readonly Term[] } | { readonly goodId: string };
 
 /**
  * Someone who wants something. **Bonus** and **refusal** are roles this buyer

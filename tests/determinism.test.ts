@@ -27,11 +27,7 @@ function play(content: ContentSet, seed: number, commands: readonly Command[]): 
   return view(campaign);
 }
 
-const SEQUENCE: readonly Command[] = [
-  { kind: 'wait' },
-  { kind: 'wait' },
-  { kind: 'wait' },
-];
+const SEQUENCE: readonly Command[] = [{ kind: 'wait' }, { kind: 'wait' }, { kind: 'wait' }];
 
 /** A galaxy with somewhere to go, so a sequence can carry a departure (#9). */
 function aFlyableGalaxy(): ContentSet {

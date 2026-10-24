@@ -36,7 +36,11 @@ export type { Problem, Report } from './verdicts';
 
 export type LoadResult =
   | { readonly ok: true; readonly content: ContentSet; readonly reports: readonly Report[] }
-  | { readonly ok: false; readonly problems: readonly Problem[]; readonly reports: readonly Report[] };
+  | {
+      readonly ok: false;
+      readonly problems: readonly Problem[];
+      readonly reports: readonly Report[];
+    };
 
 /**
  * Content errors surface at load, not mid-play (ADR 0003 decision 3). The
@@ -149,11 +153,7 @@ function readRange(raw: unknown, where: string, problems: Problem[]): Range | un
   return { least, most };
 }
 
-function readCalendar(
-  raw: unknown,
-  problems: Problem[],
-  reports: Report[],
-): Calendar | undefined {
+function readCalendar(raw: unknown, problems: Problem[], reports: Report[]): Calendar | undefined {
   if (!isObject(raw)) {
     problems.push(fails('calendar', 'is missing'));
     return undefined;
@@ -357,16 +357,10 @@ function readTags(raw: unknown, problems: Problem[]): readonly Tag[] | undefined
   });
 }
 
-function readTagClass(
-  value: unknown,
-  where: string,
-  problems: Problem[],
-): TagClass | undefined {
+function readTagClass(value: unknown, where: string, problems: Problem[]): TagClass | undefined {
   const named = tagClasses.find((tagClass) => tagClass === value);
   if (named === undefined) {
-    problems.push(
-      fails(where, `is ${String(value)}, which is not kind, quality, origin or quirk`),
-    );
+    problems.push(fails(where, `is ${String(value)}, which is not kind, quality, origin or quirk`));
     return undefined;
   }
   return named;

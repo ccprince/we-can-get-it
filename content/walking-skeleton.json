@@ -14,14 +14,7 @@
   "fareRate": 10,
   "calendar": {
     "daysPerWeek": 6,
-    "weekdayNames": [
-      "Firstday",
-      "Seconday",
-      "Thirdday",
-      "Fourthday",
-      "Fifthday",
-      "Marketday"
-    ],
+    "weekdayNames": ["Firstday", "Seconday", "Thirdday", "Fourthday", "Fifthday", "Marketday"],
     "months": [
       {
         "name": "Thessaly",
@@ -92,45 +85,27 @@
   ],
   "lanes": [
     {
-      "ends": [
-        "bellwether",
-        "kestrel"
-      ],
+      "ends": ["bellwether", "kestrel"],
       "distance": 6
     },
     {
-      "ends": [
-        "bellwether",
-        "shoals"
-      ],
+      "ends": ["bellwether", "shoals"],
       "distance": 3
     },
     {
-      "ends": [
-        "bellwether",
-        "caravel"
-      ],
+      "ends": ["bellwether", "caravel"],
       "distance": 11
     },
     {
-      "ends": [
-        "shoals",
-        "caravel"
-      ],
+      "ends": ["shoals", "caravel"],
       "distance": 9
     },
     {
-      "ends": [
-        "kestrel",
-        "hollow"
-      ],
+      "ends": ["kestrel", "hollow"],
       "distance": 16
     },
     {
-      "ends": [
-        "caravel",
-        "lament"
-      ],
+      "ends": ["caravel", "lament"],
       "distance": 26
     }
   ],

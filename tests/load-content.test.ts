@@ -291,9 +291,7 @@ describe('wants', () => {
 
   it('refuses a want that names both a predicate and a good', () => {
     const result = loadContent(
-      aContentSet(
-        aCatalogue({ buyers: [aBuyer({ wants: [aWant({ goodId: 'silk' })] })] }),
-      ),
+      aContentSet(aCatalogue({ buyers: [aBuyer({ wants: [aWant({ goodId: 'silk' })] })] })),
     );
 
     expect(result.ok).toBe(false);
