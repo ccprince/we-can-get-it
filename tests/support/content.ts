@@ -30,6 +30,20 @@ export function aLocation(overrides: RawObject = {}): RawObject {
     id: 'kestrel',
     name: 'Kestrel Reach',
     prose: 'A yard town that has outlived three owners and kept all their paperwork.',
+    archetype: 'market',
+    ...overrides,
+  };
+}
+
+/**
+ * What a content set declares about its own **draw**: the **motif count**,
+ * which is the one dial (ADR 0008 decision 5), and how far apart the motifs it
+ * places are strung. Both are placeholders to be measured.
+ */
+export function aDraw(overrides: RawObject = {}): RawObject {
+  return {
+    motifsPerCampaign: 1,
+    interMotifDistance: { least: 14, most: 18 },
     ...overrides,
   };
 }
@@ -83,6 +97,10 @@ export function aContentSet(overrides: RawObject = {}): RawObject {
     // placeholder, like every number in a fixture.
     fareRate: 10,
     calendar: aCalendar(),
+    // The short enumerated list a location is authored with and a slot types
+    // against (ADR 0007 decision 17, ADR 0008 decision 1).
+    archetypes: ['market', 'extractor', 'processor'],
+    draw: aDraw(),
     locations: [aLocation()],
     lanes: [],
     tags: [],

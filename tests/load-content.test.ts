@@ -6,6 +6,7 @@ import {
   aCalendar,
   aCatalogue,
   aContentSet,
+  aDraw,
   aGalaxy,
   aGood,
   aLane,
@@ -63,7 +64,8 @@ describe('loadContent', () => {
       'bounds',
       'fareRate',
       'calendar',
-      'lanes',
+      'draw',
+      'archetypes',
       'tags',
       'start',
     ]);
@@ -641,6 +643,97 @@ describe('the map as content', () => {
     if (result.ok) return;
     expect(result.problems).toEqual([
       { verdict: 'fails', where: 'fareRate', what: 'is missing or not a whole number' },
+    ]);
+  });
+});
+
+describe('the dial the draw is set by, and what a location is', () => {
+  it('refuses a location authored with an archetype the content set does not enumerate', () => {
+    const result = loadContent(aContentSet({ locations: [aLocation({ archetype: 'cathedral' })] }));
+
+    expect(result.ok).toBe(false);
+    if (result.ok) return;
+    expect(result.problems).toEqual([
+      {
+        verdict: 'fails',
+        where: 'locations[0].archetype',
+        what: 'names an archetype that does not exist: cathedral',
+      },
+      // A location that did not read is a location the start cannot name, which
+      // is the loader's existing cascade and not a second mistake.
+      {
+        verdict: 'fails',
+        where: 'start.locationId',
+        what: 'names a location that does not exist: kestrel',
+      },
+    ]);
+  });
+
+  it('refuses a content set that declares no draw, since the engine holds no dial', () => {
+    const result = loadContent(aContentSet({ draw: undefined }));
+
+    expect(result.ok).toBe(false);
+    if (result.ok) return;
+    expect(result.problems).toEqual([{ verdict: 'fails', where: 'draw', what: 'is missing' }]);
+  });
+
+  it('refuses a motif count of none, which would assemble no map at all', () => {
+    const result = loadContent(aContentSet({ draw: aDraw({ motifsPerCampaign: 0 }) }));
+
+    expect(result.ok).toBe(false);
+    if (result.ok) return;
+    expect(result.problems).toEqual([
+      { verdict: 'fails', where: 'draw.motifsPerCampaign', what: 'is 0, which is less than 1' },
+    ]);
+  });
+
+  it('refuses an inter-motif distance of nothing, which would be a zero-day hop', () => {
+    const result = loadContent(
+      aContentSet({ draw: aDraw({ interMotifDistance: { least: 0, most: 20 } }) }),
+    );
+
+    expect(result.ok).toBe(false);
+    if (result.ok) return;
+    expect(result.problems).toEqual([
+      {
+        verdict: 'fails',
+        where: 'draw.interMotifDistance.least',
+        what: 'is 0, which is less than 1',
+      },
+    ]);
+  });
+
+  it('refuses an archetype enumerated twice, since a name means one thing', () => {
+    const result = loadContent(aContentSet({ archetypes: ['market', 'market'] }));
+
+    expect(result.ok).toBe(false);
+    if (result.ok) return;
+    expect(result.problems).toEqual([
+      { verdict: 'fails', where: 'archetypes', what: 'names the same archetype twice' },
+      // A location that did not read is a location the start cannot name, which
+      // is the loader's existing cascade and not a second mistake.
+      {
+        verdict: 'fails',
+        where: 'start.locationId',
+        what: 'names a location that does not exist: kestrel',
+      },
+    ]);
+  });
+
+  it('refuses a content set enumerating no archetypes, which a location is authored with', () => {
+    const result = loadContent(aContentSet({ archetypes: [] }));
+
+    expect(result.ok).toBe(false);
+    if (result.ok) return;
+    expect(result.problems).toEqual([
+      { verdict: 'fails', where: 'archetypes', what: 'is missing or empty' },
+      // A location that did not read is a location the start cannot name, which
+      // is the loader's existing cascade and not a second mistake.
+      {
+        verdict: 'fails',
+        where: 'start.locationId',
+        what: 'names a location that does not exist: kestrel',
+      },
     ]);
   });
 });

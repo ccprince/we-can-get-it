@@ -51,36 +51,50 @@
     ],
     "firstYear": 1
   },
+  "draw": {
+    "motifsPerCampaign": 2,
+    "interMotifDistance": {
+      "least": 12,
+      "most": 20
+    }
+  },
+  "archetypes": ["extractor", "processor", "market"],
   "locations": [
     {
       "id": "bellwether",
       "name": "Bellwether Yards",
-      "prose": "A repair yard that outgrew its own harbour and never admitted it. Three gantries, a customs shed with a leaking roof, and a market that keeps its own hours."
+      "prose": "A repair yard that outgrew its own harbour and never admitted it. Three gantries, a customs shed with a leaking roof, and a market that keeps its own hours.",
+      "archetype": "market"
     },
     {
       "id": "kestrel",
       "name": "Kestrel Reach",
-      "prose": "A yard town that has outlived three owners and kept all their paperwork. The gate crews here know the hour you arrived and will mention it."
+      "prose": "A yard town that has outlived three owners and kept all their paperwork. The gate crews here know the hour you arrived and will mention it.",
+      "archetype": "processor"
     },
     {
       "id": "shoals",
       "name": "Thennet Shoals",
-      "prose": "A day out and already a different trade: tenders, tank farms, and a strip of chandlers who buy anything that will fit through a hatch."
+      "prose": "A day out and already a different trade: tenders, tank farms, and a strip of chandlers who buy anything that will fit through a hatch.",
+      "archetype": "processor"
     },
     {
       "id": "caravel",
       "name": "Caravel Station",
-      "prose": "A ring of warehouses around a gate that never closes, where everything stops on its way somewhere better. Nobody is from here."
+      "prose": "A ring of warehouses around a gate that never closes, where everything stops on its way somewhere better. Nobody is from here.",
+      "archetype": "market"
     },
     {
       "id": "hollow",
       "name": "Grieve's Hollow",
-      "prose": "A cut in a dead moon with one gate and no second way out. What comes up out of the Hollow leaves the way it arrived, or not at all."
+      "prose": "A cut in a dead moon with one gate and no second way out. What comes up out of the Hollow leaves the way it arrived, or not at all.",
+      "archetype": "extractor"
     },
     {
       "id": "lament",
       "name": "Lamentation",
-      "prose": "Far enough out that the chart draws it apart from everything, and spoken of at Caravel the way people speak of weather in a country they have never visited."
+      "prose": "Far enough out that the chart draws it apart from everything, and spoken of at Caravel the way people speak of weather in a country they have never visited.",
+      "archetype": "extractor"
     }
   ],
   "lanes": [

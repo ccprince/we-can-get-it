@@ -8,6 +8,7 @@ import {
   type Buyer,
   type Calendar,
   type ContentSet,
+  type Draw,
   type Good,
   type Lane,
   type Location,
@@ -61,7 +62,13 @@ export function loadContent(raw: unknown): LoadResult {
   // no number of its own (ADR 0006 decision 10, ADR 0007 decision 15).
   const fareRate = readInteger(raw.fareRate, 'fareRate', 1, problems);
   const calendar = readCalendar(raw.calendar, problems, reports);
-  const locations = readLocations(raw.locations, problems);
+  const draw = readDraw(raw.draw, problems);
+  const archetypes = readArchetypes(raw.archetypes, problems);
+  // A location is authored with an archetype, so an enumeration that did not
+  // read leaves the locations unchecked rather than failing every one of them
+  // against nothing.
+  const locations =
+    archetypes === undefined ? undefined : readLocations(raw.locations, archetypes, problems);
   // A lane names the locations it joins, so a chart that did not read leaves
   // the lanes unread rather than failing every one of them against nothing.
   const lanes = locations === undefined ? undefined : readLanes(raw.lanes, locations, problems);
@@ -88,8 +95,10 @@ export function loadContent(raw: unknown): LoadResult {
 
   if (
     bounds === undefined ||
+    draw === undefined ||
     fareRate === undefined ||
     calendar === undefined ||
+    archetypes === undefined ||
     locations === undefined ||
     lanes === undefined ||
     tags === undefined ||
@@ -103,7 +112,19 @@ export function loadContent(raw: unknown): LoadResult {
 
   return {
     ok: true,
-    content: { bounds, fareRate, calendar, locations, lanes, tags, goods, buyers, start },
+    content: {
+      bounds,
+      draw,
+      fareRate,
+      calendar,
+      archetypes,
+      locations,
+      lanes,
+      tags,
+      goods,
+      buyers,
+      start,
+    },
     reports,
   };
 }
@@ -237,13 +258,27 @@ function readMonths(
   return months.length === raw.length ? months : undefined;
 }
 
-function readLocations(raw: unknown, problems: Problem[]): readonly Location[] | undefined {
+function readLocations(
+  raw: unknown,
+  archetypes: readonly string[],
+  problems: Problem[],
+): readonly Location[] | undefined {
   const locations = readEach(raw, 'locations', problems, (entry, where) => {
     const id = readText(entry.id, `${where}.id`, problems);
     const name = readText(entry.name, `${where}.name`, problems);
     const prose = readText(entry.prose, `${where}.prose`, problems);
-    if (id === undefined || name === undefined || prose === undefined) return undefined;
-    return { id, name, prose };
+    // A location is authored with one archetype (ADR 0007 decision 17), which
+    // is what a slot types against and what the trade guide expands.
+    const archetype = readKnownArchetype(
+      entry.archetype,
+      `${where}.archetype`,
+      archetypes,
+      problems,
+    );
+    if (id === undefined || name === undefined || prose === undefined || archetype === undefined) {
+      return undefined;
+    }
+    return { id, name, prose, archetype };
   });
 
   // A campaign opens somewhere, so an empty chart is a mistake rather than a
@@ -343,6 +378,77 @@ function readKnownLocation(
     return undefined;
   }
   return id;
+}
+
+/**
+ * What the content set declares about its own draw. There is no default: the
+ * engine holds no number of its own (ADR 0007 decision 15), and the motif count
+ * is the one dial there is (ADR 0008 decision 5), so a content set that
+ * declares none cannot be drawn from at all.
+ */
+function readDraw(raw: unknown, problems: Problem[]): Draw | undefined {
+  if (!isObject(raw)) {
+    problems.push(fails('draw', 'is missing'));
+    return undefined;
+  }
+
+  // A campaign assembled from no motifs has no map, so the dial starts at one.
+  const motifsPerCampaign = readInteger(
+    raw.motifsPerCampaign,
+    'draw.motifsPerCampaign',
+    1,
+    problems,
+  );
+  const interMotifDistance = readRange(raw.interMotifDistance, 'draw.interMotifDistance', problems);
+  if (motifsPerCampaign === undefined || interMotifDistance === undefined) return undefined;
+
+  // An inter-motif lane is a lane, and a lane of no distance would be the
+  // zero-day hop ADR 0006 decision 6 refuses.
+  if (interMotifDistance.least < 1) {
+    problems.push(
+      fails(
+        'draw.interMotifDistance.least',
+        `is ${interMotifDistance.least}, which is less than 1`,
+      ),
+    );
+    return undefined;
+  }
+  return { motifsPerCampaign, interMotifDistance };
+}
+
+/**
+ * The enumerated archetypes. A short list of names, authored deliberately
+ * rather than emerging as an accident of who got written first (ADR 0007
+ * decision 17) — and every location is authored with one, so a content set that
+ * enumerates none has nothing its locations can be.
+ */
+function readArchetypes(raw: unknown, problems: Problem[]): readonly string[] | undefined {
+  const archetypes = readNonEmptyTexts(raw, 'archetypes', problems);
+  if (archetypes === undefined) return undefined;
+
+  const named = new Set(archetypes);
+  if (named.size !== archetypes.length) {
+    problems.push(fails('archetypes', 'names the same archetype twice'));
+    return undefined;
+  }
+  return archetypes;
+}
+
+/** An archetype name the content set enumerates. */
+function readKnownArchetype(
+  value: unknown,
+  where: string,
+  archetypes: readonly string[],
+  problems: Problem[],
+): string | undefined {
+  const name = readText(value, where, problems);
+  if (name === undefined) return undefined;
+
+  if (!archetypes.includes(name)) {
+    problems.push(fails(where, `names an archetype that does not exist: ${name}`));
+    return undefined;
+  }
+  return name;
 }
 
 function readTags(raw: unknown, problems: Problem[]): readonly Tag[] | undefined {

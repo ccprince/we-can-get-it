@@ -23,11 +23,21 @@ export type Calendar = {
   readonly firstYear: number;
 };
 
-/** A place on the chart, and an atomic node (ADR 0006 decision 6). */
+/**
+ * A place on the chart, and an atomic node (ADR 0006 decision 6). A location
+ * the **draw** places; the ones it does not are **hidden** and leave no trace
+ * (ADR 0008 decision 4), so a content set holds a **reserve** of these larger
+ * than one campaign uses.
+ *
+ * Its identity is authored and its position generated (ADR 0006 decision 2):
+ * nothing in here says where it sits, because that is the assembly's answer.
+ */
 export type Location = {
   readonly id: string;
   readonly name: string;
   readonly prose: string;
+  /** What the place is, naming one of the archetypes the content set enumerates. */
+  readonly archetype: string;
 };
 
 /**
@@ -188,8 +198,30 @@ export type Bounds = {
   readonly quirkRation: number;
 };
 
+/**
+ * What a content set declares about its own **draw**. The **motif count** is
+ * the one dial there is: every other drawn quantity follows from it or is a
+ * declared ratio over its own reserve, so "how much of the galaxy one campaign
+ * sees" has a single answer and the first measurement has one thing to move
+ * (ADR 0008 decision 5).
+ */
+export type Draw = {
+  /**
+   * How many motifs a campaign is assembled from, counting duplicates: the
+   * dial has to be the thing the location count is a sum of (decision 7).
+   */
+  readonly motifsPerCampaign: number;
+  /**
+   * How far apart the **inter-motif lanes** run. These are where the long hauls
+   * live, and where ADR 0006 decision 3's far-cluster invariant bites
+   * (ADR 0008 decision 6).
+   */
+  readonly interMotifDistance: Range;
+};
+
 export type ContentSet = {
   readonly bounds: Bounds;
+  readonly draw: Draw;
   /**
    * The one galaxy-wide rate a **fare** is the **distance** times (ADR 0006
    * decision 10). Authored per-lane tariffs and regional rates were rejected
@@ -197,6 +229,14 @@ export type ContentSet = {
    */
   readonly fareRate: number;
   readonly calendar: Calendar;
+  /**
+   * The short enumerated list of **archetype** names a location is authored
+   * with and a **slot** types against (ADR 0007 decision 17). Which **kinds**
+   * each one supplies and demands arrives with the kinds stage of the draw,
+   * which is #33; the name alone is what the slot reads.
+   */
+  readonly archetypes: readonly string[];
+  /** The **location reserve**, of which one campaign draws a part. */
   readonly locations: readonly Location[];
   readonly lanes: readonly Lane[];
   readonly tags: readonly Tag[];
