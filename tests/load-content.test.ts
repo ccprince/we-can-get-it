@@ -6,7 +6,8 @@ import {
   aCalendar,
   aCatalogue,
   aContentSet,
-  aDraw,
+  anArchetype,
+  aDrawParameters,
   aGalaxy,
   aGood,
   aLane,
@@ -67,7 +68,7 @@ describe('loadContent', () => {
       'bounds',
       'fareRate',
       'calendar',
-      'draw',
+      'drawParameters',
       'archetypes',
       'tags',
       'start',
@@ -770,26 +771,18 @@ describe('the motifs the map is assembled from', () => {
 
 describe('the dial the draw is set by', () => {
   it('refuses a content set that declares no draw, since the engine holds no dial', () => {
-    const result = loadContent(aContentSet({ draw: undefined }));
-
-    expect(result.ok).toBe(false);
-    if (result.ok) return;
-    expect(result.problems).toEqual([{ verdict: 'fails', where: 'draw', what: 'is missing' }]);
-  });
-
-  it('refuses a motif count of none, which would assemble no map at all', () => {
-    const result = loadContent(aContentSet({ draw: aDraw({ motifsPerCampaign: 0 }) }));
+    const result = loadContent(aContentSet({ drawParameters: undefined }));
 
     expect(result.ok).toBe(false);
     if (result.ok) return;
     expect(result.problems).toEqual([
-      { verdict: 'fails', where: 'draw.motifsPerCampaign', what: 'is 0, which is less than 1' },
+      { verdict: 'fails', where: 'drawParameters', what: 'is missing' },
     ]);
   });
 
-  it('refuses an inter-motif distance of nothing, which would be a zero-day hop', () => {
+  it('refuses a motif count of none, which would assemble no map at all', () => {
     const result = loadContent(
-      aContentSet({ draw: aDraw({ interMotifDistance: { least: 0, most: 20 } }) }),
+      aContentSet({ drawParameters: aDrawParameters({ motifsPerCampaign: 0 }) }),
     );
 
     expect(result.ok).toBe(false);
@@ -797,19 +790,41 @@ describe('the dial the draw is set by', () => {
     expect(result.problems).toEqual([
       {
         verdict: 'fails',
-        where: 'draw.interMotifDistance.least',
+        where: 'drawParameters.motifsPerCampaign',
         what: 'is 0, which is less than 1',
       },
     ]);
   });
 
-  it('refuses an archetype enumerated twice, since a name means one thing', () => {
-    const result = loadContent(aContentSet({ archetypes: ['market', 'market'] }));
+  it('refuses an inter-motif distance of nothing, which would be a zero-day hop', () => {
+    const result = loadContent(
+      aContentSet({
+        drawParameters: aDrawParameters({ interMotifDistance: { least: 0, most: 20 } }),
+      }),
+    );
 
     expect(result.ok).toBe(false);
     if (result.ok) return;
     expect(result.problems).toEqual([
-      { verdict: 'fails', where: 'archetypes', what: 'names the same archetype twice' },
+      {
+        verdict: 'fails',
+        where: 'drawParameters.interMotifDistance.least',
+        what: 'is 0, which is less than 1',
+      },
+    ]);
+  });
+
+  it('refuses an archetype enumerated twice, since an id means one thing', () => {
+    const result = loadContent(aContentSet({ archetypes: [anArchetype(), anArchetype()] }));
+
+    expect(result.ok).toBe(false);
+    if (result.ok) return;
+    expect(result.problems).toEqual([
+      {
+        verdict: 'fails',
+        where: 'archetypes[1].id',
+        what: 'repeats an id already used: market',
+      },
       // A location that did not read is a location the start cannot name, which
       // is the loader's existing cascade and not a second mistake.
       {
@@ -826,7 +841,11 @@ describe('the dial the draw is set by', () => {
     expect(result.ok).toBe(false);
     if (result.ok) return;
     expect(result.problems).toEqual([
-      { verdict: 'fails', where: 'archetypes', what: 'is missing or empty' },
+      {
+        verdict: 'fails',
+        where: 'archetypes',
+        what: 'enumerates no archetypes for a location to be',
+      },
       // A location that did not read is a location the start cannot name, which
       // is the loader's existing cascade and not a second mistake.
       {

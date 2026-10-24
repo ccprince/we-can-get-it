@@ -7,8 +7,9 @@ import {
   type Bounds,
   type Buyer,
   type Calendar,
+  type Archetype,
   type ContentSet,
-  type Draw,
+  type DrawParameters,
   type Good,
   type Lane,
   type Location,
@@ -65,7 +66,7 @@ export function loadContent(raw: unknown): LoadResult {
   // no number of its own (ADR 0006 decision 10, ADR 0007 decision 15).
   const fareRate = readInteger(raw.fareRate, 'fareRate', 1, problems);
   const calendar = readCalendar(raw.calendar, problems, reports);
-  const draw = readDraw(raw.draw, problems);
+  const drawParameters = readDrawParameters(raw.drawParameters, problems);
   const archetypes = readArchetypes(raw.archetypes, problems);
   // A location is authored with an archetype and a slot types against one, so
   // an enumeration that did not read leaves both unchecked rather than failing
@@ -100,7 +101,7 @@ export function loadContent(raw: unknown): LoadResult {
 
   if (
     bounds === undefined ||
-    draw === undefined ||
+    drawParameters === undefined ||
     fareRate === undefined ||
     calendar === undefined ||
     archetypes === undefined ||
@@ -120,7 +121,7 @@ export function loadContent(raw: unknown): LoadResult {
     ok: true,
     content: {
       bounds,
-      draw,
+      drawParameters,
       fareRate,
       calendar,
       archetypes,
@@ -267,7 +268,7 @@ function readMonths(
 
 function readLocations(
   raw: unknown,
-  archetypes: readonly string[],
+  archetypes: readonly Archetype[],
   problems: Problem[],
 ): readonly Location[] | undefined {
   const locations = readEach(raw, 'locations', problems, (entry, where) => {
@@ -388,25 +389,29 @@ function readKnownLocation(
 }
 
 /**
- * What the content set declares about its own draw. There is no default: the
- * engine holds no number of its own (ADR 0007 decision 15), and the motif count
- * is the one dial there is (ADR 0008 decision 5), so a content set that
- * declares none cannot be drawn from at all.
+ * The parameters the draw reads. There is no default: the engine holds no
+ * number of its own (ADR 0007 decision 15), and the motif count is the one dial
+ * there is (ADR 0008 decision 5), so a content set that declares none cannot be
+ * drawn from at all.
  */
-function readDraw(raw: unknown, problems: Problem[]): Draw | undefined {
+function readDrawParameters(raw: unknown, problems: Problem[]): DrawParameters | undefined {
   if (!isObject(raw)) {
-    problems.push(fails('draw', 'is missing'));
+    problems.push(fails('drawParameters', 'is missing'));
     return undefined;
   }
 
   // A campaign assembled from no motifs has no map, so the dial starts at one.
   const motifsPerCampaign = readInteger(
     raw.motifsPerCampaign,
-    'draw.motifsPerCampaign',
+    'drawParameters.motifsPerCampaign',
     1,
     problems,
   );
-  const interMotifDistance = readRange(raw.interMotifDistance, 'draw.interMotifDistance', problems);
+  const interMotifDistance = readRange(
+    raw.interMotifDistance,
+    'drawParameters.interMotifDistance',
+    problems,
+  );
   if (motifsPerCampaign === undefined || interMotifDistance === undefined) return undefined;
 
   // An inter-motif lane is a lane, and a lane of no distance would be the
@@ -414,7 +419,7 @@ function readDraw(raw: unknown, problems: Problem[]): Draw | undefined {
   if (interMotifDistance.least < 1) {
     problems.push(
       fails(
-        'draw.interMotifDistance.least',
+        'drawParameters.interMotifDistance.least',
         `is ${interMotifDistance.least}, which is less than 1`,
       ),
     );
@@ -424,34 +429,35 @@ function readDraw(raw: unknown, problems: Problem[]): Draw | undefined {
 }
 
 /**
- * The enumerated archetypes. A short list of names, authored deliberately
- * rather than emerging as an accident of who got written first (ADR 0007
- * decision 17) — and every location is authored with one, so a content set that
- * enumerates none has nothing its locations can be.
+ * The enumerated archetypes, authored deliberately rather than emerging as an
+ * accident of who got written first (ADR 0007 decision 17). Every location is
+ * authored with one, so a content set that enumerates none has nothing its
+ * locations can be.
  */
-function readArchetypes(raw: unknown, problems: Problem[]): readonly string[] | undefined {
-  const archetypes = readNonEmptyTexts(raw, 'archetypes', problems);
-  if (archetypes === undefined) return undefined;
+function readArchetypes(raw: unknown, problems: Problem[]): readonly Archetype[] | undefined {
+  const archetypes = readEach(raw, 'archetypes', problems, (entry, where) => {
+    const id = readText(entry.id, `${where}.id`, problems);
+    return id === undefined ? undefined : { id };
+  });
 
-  const named = new Set(archetypes);
-  if (named.size !== archetypes.length) {
-    problems.push(fails('archetypes', 'names the same archetype twice'));
+  if (archetypes !== undefined && archetypes.length === 0) {
+    problems.push(fails('archetypes', 'enumerates no archetypes for a location to be'));
     return undefined;
   }
   return archetypes;
 }
 
-/** An archetype name the content set enumerates. */
+/** An archetype id the content set enumerates. */
 function readKnownArchetype(
   value: unknown,
   where: string,
-  archetypes: readonly string[],
+  archetypes: readonly Archetype[],
   problems: Problem[],
 ): string | undefined {
   const name = readText(value, where, problems);
   if (name === undefined) return undefined;
 
-  if (!archetypes.includes(name)) {
+  if (!archetypes.some((archetype) => archetype.id === name)) {
     problems.push(fails(where, `names an archetype that does not exist: ${name}`));
     return undefined;
   }
@@ -468,7 +474,7 @@ function readKnownArchetype(
  */
 function readMotifs(
   raw: unknown,
-  archetypes: readonly string[],
+  archetypes: readonly Archetype[],
   problems: Problem[],
 ): readonly Motif[] | undefined {
   const motifs = readEach(raw, 'motifs', problems, (entry, where) => {
@@ -495,7 +501,7 @@ function readMotifs(
 function readSlots(
   raw: unknown,
   where: string,
-  archetypes: readonly string[],
+  archetypes: readonly Archetype[],
   problems: Problem[],
 ): readonly Slot[] | undefined {
   const slots = readEach(raw, where, problems, (entry, at) => {

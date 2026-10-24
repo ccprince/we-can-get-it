@@ -41,6 +41,21 @@ export type Location = {
 };
 
 /**
+ * What a **location** is, drawn from a short enumerated list the content set
+ * declares (ADR 0007 decision 17). A **slot** types against the id and the
+ * validator reads it; nobody else does, which is why it is a designer's word
+ * for a designer's thing (ADR 0008 decision 1).
+ *
+ * One field for now. Which **kinds** each archetype **supplies** and
+ * **demands** is the kinds stage of the cascade, which is #33, and it is
+ * declared here as an entity with an id so that gaining them is a field and
+ * not a change of shape.
+ */
+export type Archetype = {
+  readonly id: string;
+};
+
+/**
  * A hole in a **motif**, typed by an **archetype** and filled from the reserve
  * at campaign start. `archetype` is null for a slot that is deliberately
  * **untyped**, which accepts any location at all — so that a region's grammar
@@ -236,13 +251,12 @@ export type Bounds = {
 };
 
 /**
- * What a content set declares about its own **draw**. The **motif count** is
- * the one dial there is: every other drawn quantity follows from it or is a
- * declared ratio over its own reserve, so "how much of the galaxy one campaign
- * sees" has a single answer and the first measurement has one thing to move
- * (ADR 0008 decision 5).
+ * The declared content-set parameters the **draw** reads (ADR 0008 decision 20,
+ * ADR 0007 decision 15). Named for what it is rather than `Draw`: the draw is
+ * the roll itself, which lives in the engine, and this is what a writer hands
+ * it.
  */
-export type Draw = {
+export type DrawParameters = {
   /**
    * How many motifs a campaign is assembled from, counting duplicates: the
    * dial has to be the thing the location count is a sum of (decision 7).
@@ -252,13 +266,19 @@ export type Draw = {
    * How far apart the **inter-motif lanes** run. These are where the long hauls
    * live, and where ADR 0006 decision 3's far-cluster invariant bites
    * (ADR 0008 decision 6).
+   *
+   * A declared parameter and **not a second dial**: there is one dial and it is
+   * the motif count (decision 5). This says how long a lane the assembly lays
+   * between two motifs, which it has to know and cannot invent. The far-cluster
+   * invariant's own threshold is #12's, and must not become a second number for
+   * the same thing.
    */
   readonly interMotifDistance: Range;
 };
 
 export type ContentSet = {
   readonly bounds: Bounds;
-  readonly draw: Draw;
+  readonly drawParameters: DrawParameters;
   /**
    * The one galaxy-wide rate a **fare** is the **distance** times (ADR 0006
    * decision 10). Authored per-lane tariffs and regional rates were rejected
@@ -266,13 +286,8 @@ export type ContentSet = {
    */
   readonly fareRate: number;
   readonly calendar: Calendar;
-  /**
-   * The short enumerated list of **archetype** names a location is authored
-   * with and a **slot** types against (ADR 0007 decision 17). Which **kinds**
-   * each one supplies and demands arrives with the kinds stage of the draw,
-   * which is #33; the name alone is what the slot reads.
-   */
-  readonly archetypes: readonly string[];
+  /** The short enumerated list a location is authored with. */
+  readonly archetypes: readonly Archetype[];
   /** The **motif reserve**, larger than one campaign assembles from. */
   readonly motifs: readonly Motif[];
   /** The **location reserve**, of which one campaign draws a part. */

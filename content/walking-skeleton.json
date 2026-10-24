@@ -51,14 +51,24 @@
     ],
     "firstYear": 1
   },
-  "draw": {
+  "drawParameters": {
     "motifsPerCampaign": 2,
     "interMotifDistance": {
       "least": 12,
       "most": 20
     }
   },
-  "archetypes": ["extractor", "processor", "market"],
+  "archetypes": [
+    {
+      "id": "extractor"
+    },
+    {
+      "id": "processor"
+    },
+    {
+      "id": "market"
+    }
+  ],
   "motifs": [
     {
       "id": "pair",
