@@ -98,4 +98,45 @@ describe('the chart', () => {
     expect(chart.lanes[1]?.ends).toEqual(['Bellwether Yards', "Grieve's Hollow"]);
     expect(chart.lanes[1]?.destination).toBeNull();
   });
+
+  it('names every location the draw placed', () => {
+    const chart = chartAt(aFourPlaceGalaxy());
+
+    expect(namesOf(chart.locations)).toEqual([
+      'Bellwether Yards',
+      "Grieve's Hollow",
+      'Kestrel Reach',
+      'Thennet Shoals',
+    ]);
+  });
+
+  it('names a location no lane touches, because it is a place that exists', () => {
+    // The chart says which places exist on its own account (ADR 0006
+    // decision 5), not by reading them off the ends of lanes. Caravel is drawn
+    // and joined to nothing, and it is on the chart all the same.
+    const chart = chartAt(
+      loadedContentSet(
+        aGalaxy({
+          locations: [
+            aLocation(),
+            aLocation({ id: 'bellwether', name: 'Bellwether Yards' }),
+            aLocation({ id: 'caravel', name: 'Caravel Station' }),
+          ],
+          lanes: [aMotifLane({ ends: ['kestrel', 'bellwether'], distance: 6 })],
+        }),
+      ),
+    );
+
+    expect(chart.lanes.flatMap((lane) => lane.ends)).not.toContain('Caravel Station');
+    expect(namesOf(chart.locations)).toEqual([
+      'Bellwether Yards',
+      'Caravel Station',
+      'Kestrel Reach',
+    ]);
+  });
 });
+
+/** The names on the chart, sorted: the order the engine gives them means nothing. */
+function namesOf(locations: readonly { readonly name: string }[]): readonly string[] {
+  return locations.map((location) => location.name).sort();
+}

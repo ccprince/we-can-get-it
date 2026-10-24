@@ -80,6 +80,16 @@ export type LaneView = {
 };
 
 /**
+ * One **location** as the chart shows it: what is published about a place,
+ * which for now is its name. A published fact about a place joins as a field
+ * here when the canon publishes it, rather than as a second list of the same
+ * places.
+ */
+export type LocationView = {
+  readonly name: string;
+};
+
+/**
  * The chart: which locations exist, what lanes join them and what each costs,
  * which are published facts from day one (ADR 0006 decision 5) — so it carries
  * every lane in the **drawn galaxy** and not only the ones that leave from
@@ -87,6 +97,13 @@ export type LaneView = {
  * all, greyed or otherwise (ADR 0008 decision 4).
  */
 export type ChartView = {
+  /**
+   * Every location the draw placed, whether or not a lane touches it: the
+   * chart says which places exist on its own account, not as whatever happens
+   * to sit at the end of a lane. In draw order, which means nothing; sorting
+   * is the view's (ADR 0009 decision 10).
+   */
+  readonly locations: readonly LocationView[];
   readonly lanes: readonly LaneView[];
 };
 
@@ -142,7 +159,10 @@ export function view(campaign: Campaign): View {
 }
 
 function chartFor(campaign: Campaign): ChartView {
-  return { lanes: campaign.galaxy.lanes.map((lane) => laneFor(lane, campaign)) };
+  return {
+    locations: campaign.galaxy.locations.map(({ name }) => ({ name })),
+    lanes: campaign.galaxy.lanes.map((lane) => laneFor(lane, campaign)),
+  };
 }
 
 function laneFor(lane: Lane, campaign: Campaign): LaneView {

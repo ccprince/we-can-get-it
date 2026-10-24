@@ -172,14 +172,9 @@ describe('what the draw guarantees', () => {
     });
   }
 
-  /**
-   * Every location named on the chart. The chart carries lanes, so this reads
-   * the locations off their ends — which holds only while every drawn location
-   * is an end of some lane. A `chart.locations` would say it directly, and is
-   * #42.
-   */
+  /** Every location the chart names, which is every location the draw placed. */
   function locationsOn(content: ContentSet, seed: number): readonly string[] {
-    return view(startCampaign(content, seed)).chart.lanes.flatMap((lane) => [...lane.ends]);
+    return chartOf(content, seed).locations.map((location) => location.name);
   }
 
   it('gives the same galaxy for the same seed, lane for lane', () => {
@@ -201,7 +196,7 @@ describe('what the draw guarantees', () => {
     const content = aContentSetToDrawFrom();
 
     const charts = SEEDS.map((seed) => JSON.stringify(chartOf(content, seed)));
-    const drawn = SEEDS.map((seed) => [...new Set(locationsOn(content, seed))].sort().join(','));
+    const drawn = SEEDS.map((seed) => [...locationsOn(content, seed)].sort().join(','));
 
     expect(new Set(charts).size).toBe(6);
     expect(new Set(drawn).size).toBe(6);
@@ -214,7 +209,7 @@ describe('what the draw guarantees', () => {
     const content = aContentSetToDrawFrom();
 
     for (const seed of SEEDS) {
-      expect(new Set(locationsOn(content, seed)).size).toBe(4);
+      expect(locationsOn(content, seed)).toHaveLength(4);
     }
   });
 
@@ -223,7 +218,7 @@ describe('what the draw guarantees', () => {
       drawParameters: aDrawParameters({ motifsPerCampaign: 3 }),
     });
 
-    expect(new Set(locationsOn(three, 4)).size).toBe(6);
+    expect(locationsOn(three, 4)).toHaveLength(6);
   });
 
   it('never places one location twice, even when the same motif is placed twice', () => {
@@ -246,7 +241,8 @@ describe('what the draw guarantees', () => {
     for (const seed of SEEDS) {
       const named = locationsOn(content, seed);
 
-      expect(new Set(named).size).toBe(4);
+      expect(named).toHaveLength(4);
+      expect(new Set(named).size).toBe(named.length);
     }
   });
 
@@ -262,7 +258,7 @@ describe('what the draw guarantees', () => {
     // per placement, and the inter-motif lane is dearer than either.
     const pairLanes = chart.lanes.filter((lane) => lane.fare === 60);
 
-    expect(new Set(locationsOn(content, 4)).size).toBe(4);
+    expect(locationsOn(content, 4)).toHaveLength(4);
     expect(pairLanes).toHaveLength(2);
   });
 
