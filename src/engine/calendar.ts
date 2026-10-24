@@ -41,7 +41,9 @@ export function dateOf(calendar: Calendar, day: number): CalendarDate {
   // boundary and weekday follows from the day index alone (ADR 0005 d2).
   const weekday = calendar.weekdayNames[sinceFirstDay % calendar.daysPerWeek];
   if (weekday === undefined) {
-    throw new Error('the calendar names fewer weekdays than its week has days, which the loader forbids');
+    throw new Error(
+      'the calendar names fewer weekdays than its week has days, which the loader forbids',
+    );
   }
 
   const dayOfMonth = dayOfYear + 1;

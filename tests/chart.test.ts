@@ -64,18 +64,14 @@ describe('the chart', () => {
   it('cuts days and not fare when the ship is faster', () => {
     // Distance is distance: speed and money are genuinely different purchases
     // (ADR 0006 decision 10).
-    const faster = chartAt(
-      aThreePlaceGalaxy({ start: aStart({ ship: aShip({ speed: 6 }) }) }),
-    );
+    const faster = chartAt(aThreePlaceGalaxy({ start: aStart({ ship: aShip({ speed: 6 }) }) }));
 
     expect(faster.lanes[0]?.days).toBe(1);
     expect(faster.lanes[0]?.fare).toBe(60);
   });
 
   it('says of every lane whether this ship’s range reaches it at all', () => {
-    const chart = chartAt(
-      aThreePlaceGalaxy({ start: aStart({ ship: aShip({ range: 10 }) }) }),
-    );
+    const chart = chartAt(aThreePlaceGalaxy({ start: aStart({ ship: aShip({ range: 10 }) }) }));
 
     expect(chart.lanes.map((lane) => lane.withinRange)).toEqual([true, false]);
   });

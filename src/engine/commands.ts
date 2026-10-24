@@ -30,9 +30,7 @@ export type Reason = {
 
 export type CommandResult = { readonly campaign: Campaign } | { readonly rejected: Reason };
 
-export function isRejected(
-  result: CommandResult,
-): result is { readonly rejected: Reason } {
+export function isRejected(result: CommandResult): result is { readonly rejected: Reason } {
   return 'rejected' in result;
 }
 
