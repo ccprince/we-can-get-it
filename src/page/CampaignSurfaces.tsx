@@ -1,5 +1,9 @@
 import type { Command, LaneView, View } from '../engine';
 
+// The chrome both buttons wear; only their padding differs.
+const buttonChrome =
+  'rounded border border-stone-600 text-stone-200 hover:border-stone-400 hover:bg-stone-800';
+
 /**
  * The campaign's reading surfaces. Everything shown here comes out of one
  * `view` call (ADR 0009 decision 10); this component decides nothing and only
@@ -10,14 +14,6 @@ import type { Command, LaneView, View } from '../engine';
  * shows where the player is, the day, their credits, the digest and what they
  * can do.
  */
-/**
- * The chrome both buttons wear. Named rather than repeated because the class
- * list is the same on each and only the padding differs — and because a line
- * past 100 columns is a check now (#31).
- */
-const buttonChrome =
-  'rounded border border-stone-600 text-stone-200 hover:border-stone-400 hover:bg-stone-800';
-
 export function CampaignSurfaces({
   view,
   seed,

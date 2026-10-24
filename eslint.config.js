@@ -96,15 +96,9 @@ export default tseslint.config(
     },
   },
   /**
-   * Formatting is a check, not a judgement call (#31). Prettier owns the layout
-   * of everything it can reach; `max-len` covers the one thing it cannot, which
-   * is a line too long because of a string or a comment rather than because of
-   * its structure. Prettier leaves those alone by design, and they are a third
-   * of the long lines `/code-review` found by eye in #10.
-   *
-   * `max-len` carries ESLint's "formatting rules are being moved out of core"
-   * notice. Removal would fail `eslint .` on an unknown rule, loudly and at
-   * upgrade time, which is cheaper than a third dependency for one rule.
+   * Formatting is a check, not a judgement call (ADR 0009 decision 13). Prettier
+   * owns the layout it can reach; `max-len` covers what it cannot, which is a
+   * line long because of a string or a comment rather than its structure.
    */
   {
     plugins: { prettier },
