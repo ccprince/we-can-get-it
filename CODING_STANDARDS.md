@@ -47,4 +47,9 @@ Do not spend review attention on these — a failing check is louder than a revi
   (`eslint.config.js`, path-scoped to `src/engine/**`).
 - The day index never reaching the page (`eslint.config.js`, path-scoped to `src/page/**`).
   ADR 0005 decision 3; added after a hand review found it breached in the page's first commit.
-- Types, lint and tests: `npm run check`, which is what the pre-commit hook and CI both run.
+- **Formatting and line width**: Prettier at width 100, run as an ESLint rule, plus `max-len` for the
+  long string or comment Prettier leaves alone (ADR 0009 decision 13). A violation names the file and
+  the line; `npm run format` fixes what is fixable. Do not wrap a line by hand in review, and do not
+  argue a width — the width is what the code already was. Two exceptions, both deliberate: Markdown is
+  not formatted, and authored prose in `content/` is not width-checked.
+- Types, lint, formatting and tests: `npm run check`, which is what the pre-commit hook and CI both run.

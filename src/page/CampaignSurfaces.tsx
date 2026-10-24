@@ -10,6 +10,14 @@ import type { Command, LaneView, View } from '../engine';
  * shows where the player is, the day, their credits, the digest and what they
  * can do.
  */
+/**
+ * The chrome both buttons wear. Named rather than repeated because the class
+ * list is the same on each and only the padding differs — and because a line
+ * past 100 columns is a check now (#31).
+ */
+const buttonChrome =
+  'rounded border border-stone-600 text-stone-200 hover:border-stone-400 hover:bg-stone-800';
+
 export function CampaignSurfaces({
   view,
   seed,
@@ -102,7 +110,7 @@ export function CampaignSurfaces({
               key={command.kind}
               type="button"
               onClick={() => onCommand(command)}
-              className="rounded border border-stone-600 px-3 py-1.5 text-stone-200 hover:border-stone-400 hover:bg-stone-800"
+              className={`${buttonChrome} px-3 py-1.5`}
             >
               {wordCommand(command)}
             </button>
@@ -144,11 +152,7 @@ function Departure({
   if (depart === null) return null;
 
   return (
-    <button
-      type="button"
-      onClick={() => onCommand(depart)}
-      className="rounded border border-stone-600 px-2 py-1 text-stone-200 hover:border-stone-400 hover:bg-stone-800"
-    >
+    <button type="button" onClick={() => onCommand(depart)} className={`${buttonChrome} px-2 py-1`}>
       Depart for {lane.destination}
     </button>
   );
