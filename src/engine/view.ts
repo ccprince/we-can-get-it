@@ -1,7 +1,8 @@
 import { dateOf, type CalendarDate } from './calendar';
 import type { Campaign, DigestEntry } from './campaign';
 import { departureTo, offeredCommands, type Command } from './commands';
-import { locationNamed, type Lane, type Location } from './content';
+import type { Lane } from './content';
+import { locationNamed, type DrawnGalaxy } from './galaxy';
 import { daysToFly, fareToFly, otherEnd, withinRange } from './map';
 
 /**
@@ -56,7 +57,7 @@ export type DigestView = {
  * ship, never the raw **distance** (ADR 0006 decision 20).
  */
 export type LaneView = {
-  /** The two locations it joins, named, in the order the content set wrote them. */
+  /** The two locations it joins, named, in the order the lane holds them. */
   readonly ends: readonly [string, string];
   /**
    * Where it would take the player from where they are, or null when it does
@@ -81,7 +82,9 @@ export type LaneView = {
 /**
  * The chart: which locations exist, what lanes join them and what each costs,
  * which are published facts from day one (ADR 0006 decision 5) — so it carries
- * every lane in the galaxy and not only the ones that leave from here.
+ * every lane in the **drawn galaxy** and not only the ones that leave from
+ * here. What the draw did not place is **hidden** and is not on the chart at
+ * all, greyed or otherwise (ADR 0008 decision 4).
  */
 export type ChartView = {
   readonly lanes: readonly LaneView[];
@@ -108,16 +111,17 @@ export type View = {
 };
 
 export function view(campaign: Campaign): View {
-  const { calendar, locations } = campaign.content;
+  const { calendar } = campaign.content;
+  const galaxy = campaign.galaxy;
   const where = campaign.where;
 
   return {
-    here: where.kind === 'at' ? hereAt(locations, where.locationId) : null,
+    here: where.kind === 'at' ? hereAt(galaxy, where.locationId) : null,
     transit:
       where.kind === 'in-transit'
         ? {
-            from: nameOf(locations, where.leg.fromId),
-            destination: nameOf(locations, where.leg.toId),
+            from: nameOf(galaxy, where.leg.fromId),
+            destination: nameOf(galaxy, where.leg.toId),
             daysOut: where.leg.daysFlown,
             daysToRun: where.leg.days - where.leg.daysFlown,
           }
@@ -138,11 +142,12 @@ export function view(campaign: Campaign): View {
 }
 
 function chartFor(campaign: Campaign): ChartView {
-  return { lanes: campaign.content.lanes.map((lane) => laneFor(lane, campaign)) };
+  return { lanes: campaign.galaxy.lanes.map((lane) => laneFor(lane, campaign)) };
 }
 
 function laneFor(lane: Lane, campaign: Campaign): LaneView {
-  const { locations, fareRate } = campaign.content;
+  const { fareRate } = campaign.content;
+  const galaxy = campaign.galaxy;
 
   // In transit there is no "from here": the destination is fixed and no lane
   // on the chart is a departure (ADR 0005 decision 10).
@@ -150,8 +155,8 @@ function laneFor(lane: Lane, campaign: Campaign): LaneView {
     campaign.where.kind === 'at' ? otherEnd(lane, campaign.where.locationId) : null;
 
   return {
-    ends: [nameOf(locations, lane.ends[0]), nameOf(locations, lane.ends[1])],
-    destination: destination === null ? null : nameOf(locations, destination),
+    ends: [nameOf(galaxy, lane.ends[0]), nameOf(galaxy, lane.ends[1])],
+    destination: destination === null ? null : nameOf(galaxy, destination),
     days: daysToFly(lane, campaign.ship),
     fare: fareToFly(lane, fareRate),
     withinRange: withinRange(lane, campaign.ship),
@@ -168,12 +173,12 @@ function departFor(campaign: Campaign, toId: string): Command | null {
   return 'rejected' in departureTo(campaign, toId) ? null : { kind: 'depart', toId };
 }
 
-/** Every location id in a read model names a location the loader has checked. */
-function nameOf(locations: readonly Location[], locationId: string): string {
-  return locationNamed({ locations }, locationId).name;
+/** Every location id in a read model names a location the draw placed. */
+function nameOf(galaxy: DrawnGalaxy, locationId: string): string {
+  return locationNamed(galaxy, locationId).name;
 }
 
-function hereAt(locations: readonly Location[], locationId: string): HereView {
-  const { name, prose } = locationNamed({ locations }, locationId);
+function hereAt(galaxy: DrawnGalaxy, locationId: string): HereView {
+  const { name, prose } = locationNamed(galaxy, locationId);
   return { name, prose };
 }

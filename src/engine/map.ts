@@ -1,4 +1,5 @@
-import type { ContentSet, Lane, Ship } from './content';
+import type { Lane, Ship } from './content';
+import type { DrawnGalaxy } from './galaxy';
 
 /**
  * The rules of the map: what a **lane** costs this ship in days and in
@@ -47,9 +48,9 @@ export function otherEnd(lane: Lane, locationId: string): string | null {
 
 /** The lane joining two locations, which is the only way between them. */
 export function laneBetween(
-  content: Pick<ContentSet, 'lanes'>,
+  galaxy: Pick<DrawnGalaxy, 'lanes'>,
   locationId: string,
   toId: string,
 ): Lane | undefined {
-  return content.lanes.find((lane) => otherEnd(lane, locationId) === toId);
+  return galaxy.lanes.find((lane) => otherEnd(lane, locationId) === toId);
 }

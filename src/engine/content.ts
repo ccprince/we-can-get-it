@@ -23,11 +23,73 @@ export type Calendar = {
   readonly firstYear: number;
 };
 
-/** A place on the chart, and an atomic node (ADR 0006 decision 6). */
+/**
+ * A place on the chart, and an atomic node (ADR 0006 decision 6). A location
+ * the **draw** places; the ones it does not are **hidden** and leave no trace
+ * (ADR 0008 decision 4), so a content set holds a **reserve** of these larger
+ * than one campaign uses.
+ *
+ * Its identity is authored and its position generated (ADR 0006 decision 2):
+ * nothing in here says where it sits, because that is the assembly's answer.
+ */
 export type Location = {
   readonly id: string;
   readonly name: string;
   readonly prose: string;
+  /** What the place is, naming one of the archetypes the content set enumerates. */
+  readonly archetype: string;
+};
+
+/**
+ * What a **location** is, drawn from a short enumerated list the content set
+ * declares (ADR 0007 decision 17). A **slot** types against the id and the
+ * validator reads it; nobody else does, which is why it is a designer's word
+ * for a designer's thing (ADR 0008 decision 1).
+ *
+ * One field for now. Which **kinds** each archetype **supplies** and
+ * **demands** is the kinds stage of the cascade, which is #33, and it is
+ * declared here as an entity with an id so that gaining them is a field and
+ * not a change of shape.
+ */
+export type Archetype = {
+  readonly id: string;
+};
+
+/**
+ * A hole in a **motif**, typed by an **archetype** and filled from the reserve
+ * at campaign start. `archetype` is null for a slot that is deliberately
+ * **untyped**, which accepts any location at all — so that a region's grammar
+ * has exceptions in it (ADR 0006 decision 4).
+ */
+export type Slot = {
+  /** Unique within its motif, and what the motif's own lanes name. */
+  readonly id: string;
+  readonly archetype: string | null;
+};
+
+/**
+ * A lane inside a **motif**, joining two of its **slots** rather than two
+ * locations: which locations it ends up joining is the assembly's answer. It
+ * carries a **distance** like any other lane (ADR 0006 decision 8).
+ */
+export type MotifLane = {
+  readonly ends: readonly [string, string];
+  readonly distance: number;
+};
+
+/**
+ * An authored fragment of topology with typed **slots** (ADR 0006 decision 3).
+ * Drawn from a reserve larger than one campaign uses, and a motif **may appear
+ * more than once** in one assembly, so what is authored here is a shape and not
+ * a region (ADR 0008 decision 7).
+ *
+ * Motifs join by **lanes** and never by sharing a location, which is why a
+ * motif's lanes name its own slots and nothing outside it (decision 6).
+ */
+export type Motif = {
+  readonly id: string;
+  readonly slots: readonly Slot[];
+  readonly lanes: readonly MotifLane[];
 };
 
 /**
@@ -42,9 +104,12 @@ export type Ship = {
   readonly range: number;
 };
 
-/** Where and when a campaign opens, and what the player opens it with. */
+/**
+ * When a campaign opens and what the player opens it with. **Where** is not
+ * here: the start is a location the **draw** placed, so it is chosen by the
+ * assembly rather than authored (ADR 0006 decision 16, ADR 0008 decision 2).
+ */
 export type Start = {
-  readonly locationId: string;
   readonly credits: number;
   readonly day: number;
   readonly ship: Ship;
@@ -157,22 +222,6 @@ export function within(count: number, range: Range): boolean {
 }
 
 /**
- * The location an id names. Every location id in a loaded content set names a
- * location the set holds — the loader has already refused the ones that do not
- * — so this is total for any content set that got past it.
- */
-export function locationNamed(
-  content: Pick<ContentSet, 'locations'>,
-  locationId: string,
-): Location {
-  const location = content.locations.find((candidate) => candidate.id === locationId);
-  if (location === undefined) {
-    throw new Error(`${locationId} is not a location the content set holds`);
-  }
-  return location;
-}
-
-/**
  * The tags any buyer holds as a **bonus** or a **refusal**. A role is a
  * property of a buyer's relationship to a tag rather than a class of tag
  * (ADR 0007 decision 7), so this is the only way to ask which tags are in a
@@ -204,8 +253,35 @@ export type Bounds = {
   readonly quirkRation: number;
 };
 
+/**
+ * The declared content-set parameters the **draw** reads (ADR 0008 decision 20,
+ * ADR 0007 decision 15). Named for what it is rather than `Draw`: the draw is
+ * the roll itself, which lives in the engine, and this is what a writer hands
+ * it.
+ */
+export type DrawParameters = {
+  /**
+   * How many motifs a campaign is assembled from, counting duplicates: the
+   * dial has to be the thing the location count is a sum of (decision 7).
+   */
+  readonly motifsPerCampaign: number;
+  /**
+   * How far apart the **inter-motif lanes** run. These are where the long hauls
+   * live, and where ADR 0006 decision 3's far-cluster invariant bites
+   * (ADR 0008 decision 6).
+   *
+   * A declared parameter and **not a second dial**: there is one dial and it is
+   * the motif count (decision 5). This says how long a lane the assembly lays
+   * between two motifs, which it has to know and cannot invent. The far-cluster
+   * invariant's own threshold is #12's, and must not become a second number for
+   * the same thing.
+   */
+  readonly interMotifDistance: Range;
+};
+
 export type ContentSet = {
   readonly bounds: Bounds;
+  readonly drawParameters: DrawParameters;
   /**
    * The one galaxy-wide rate a **fare** is the **distance** times (ADR 0006
    * decision 10). Authored per-lane tariffs and regional rates were rejected
@@ -213,8 +289,12 @@ export type ContentSet = {
    */
   readonly fareRate: number;
   readonly calendar: Calendar;
+  /** The short enumerated list a location is authored with. */
+  readonly archetypes: readonly Archetype[];
+  /** The **motif reserve**, larger than one campaign assembles from. */
+  readonly motifs: readonly Motif[];
+  /** The **location reserve**, of which one campaign draws a part. */
   readonly locations: readonly Location[];
-  readonly lanes: readonly Lane[];
   readonly tags: readonly Tag[];
   readonly goods: readonly Good[];
   readonly buyers: readonly Buyer[];

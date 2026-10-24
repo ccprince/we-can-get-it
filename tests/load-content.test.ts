@@ -6,10 +6,14 @@ import {
   aCalendar,
   aCatalogue,
   aContentSet,
+  anArchetype,
+  aDrawParameters,
   aGalaxy,
   aGood,
-  aLane,
+  aMotifLane,
   aLocation,
+  aMotif,
+  aSlot,
   aStart,
   aTag,
   aWant,
@@ -20,20 +24,6 @@ describe('loadContent', () => {
     const result = loadContent(aContentSet());
 
     expect(result.ok).toBe(true);
-  });
-
-  it('refuses a start that names a location the content set does not have', () => {
-    const result = loadContent(aContentSet({ start: aStart({ locationId: 'nowhere' }) }));
-
-    expect(result.ok).toBe(false);
-    if (result.ok) return;
-    expect(result.problems).toEqual([
-      {
-        verdict: 'fails',
-        where: 'start.locationId',
-        what: 'names a location that does not exist: nowhere',
-      },
-    ]);
   });
 
   it('refuses a month that is not a whole number of weeks', () => {
@@ -63,7 +53,8 @@ describe('loadContent', () => {
       'bounds',
       'fareRate',
       'calendar',
-      'lanes',
+      'drawParameters',
+      'archetypes',
       'tags',
       'start',
     ]);
@@ -86,7 +77,7 @@ describe('loadContent', () => {
  */
 describe('the two verdicts', () => {
   it('carries its verdict on every problem and every report', () => {
-    const result = loadContent(aContentSet({ start: aStart({ locationId: 'nowhere' }) }));
+    const result = loadContent(aContentSet({ start: aStart({ credits: -1 }) }));
 
     expect(result.ok).toBe(false);
     if (result.ok) return;
@@ -553,75 +544,7 @@ describe('the report', () => {
   });
 });
 
-describe('the map as content', () => {
-  it('reads lanes joining the locations the content set holds', () => {
-    const result = loadContent(aContentSet(aGalaxy()));
-
-    expect(result.ok ? [] : result.problems).toEqual([]);
-  });
-
-  it('refuses a lane naming a location the content set does not hold', () => {
-    const result = loadContent(
-      aContentSet(aGalaxy({ lanes: [aLane({ ends: ['kestrel', 'nowhere'] })] })),
-    );
-
-    expect(result.ok).toBe(false);
-    if (result.ok) return;
-    expect(result.problems).toEqual([
-      {
-        verdict: 'fails',
-        where: 'lanes[0].ends[1]',
-        what: 'names a location that does not exist: nowhere',
-      },
-    ]);
-  });
-
-  it('refuses a lane from a location to itself, since a lane joins two of them', () => {
-    const result = loadContent(
-      aContentSet(aGalaxy({ lanes: [aLane({ ends: ['kestrel', 'kestrel'] })] })),
-    );
-
-    expect(result.ok).toBe(false);
-    if (result.ok) return;
-    expect(result.problems).toEqual([
-      {
-        verdict: 'fails',
-        where: 'lanes[0].ends',
-        what: 'joins kestrel to itself, and a lane joins two locations',
-      },
-    ]);
-  });
-
-  it('refuses a second lane between the same two locations, flown the other way round', () => {
-    const result = loadContent(
-      aContentSet(
-        aGalaxy({
-          lanes: [aLane(), aLane({ ends: ['bellwether', 'kestrel'], distance: 9 })],
-        }),
-      ),
-    );
-
-    expect(result.ok).toBe(false);
-    if (result.ok) return;
-    expect(result.problems).toEqual([
-      {
-        verdict: 'fails',
-        where: 'lanes[1].ends',
-        what: 'joins bellwether and kestrel, which a lane already joins: a lane is symmetric',
-      },
-    ]);
-  });
-
-  it('refuses a lane carrying no distance, which is the one number it has', () => {
-    const result = loadContent(aContentSet(aGalaxy({ lanes: [aLane({ distance: 0 })] })));
-
-    expect(result.ok).toBe(false);
-    if (result.ok) return;
-    expect(result.problems).toEqual([
-      { verdict: 'fails', where: 'lanes[0].distance', what: 'is 0, which is less than 1' },
-    ]);
-  });
-
+describe('the ship and the fare rate', () => {
   it('refuses a ship with no speed to convert a distance into days', () => {
     const result = loadContent(
       aContentSet(aGalaxy({ start: aStart({ ship: { speed: 0, range: 20 } }) })),
@@ -641,6 +564,294 @@ describe('the map as content', () => {
     if (result.ok) return;
     expect(result.problems).toEqual([
       { verdict: 'fails', where: 'fareRate', what: 'is missing or not a whole number' },
+    ]);
+  });
+});
+
+describe('the motifs the map is assembled from', () => {
+  it('refuses a content set with no motifs, since the map is assembled from them', () => {
+    const result = loadContent(aContentSet({ motifs: [] }));
+
+    expect(result.ok).toBe(false);
+    if (result.ok) return;
+    expect(result.problems).toEqual([
+      {
+        verdict: 'fails',
+        where: 'motifs',
+        what: 'names no motifs for the map to be assembled from',
+      },
+    ]);
+  });
+
+  it('refuses a motif with no slots, since it would place no locations', () => {
+    const result = loadContent(aContentSet({ motifs: [aMotif({ slots: [], lanes: [] })] }));
+
+    expect(result.ok).toBe(false);
+    if (result.ok) return;
+    expect(result.problems).toEqual([
+      {
+        verdict: 'fails',
+        where: 'motifs[0].slots',
+        what: 'has no slots, so it would place no locations',
+      },
+    ]);
+  });
+
+  it('accepts a slot that is deliberately untyped, which anything may fill', () => {
+    // The occasional illogical place, so a region's grammar has exceptions in
+    // it (ADR 0006 decision 4).
+    const result = loadContent(aContentSet({ motifs: [aMotif({ slots: [aSlot()] })] }));
+
+    expect(result.ok ? [] : result.problems).toEqual([]);
+  });
+
+  it('refuses a slot typed by an archetype the content set does not enumerate', () => {
+    const result = loadContent(
+      aContentSet({ motifs: [aMotif({ slots: [aSlot({ archetype: 'cathedral' })] })] }),
+    );
+
+    expect(result.ok).toBe(false);
+    if (result.ok) return;
+    expect(result.problems).toEqual([
+      {
+        verdict: 'fails',
+        where: 'motifs[0].slots[0].archetype',
+        what: 'names an archetype that does not exist: cathedral',
+      },
+    ]);
+  });
+
+  it('refuses a location authored with an archetype the content set does not enumerate', () => {
+    const result = loadContent(aContentSet({ locations: [aLocation({ archetype: 'cathedral' })] }));
+
+    expect(result.ok).toBe(false);
+    if (result.ok) return;
+    expect(result.problems).toEqual([
+      {
+        verdict: 'fails',
+        where: 'locations[0].archetype',
+        what: 'names an archetype that does not exist: cathedral',
+      },
+    ]);
+  });
+
+  it('refuses a motif lane naming a slot that motif does not hold', () => {
+    // Motifs join by inter-motif lanes the assembly adds, never by naming each
+    // other's slots (ADR 0008 decision 6).
+    const result = loadContent(
+      aContentSet({
+        motifs: [
+          aMotif({
+            slots: [aSlot(), aSlot({ id: 'pit' })],
+            lanes: [aMotifLane({ ends: ['berth', 'gate'] })],
+          }),
+        ],
+      }),
+    );
+
+    expect(result.ok).toBe(false);
+    if (result.ok) return;
+    expect(result.problems).toEqual([
+      {
+        verdict: 'fails',
+        where: 'motifs[0].lanes[0].ends[1]',
+        what: 'names a slot this motif does not hold: gate',
+      },
+    ]);
+  });
+
+  it('refuses two motif lanes joining the same pair of slots', () => {
+    // One cost, the same both ways (ADR 0006 decision 7), so a lane authored
+    // the other way round is the same lane twice.
+    const result = loadContent(
+      aContentSet({
+        motifs: [
+          aMotif({
+            slots: [aSlot(), aSlot({ id: 'pit' })],
+            lanes: [aMotifLane({ ends: ['berth', 'pit'] }), aMotifLane({ ends: ['pit', 'berth'] })],
+          }),
+        ],
+      }),
+    );
+
+    expect(result.ok).toBe(false);
+    if (result.ok) return;
+    expect(result.problems).toEqual([
+      {
+        verdict: 'fails',
+        where: 'motifs[0].lanes[1].ends',
+        what: 'joins pit and berth, which a lane already joins: a lane is symmetric',
+      },
+    ]);
+  });
+
+  it('refuses a motif lane carrying no distance, which is the one number it has', () => {
+    const result = loadContent(
+      aContentSet({
+        motifs: [
+          aMotif({
+            slots: [aSlot(), aSlot({ id: 'pit' })],
+            lanes: [aMotifLane({ ends: ['berth', 'pit'], distance: 0 })],
+          }),
+        ],
+      }),
+    );
+
+    expect(result.ok).toBe(false);
+    if (result.ok) return;
+    expect(result.problems).toEqual([
+      {
+        verdict: 'fails',
+        where: 'motifs[0].lanes[0].distance',
+        what: 'is 0, which is less than 1',
+      },
+    ]);
+  });
+
+  it('refuses a motif holding the same slot id twice, since its lanes name them', () => {
+    // A motif's lanes name its slots, so two slots of one name is a lane with
+    // an ambiguous end. Every list of nodes in a content set reads this way.
+    const result = loadContent(aContentSet({ motifs: [aMotif({ slots: [aSlot(), aSlot()] })] }));
+
+    expect(result.ok).toBe(false);
+    if (result.ok) return;
+    expect(result.problems).toEqual([
+      {
+        verdict: 'fails',
+        where: 'motifs[0].slots[1].id',
+        what: 'repeats an id already used: berth',
+      },
+    ]);
+  });
+
+  it('refuses a motif lane from a slot to itself', () => {
+    const result = loadContent(
+      aContentSet({
+        motifs: [aMotif({ lanes: [aMotifLane({ ends: ['berth', 'berth'] })] })],
+      }),
+    );
+
+    expect(result.ok).toBe(false);
+    if (result.ok) return;
+    expect(result.problems).toEqual([
+      {
+        verdict: 'fails',
+        where: 'motifs[0].lanes[0].ends',
+        what: 'joins berth to itself, and a lane joins two slots',
+      },
+    ]);
+  });
+});
+
+describe('the dial the draw is set by', () => {
+  it('refuses a content set that declares no draw, since the engine holds no dial', () => {
+    const result = loadContent(aContentSet({ drawParameters: undefined }));
+
+    expect(result.ok).toBe(false);
+    if (result.ok) return;
+    expect(result.problems).toEqual([
+      { verdict: 'fails', where: 'drawParameters', what: 'is missing' },
+    ]);
+  });
+
+  it('refuses a motif count of none, which would assemble no map at all', () => {
+    const result = loadContent(
+      aContentSet({ drawParameters: aDrawParameters({ motifsPerCampaign: 0 }) }),
+    );
+
+    expect(result.ok).toBe(false);
+    if (result.ok) return;
+    expect(result.problems).toEqual([
+      {
+        verdict: 'fails',
+        where: 'drawParameters.motifsPerCampaign',
+        what: 'is 0, which is less than 1',
+      },
+    ]);
+  });
+
+  it('refuses an inter-motif distance of nothing, which would be a zero-day hop', () => {
+    const result = loadContent(
+      aContentSet({
+        drawParameters: aDrawParameters({ interMotifDistance: { least: 0, most: 20 } }),
+      }),
+    );
+
+    expect(result.ok).toBe(false);
+    if (result.ok) return;
+    expect(result.problems).toEqual([
+      {
+        verdict: 'fails',
+        where: 'drawParameters.interMotifDistance.least',
+        what: 'is 0, which is less than 1',
+      },
+    ]);
+  });
+
+  it('refuses joining motifs further than the baseline ship can fly', () => {
+    // An inter-motif lane beyond range is a lane no ship can fly, so the galaxy
+    // would not be flyable end to end. Range is the only gate on the map
+    // (ADR 0006 decision 14), and this much is checkable before any draw.
+    const result = loadContent(
+      aContentSet({
+        drawParameters: aDrawParameters({
+          motifsPerCampaign: 2,
+          interMotifDistance: { least: 14, most: 40 },
+        }),
+      }),
+    );
+
+    expect(result.ok).toBe(false);
+    if (result.ok) return;
+    expect(result.problems).toEqual([
+      {
+        verdict: 'fails',
+        where: 'drawParameters.interMotifDistance.most',
+        what: "is 40, which is beyond the baseline ship's range of 20: no ship could fly the lane",
+      },
+    ]);
+  });
+
+  it('says nothing about that range when the draw places a single motif', () => {
+    // With one motif there is nothing to join, so the range is never read and
+    // a wide declaration is not a mistake.
+    const result = loadContent(
+      aContentSet({
+        drawParameters: aDrawParameters({
+          motifsPerCampaign: 1,
+          interMotifDistance: { least: 14, most: 40 },
+        }),
+      }),
+    );
+
+    expect(result.ok ? [] : result.problems).toEqual([]);
+  });
+
+  it('refuses an archetype enumerated twice, since an id means one thing', () => {
+    const result = loadContent(aContentSet({ archetypes: [anArchetype(), anArchetype()] }));
+
+    expect(result.ok).toBe(false);
+    if (result.ok) return;
+    expect(result.problems).toEqual([
+      {
+        verdict: 'fails',
+        where: 'archetypes[1].id',
+        what: 'repeats an id already used: market',
+      },
+    ]);
+  });
+
+  it('refuses a content set enumerating no archetypes, which a location is authored with', () => {
+    const result = loadContent(aContentSet({ archetypes: [] }));
+
+    expect(result.ok).toBe(false);
+    if (result.ok) return;
+    expect(result.problems).toEqual([
+      {
+        verdict: 'fails',
+        where: 'archetypes',
+        what: 'enumerates no archetypes for a location to be',
+      },
     ]);
   });
 });

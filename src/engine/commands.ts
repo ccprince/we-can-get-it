@@ -1,5 +1,5 @@
 import type { Campaign, DigestEntry, Leg, Whereabouts } from './campaign';
-import { locationNamed, type ContentSet } from './content';
+import { locationNamed, type DrawnGalaxy } from './galaxy';
 import { daysToFly, fareToFly, laneBetween, withinRange } from './map';
 
 /**
@@ -85,7 +85,7 @@ export function departureTo(
   }
 
   const from = campaign.where.locationId;
-  const lane = laneBetween(campaign.content, from, toId);
+  const lane = laneBetween(campaign.galaxy, from, toId);
   if (lane === undefined) {
     return {
       rejected: {
@@ -214,14 +214,14 @@ function dayEnds(campaign: Campaign): {
 
   return {
     where: { kind: 'at', locationId: leg.toId },
-    entries: [{ text: spanOf(campaign.content, leg) }],
+    entries: [{ text: spanOf(campaign.galaxy, leg) }],
   };
 }
 
 /** The leg, as the arrival digest states it: the days it took and its two ends. */
-function spanOf(content: ContentSet, leg: Leg): string {
-  const from = locationNamed(content, leg.fromId).name;
-  const to = locationNamed(content, leg.toId).name;
+function spanOf(galaxy: DrawnGalaxy, leg: Leg): string {
+  const from = locationNamed(galaxy, leg.fromId).name;
+  const to = locationNamed(galaxy, leg.toId).name;
   const days = leg.days === 1 ? '1 day' : `${leg.days} days`;
   return `${days} out of ${from}, you set down at ${to}.`;
 }

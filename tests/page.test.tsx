@@ -13,7 +13,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { isRejected, startCampaign, takeCommand, view } from '../src/engine';
 import type { Campaign, Command, ContentSet } from '../src/engine';
 import { CampaignSurfaces } from '../src/page/CampaignSurfaces';
-import { aGalaxy, aLane, aLocation, aShip, aStart, loadedContentSet } from './support/content';
+import { aGalaxy, aMotifLane, aLocation, aShip, aStart, loadedContentSet } from './support/content';
 
 afterEach(cleanup);
 
@@ -92,7 +92,7 @@ function aGalaxyOfTwo(overrides: Record<string, unknown> = {}): ContentSet {
         aLocation(),
         aLocation({ id: 'bellwether', name: 'Bellwether Yards', prose: 'A repair yard.' }),
       ],
-      lanes: [aLane({ ends: ['kestrel', 'bellwether'], distance: 12 })],
+      lanes: [aMotifLane({ ends: ['kestrel', 'bellwether'], distance: 12 })],
       start: aStart({ credits: 500 }),
       ...overrides,
     }),
@@ -100,20 +100,24 @@ function aGalaxyOfTwo(overrides: Record<string, unknown> = {}): ContentSet {
 }
 
 /**
- * Kestrel, Bellwether and a third place, so a lane can fail to touch here. At
- * range 10 the far lane is out of reach and the near one is not.
+ * Kestrel, two places a lane from it and one beyond, so a lane can fail to
+ * touch here. At range 10 the far lane is out of reach and the near ones are
+ * not. Kestrel's second lane is what opens the campaign there: the assembly
+ * starts the player at the place the most lanes touch (ADR 0006 decision 16).
  */
-function aGalaxyOfThree(overrides: Record<string, unknown> = {}): ContentSet {
+function aGalaxyOfFour(overrides: Record<string, unknown> = {}): ContentSet {
   return loadedContentSet(
     aGalaxy({
       locations: [
         aLocation(),
         aLocation({ id: 'bellwether', name: 'Bellwether Yards', prose: 'A repair yard.' }),
         aLocation({ id: 'hollow', name: "Grieve's Hollow", prose: 'A cut in a dead moon.' }),
+        aLocation({ id: 'shoals', name: 'Thennet Shoals', prose: 'Tenders and tank farms.' }),
       ],
       lanes: [
-        aLane({ ends: ['kestrel', 'bellwether'], distance: 6 }),
-        aLane({ ends: ['bellwether', 'hollow'], distance: 16 }),
+        aMotifLane({ ends: ['kestrel', 'bellwether'], distance: 6 }),
+        aMotifLane({ ends: ['bellwether', 'hollow'], distance: 16 }),
+        aMotifLane({ ends: ['kestrel', 'shoals'], distance: 2 }),
       ],
       start: aStart({ credits: 500, ship: aShip({ range: 10 }) }),
       ...overrides,
@@ -159,14 +163,14 @@ describe('the chart on the page', () => {
   it('says a lane is beyond range wherever it sits on the chart, not only from here', () => {
     // The chart carries the whole galaxy (ADR 0006 decision 5), so what the
     // ship cannot reach is readable before the player is standing at its end.
-    surfaces({ campaign: startCampaign(aGalaxyOfThree(), SEED) });
+    surfaces({ campaign: startCampaign(aGalaxyOfFour(), SEED) });
 
     const far = screen.getByRole('row', { name: /Grieve's Hollow/ });
     expect(far.textContent).toContain('Beyond your range');
   });
 
   it('keeps the range reading while underway, and takes only the departures away', () => {
-    surfaces({ campaign: flying(aGalaxyOfThree(), { kind: 'depart', toId: 'bellwether' }) });
+    surfaces({ campaign: flying(aGalaxyOfFour(), { kind: 'depart', toId: 'bellwether' }) });
 
     expect(screen.getByText('Beyond your range')).toBeDefined();
     expect(screen.queryByRole('button', { name: /Depart/ })).toBeNull();

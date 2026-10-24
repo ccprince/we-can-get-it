@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { isRejected, startCampaign, takeCommand, view } from '../src/engine';
 import type { Command, ContentSet, View } from '../src/engine';
-import { aGalaxy, aLane, aLocation, aStart, loadedContentSet } from './support/content';
+import { aGalaxy, aMotifLane, aLocation, aStart, loadedContentSet } from './support/content';
 
 /**
  * Determinism is a test, not a convention: the measurement method this project
@@ -9,13 +9,12 @@ import { aGalaxy, aLane, aLocation, aStart, loadedContentSet } from './support/c
  * moment the same seed and command sequence stop agreeing (ADR 0003 decision 1,
  * ADR 0009 decision 3).
  *
- * Worth being honest about what this can catch today: nothing in the view
- * derives from the seed yet, because nothing is drawn until the draw (#11).
- * These assertions therefore hold the shape — the harness's input is a content
- * set, a seed and a command sequence, and replaying it is the whole of a save —
- * and they only begin to bite when the galaxy is rolled. The campaign under
- * them is already immutable, which is the part that would be expensive to
- * retrofit.
+ * These hold the shape the harness and a save depend on: the input is a content
+ * set, a seed and a command sequence, and replaying it is the whole of a save.
+ * They began to bite with the **draw** (#11) — the galaxy itself now derives
+ * from the seed, so a view replayed from one is a claim about the whole
+ * campaign and not only about the clock. That the galaxy a seed gives is the
+ * same galaxy every time is proved where it is drawn, in `draw.test.ts`.
  */
 function play(content: ContentSet, seed: number, commands: readonly Command[]): View {
   let campaign = startCampaign(content, seed);
@@ -37,7 +36,7 @@ function aFlyableGalaxy(): ContentSet {
         aLocation(),
         aLocation({ id: 'bellwether', name: 'Bellwether Yards', prose: 'A repair yard.' }),
       ],
-      lanes: [aLane({ ends: ['kestrel', 'bellwether'], distance: 12 })],
+      lanes: [aMotifLane({ ends: ['kestrel', 'bellwether'], distance: 12 })],
       start: aStart({ credits: 500 }),
     }),
   );
