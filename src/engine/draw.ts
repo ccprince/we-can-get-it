@@ -1,3 +1,4 @@
+import { assembleMap } from './assemble';
 import type { ContentSet } from './content';
 import type { DrawnGalaxy } from './galaxy';
 import type { Rng } from './rng';
@@ -22,16 +23,10 @@ import type { Rng } from './rng';
  * modes, which is the part of decision 18 that matters.
  *
  * The map goes first and everything later is conditioned on what it has fixed
- * (decision 2). Assembling it from motifs is #11's next slice; **kinds, goods
- * and people** are #33, and **patrons** are chunk 6.
+ * (decision 2). **Kinds, goods and people** are the stages after it and are
+ * #33; **patrons** are the sixth and are chunk 6. Each will be a step added
+ * here, reading the galaxy the steps above it have built.
  */
 export function draw(content: ContentSet, rng: Rng): readonly [DrawnGalaxy, Rng] {
-  return [
-    {
-      locations: content.locations,
-      lanes: content.lanes,
-      startId: content.start.locationId,
-    },
-    rng,
-  ];
+  return assembleMap(content, rng);
 }

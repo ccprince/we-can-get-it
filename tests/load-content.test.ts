@@ -13,7 +13,6 @@ import {
   aLane,
   aLocation,
   aMotif,
-  aMotifLane,
   aSlot,
   aStart,
   aTag,
@@ -25,20 +24,6 @@ describe('loadContent', () => {
     const result = loadContent(aContentSet());
 
     expect(result.ok).toBe(true);
-  });
-
-  it('refuses a start that names a location the content set does not have', () => {
-    const result = loadContent(aContentSet({ start: aStart({ locationId: 'nowhere' }) }));
-
-    expect(result.ok).toBe(false);
-    if (result.ok) return;
-    expect(result.problems).toEqual([
-      {
-        verdict: 'fails',
-        where: 'start.locationId',
-        what: 'names a location that does not exist: nowhere',
-      },
-    ]);
   });
 
   it('refuses a month that is not a whole number of weeks', () => {
@@ -92,7 +77,7 @@ describe('loadContent', () => {
  */
 describe('the two verdicts', () => {
   it('carries its verdict on every problem and every report', () => {
-    const result = loadContent(aContentSet({ start: aStart({ locationId: 'nowhere' }) }));
+    const result = loadContent(aContentSet({ start: aStart({ credits: -1 }) }));
 
     expect(result.ok).toBe(false);
     if (result.ok) return;
@@ -559,75 +544,7 @@ describe('the report', () => {
   });
 });
 
-describe('the map as content', () => {
-  it('reads lanes joining the locations the content set holds', () => {
-    const result = loadContent(aContentSet(aGalaxy()));
-
-    expect(result.ok ? [] : result.problems).toEqual([]);
-  });
-
-  it('refuses a lane naming a location the content set does not hold', () => {
-    const result = loadContent(
-      aContentSet(aGalaxy({ lanes: [aLane({ ends: ['kestrel', 'nowhere'] })] })),
-    );
-
-    expect(result.ok).toBe(false);
-    if (result.ok) return;
-    expect(result.problems).toEqual([
-      {
-        verdict: 'fails',
-        where: 'lanes[0].ends[1]',
-        what: 'names a location that does not exist: nowhere',
-      },
-    ]);
-  });
-
-  it('refuses a lane from a location to itself, since a lane joins two of them', () => {
-    const result = loadContent(
-      aContentSet(aGalaxy({ lanes: [aLane({ ends: ['kestrel', 'kestrel'] })] })),
-    );
-
-    expect(result.ok).toBe(false);
-    if (result.ok) return;
-    expect(result.problems).toEqual([
-      {
-        verdict: 'fails',
-        where: 'lanes[0].ends',
-        what: 'joins kestrel to itself, and a lane joins two locations',
-      },
-    ]);
-  });
-
-  it('refuses a second lane between the same two locations, flown the other way round', () => {
-    const result = loadContent(
-      aContentSet(
-        aGalaxy({
-          lanes: [aLane(), aLane({ ends: ['bellwether', 'kestrel'], distance: 9 })],
-        }),
-      ),
-    );
-
-    expect(result.ok).toBe(false);
-    if (result.ok) return;
-    expect(result.problems).toEqual([
-      {
-        verdict: 'fails',
-        where: 'lanes[1].ends',
-        what: 'joins bellwether and kestrel, which a lane already joins: a lane is symmetric',
-      },
-    ]);
-  });
-
-  it('refuses a lane carrying no distance, which is the one number it has', () => {
-    const result = loadContent(aContentSet(aGalaxy({ lanes: [aLane({ distance: 0 })] })));
-
-    expect(result.ok).toBe(false);
-    if (result.ok) return;
-    expect(result.problems).toEqual([
-      { verdict: 'fails', where: 'lanes[0].distance', what: 'is 0, which is less than 1' },
-    ]);
-  });
-
+describe('the ship and the fare rate', () => {
   it('refuses a ship with no speed to convert a distance into days', () => {
     const result = loadContent(
       aContentSet(aGalaxy({ start: aStart({ ship: { speed: 0, range: 20 } }) })),
@@ -715,13 +632,6 @@ describe('the motifs the map is assembled from', () => {
         where: 'locations[0].archetype',
         what: 'names an archetype that does not exist: cathedral',
       },
-      // A location that did not read is a location the start cannot name, which
-      // is the loader's existing cascade and not a second mistake.
-      {
-        verdict: 'fails',
-        where: 'start.locationId',
-        what: 'names a location that does not exist: kestrel',
-      },
     ]);
   });
 
@@ -733,7 +643,7 @@ describe('the motifs the map is assembled from', () => {
         motifs: [
           aMotif({
             slots: [aSlot(), aSlot({ id: 'pit' })],
-            lanes: [aMotifLane({ ends: ['berth', 'gate'] })],
+            lanes: [aLane({ ends: ['berth', 'gate'] })],
           }),
         ],
       }),
@@ -750,10 +660,58 @@ describe('the motifs the map is assembled from', () => {
     ]);
   });
 
+  it('refuses two motif lanes joining the same pair of slots', () => {
+    // One cost, the same both ways (ADR 0006 decision 7), so a lane authored
+    // the other way round is the same lane twice.
+    const result = loadContent(
+      aContentSet({
+        motifs: [
+          aMotif({
+            slots: [aSlot(), aSlot({ id: 'pit' })],
+            lanes: [aLane({ ends: ['berth', 'pit'] }), aLane({ ends: ['pit', 'berth'] })],
+          }),
+        ],
+      }),
+    );
+
+    expect(result.ok).toBe(false);
+    if (result.ok) return;
+    expect(result.problems).toEqual([
+      {
+        verdict: 'fails',
+        where: 'motifs[0].lanes[1].ends',
+        what: 'joins pit and berth, which a lane already joins: a lane is symmetric',
+      },
+    ]);
+  });
+
+  it('refuses a motif lane carrying no distance, which is the one number it has', () => {
+    const result = loadContent(
+      aContentSet({
+        motifs: [
+          aMotif({
+            slots: [aSlot(), aSlot({ id: 'pit' })],
+            lanes: [aLane({ ends: ['berth', 'pit'], distance: 0 })],
+          }),
+        ],
+      }),
+    );
+
+    expect(result.ok).toBe(false);
+    if (result.ok) return;
+    expect(result.problems).toEqual([
+      {
+        verdict: 'fails',
+        where: 'motifs[0].lanes[0].distance',
+        what: 'is 0, which is less than 1',
+      },
+    ]);
+  });
+
   it('refuses a motif lane from a slot to itself', () => {
     const result = loadContent(
       aContentSet({
-        motifs: [aMotif({ lanes: [aMotifLane({ ends: ['berth', 'berth'] })] })],
+        motifs: [aMotif({ lanes: [aLane({ ends: ['berth', 'berth'] })] })],
       }),
     );
 
@@ -825,13 +783,6 @@ describe('the dial the draw is set by', () => {
         where: 'archetypes[1].id',
         what: 'repeats an id already used: market',
       },
-      // A location that did not read is a location the start cannot name, which
-      // is the loader's existing cascade and not a second mistake.
-      {
-        verdict: 'fails',
-        where: 'start.locationId',
-        what: 'names a location that does not exist: kestrel',
-      },
     ]);
   });
 
@@ -845,13 +796,6 @@ describe('the dial the draw is set by', () => {
         verdict: 'fails',
         where: 'archetypes',
         what: 'enumerates no archetypes for a location to be',
-      },
-      // A location that did not read is a location the start cannot name, which
-      // is the loader's existing cascade and not a second mistake.
-      {
-        verdict: 'fails',
-        where: 'start.locationId',
-        what: 'names a location that does not exist: kestrel',
       },
     ]);
   });

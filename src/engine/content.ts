@@ -104,9 +104,12 @@ export type Ship = {
   readonly range: number;
 };
 
-/** Where and when a campaign opens, and what the player opens it with. */
+/**
+ * When a campaign opens and what the player opens it with. **Where** is not
+ * here: the start is a location the **draw** placed, so it is chosen by the
+ * assembly rather than authored (ADR 0006 decision 16, ADR 0008 decision 2).
+ */
 export type Start = {
-  readonly locationId: string;
   readonly credits: number;
   readonly day: number;
   readonly ship: Ship;
@@ -292,7 +295,6 @@ export type ContentSet = {
   readonly motifs: readonly Motif[];
   /** The **location reserve**, of which one campaign draws a part. */
   readonly locations: readonly Location[];
-  readonly lanes: readonly Lane[];
   readonly tags: readonly Tag[];
   readonly goods: readonly Good[];
   readonly buyers: readonly Buyer[];

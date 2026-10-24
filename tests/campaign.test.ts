@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { startCampaign, view } from '../src/engine';
-import { aLocation, aStart, loadedContentSet } from './support/content';
+import { aGalaxy, aLane, aLocation, aStart, loadedContentSet } from './support/content';
 
 const SEED = 20261022;
 
@@ -69,14 +69,24 @@ describe('startCampaign', () => {
     expect(view(campaign).digest).toBeNull();
   });
 
-  it('starts where the content set says when the galaxy holds more than one place', () => {
-    const content = loadedContentSet({
-      locations: [
-        aLocation(),
-        aLocation({ id: 'ladder', name: "Jacob's Ladder", prose: 'A gantry.' }),
-      ],
-      start: aStart({ locationId: 'ladder' }),
-    });
+  it('starts at the best-connected place the assembly drew, not one the content named', () => {
+    // A start on a spur makes the first decision "fly out, or fly out"
+    // (ADR 0006 decision 16), so the assembly opens the campaign at the place
+    // the most lanes touch. Here that is the Ladder, which has two where the
+    // other two places have one each — and nothing in the content set says so.
+    const content = loadedContentSet(
+      aGalaxy({
+        locations: [
+          aLocation(),
+          aLocation({ id: 'ladder', name: "Jacob's Ladder", prose: 'A gantry.' }),
+          aLocation({ id: 'hollow', name: "Grieve's Hollow", prose: 'A cut in a dead moon.' }),
+        ],
+        lanes: [
+          aLane({ ends: ['kestrel', 'ladder'], distance: 6 }),
+          aLane({ ends: ['ladder', 'hollow'], distance: 8 }),
+        ],
+      }),
+    );
 
     expect(view(startCampaign(content, SEED)).here?.name).toBe("Jacob's Ladder");
   });

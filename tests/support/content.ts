@@ -48,15 +48,6 @@ export function aSlot(overrides: RawObject = {}): RawObject {
   };
 }
 
-/** A lane inside a **motif**, joining two of its slots. */
-export function aMotifLane(overrides: RawObject = {}): RawObject {
-  return {
-    ends: ['berth', 'pit'],
-    distance: 6,
-    ...overrides,
-  };
-}
-
 /**
  * The smallest **motif** there is: one slot and no lanes, which is the fragment
  * the trivial content set of #7 assembles its one-place galaxy from.
@@ -93,7 +84,6 @@ export function aDrawParameters(overrides: RawObject = {}): RawObject {
 
 export function aStart(overrides: RawObject = {}): RawObject {
   return {
-    locationId: 'kestrel',
     // Placeholder, to be measured. No prototype number is a starting point
     // (CLAUDE.md).
     credits: 180,
@@ -146,7 +136,6 @@ export function aContentSet(overrides: RawObject = {}): RawObject {
     motifs: [aMotif()],
     drawParameters: aDrawParameters(),
     locations: [aLocation()],
-    lanes: [],
     tags: [],
     goods: [],
     buyers: [],
@@ -155,7 +144,12 @@ export function aContentSet(overrides: RawObject = {}): RawObject {
   };
 }
 
-/** A lane, carrying the one authored number it has (ADR 0006 decision 8). */
+/**
+ * A lane, carrying the one authored number it has (ADR 0006 decision 8). Its
+ * ends are **slot** ids, since that is where a lane is now authored — and in
+ * `aGalaxy` a slot is named for the location that fills it, so a lane in a
+ * fixture reads as the lane between two places.
+ */
 export function aLane(overrides: RawObject = {}): RawObject {
   return {
     ends: ['kestrel', 'bellwether'],
@@ -166,11 +160,20 @@ export function aLane(overrides: RawObject = {}): RawObject {
 
 /**
  * Two locations and the lane between them: the smallest galaxy that can be
- * flown. Spread over `aContentSet`, which holds one location and no lanes by
- * default — the trivial content set of #7 goes nowhere.
+ * flown. Spread over `aContentSet`, whose one location and one slot go nowhere
+ * — the trivial content set of #7.
+ *
+ * The assembly it describes is **forced**. Every location is given an archetype
+ * of its own and the one motif's slots are named and typed after them, so the
+ * draw has exactly one legal way to fill the map: a test about the chart is then
+ * about the chart and not about what came up. A test whose subject *is* what
+ * came up states its own motifs and lets several locations fit a slot.
+ *
+ * Lanes are stated between location ids, which are also the slot ids here, so a
+ * fixture reads the way a chart does.
  */
 export function aGalaxy(overrides: RawObject = {}): RawObject {
-  return {
+  const { locations, lanes, ...rest } = {
     locations: [
       aLocation(),
       aLocation({
@@ -179,15 +182,29 @@ export function aGalaxy(overrides: RawObject = {}): RawObject {
         prose: 'A repair yard that outgrew its own harbour and never admitted it.',
       }),
     ],
-    motifs: [
-      aMotif({
-        id: 'berth-and-pit',
-        slots: [aSlot(), aSlot({ id: 'pit' })],
-        lanes: [aMotifLane()],
-      }),
-    ],
     lanes: [aLane()],
     ...overrides,
+  } as { locations: RawObject[]; lanes: RawObject[] } & RawObject;
+
+  // One archetype per place, so every slot has exactly one location that fits.
+  const placed = locations.map((location) => ({
+    ...location,
+    id: String(location.id),
+    archetype: `only-${String(location.id)}`,
+  }));
+
+  return {
+    archetypes: placed.map((location) => ({ id: location.archetype })),
+    locations: placed,
+    motifs: [
+      {
+        id: 'the-whole-map',
+        slots: placed.map((location) => ({ id: location.id, archetype: location.archetype })),
+        lanes,
+      },
+    ],
+    drawParameters: aDrawParameters({ motifsPerCampaign: 1 }),
+    ...rest,
   };
 }
 
