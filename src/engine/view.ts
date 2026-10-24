@@ -57,7 +57,11 @@ export type DigestView = {
  * ship, never the raw **distance** (ADR 0006 decision 20).
  */
 export type LaneView = {
-  /** The two locations it joins, named, in the order the lane holds them. */
+  /**
+   * The two locations it joins, named. A motif's own lane holds them in the
+   * order of the slot ids they fill; a lane joining two motifs holds the earlier
+   * placement's end first. Derived order, as on the chart (ADR 0009 decision 3).
+   */
   readonly ends: readonly [string, string];
   /**
    * Where it would take the player from where they are, or null when it does
