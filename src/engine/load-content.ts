@@ -153,13 +153,9 @@ export function loadContent(raw: unknown): LoadResult {
 }
 
 /**
- * The content set with its **written order** taken out: every collection of
- * things with an authored id comes out sorted by that id, so where something
- * sat in the file never decides an outcome or reaches the player, and the same
- * seed gives the same galaxy however the file is arranged (ADR 0009 decision 3,
- * iteration order). Ids are unique within each collection, which the readers
- * check, so no tie is left for the written order to break.
- *
+ * The content set with its **written order** taken out, which is what makes it
+ * the `ContentSet` that type describes. The readers check that ids are unique
+ * within each collection, so no tie is left for the written order to break.
  * It runs after validation, so a problem still names the position the writer
  * put the mistake at.
  */

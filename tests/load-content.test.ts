@@ -52,6 +52,11 @@ describe('loadContent', () => {
           }),
           aMotif(),
         ],
+        ...aCatalogue({
+          tags: [aTag({ id: 'warm', class: 'quality', tells: ['fleece', 'quilted'] }), aTag()],
+          goods: [...(aCatalogue().goods as unknown[])].reverse(),
+          buyers: [aBuyer({ id: 'oskar', name: 'Oskar Fell' }), aBuyer()],
+        }),
       }),
     );
     if (!result.ok) throw new Error(JSON.stringify(result.problems));
@@ -62,6 +67,9 @@ describe('loadContent', () => {
     expect(content.archetypes.map((archetype) => archetype.id)).toEqual(['market', 'processor']);
     expect(content.locations.map((location) => location.id)).toEqual(['kestrel', 'shoals']);
     expect(content.motifs.map((motif) => motif.id)).toEqual(['lone-berth', 'spur']);
+    expect(content.tags.map((tag) => tag.id)).toEqual(['cloth', 'warm']);
+    expect(content.goods.map((good) => good.id)).toEqual(['blanket', 'quilt', 'silk']);
+    expect(content.buyers.map((buyer) => buyer.id)).toEqual(['ilse', 'oskar']);
     expect(spur?.slots.map((slot) => slot.id)).toEqual(['berth', 'dead-end', 'pit']);
     expect(spur?.lanes.map((lane) => lane.ends)).toEqual([
       ['berth', 'pit'],

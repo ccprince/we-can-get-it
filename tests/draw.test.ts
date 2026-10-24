@@ -107,6 +107,7 @@ describe('the map assembled from motifs', () => {
     // a lane the player can depart along and land at the far end of.
     const content = aPairedGalaxy();
     const campaign = startCampaign(content, SEED);
+    const setOutFrom = view(campaign).here?.name;
     const lane = view(campaign).chart.lanes[0];
     const departure = lane?.depart;
     if (departure === undefined || departure === null) {
@@ -119,7 +120,9 @@ describe('the map assembled from motifs', () => {
     }
     if (isRejected(flown)) throw new Error(flown.rejected.message);
 
-    expect(view(flown.campaign).here?.name).toBe(lane?.destination);
+    const farEnd = lane?.ends.find((end) => end !== setOutFrom);
+    expect(farEnd).toBeDefined();
+    expect(view(flown.campaign).here?.name).toBe(farEnd);
     expect(view(flown.campaign).digest?.entries[0]?.text).toContain('you set down at');
   });
 });

@@ -209,7 +209,6 @@ export function aGalaxy(overrides: RawObject = {}): RawObject {
   const slotOf = new Map(
     placed.map((location, at) => [location.id, `${String(at).padStart(2, '0')}-${location.id}`]),
   );
-  const slotFor = (end: unknown): unknown => slotOf.get(String(end)) ?? end;
 
   return {
     archetypes: placed.map((location) => ({ id: location.archetype })),
@@ -223,7 +222,7 @@ export function aGalaxy(overrides: RawObject = {}): RawObject {
         })),
         lanes: (asObjects(lanes) ?? [aMotifLane()]).map((lane) => ({
           ...lane,
-          ends: Array.isArray(lane.ends) ? lane.ends.map(slotFor) : lane.ends,
+          ends: (lane.ends as readonly string[]).map((end) => slotOf.get(end)),
         })),
       },
     ],
