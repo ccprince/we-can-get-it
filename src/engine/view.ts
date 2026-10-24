@@ -100,11 +100,16 @@ export type ChartView = {
   /**
    * Every location the draw placed, whether or not a lane touches it: the
    * chart says which places exist on its own account, not as whatever happens
-   * to sit at the end of a lane. Sorted by authored id, so what the player
-   * reads never follows the order the draw happened to place them in
-   * (ADR 0009, iteration order).
+   * to sit at the end of a lane. In **placement order**: motif by motif as the
+   * draw placed them, and within each motif in the order of its slot ids.
+   * That is derived order, from the seed and the content set alone; sorting it
+   * for display is the view's (ADR 0009 decisions 3 and 10).
    */
   readonly locations: readonly LocationView[];
+  /**
+   * In the order the draw laid them: each placed motif's own lanes, motif by
+   * motif, then the lanes joining the motifs. Derived order, as above.
+   */
   readonly lanes: readonly LaneView[];
 };
 
@@ -161,9 +166,7 @@ export function view(campaign: Campaign): View {
 
 function chartFor(campaign: Campaign): ChartView {
   return {
-    locations: [...campaign.galaxy.locations]
-      .sort((one, other) => byId(one.id, other.id))
-      .map(({ name }) => ({ name })),
+    locations: campaign.galaxy.locations.map(({ name }) => ({ name })),
     lanes: campaign.galaxy.lanes.map((lane) => laneFor(lane, campaign)),
   };
 }
@@ -194,12 +197,6 @@ function laneFor(lane: Lane, campaign: Campaign): LaneView {
  */
 function departFor(campaign: Campaign, toId: string): Command | null {
   return 'rejected' in departureTo(campaign, toId) ? null : { kind: 'depart', toId };
-}
-
-/** Code-unit order over authored ids, which no locale can change. */
-function byId(one: string, other: string): number {
-  if (one === other) return 0;
-  return one < other ? -1 : 1;
 }
 
 /** Every location id in a read model names a location the draw placed. */

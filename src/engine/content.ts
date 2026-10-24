@@ -18,7 +18,9 @@ export type Month = {
  */
 export type Calendar = {
   readonly daysPerWeek: number;
+  /** In **authored order**: the first is the weekday of day 0, and so on. */
   readonly weekdayNames: readonly string[];
+  /** In **authored order**: the year runs through them as written. */
   readonly months: readonly Month[];
   readonly firstYear: number;
 };
@@ -279,6 +281,20 @@ export type DrawParameters = {
   readonly interMotifDistance: Range;
 };
 
+/**
+ * A content set as the loader hands it over, **in id order**: every collection
+ * of things with an authored id (archetypes, motifs, locations, tags, goods and
+ * buyers, a motif's slots) is sorted by that id, and a motif's lanes by their
+ * two ends, each lane's ends in id order too. Where something sat in the file is
+ * **written order**, and it never decides an outcome or reaches the player
+ * (ADR 0009 decision 3, iteration order).
+ *
+ * **Authored order** is kept only where a field says so: the calendar's months
+ * and weekday names. The lists of plain values — a tag's tells, a good's tags,
+ * a buyer's wants and the terms and tags in them — have no id and are kept as
+ * written. Today they are read for membership only. The first of them to decide
+ * an outcome or reach the player has to get a canonical order here first.
+ */
 export type ContentSet = {
   readonly bounds: Bounds;
   readonly drawParameters: DrawParameters;

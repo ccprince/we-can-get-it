@@ -102,8 +102,9 @@ function aGalaxyOfTwo(overrides: Record<string, unknown> = {}): ContentSet {
 /**
  * Kestrel, two places a lane from it and one beyond, so a lane can fail to
  * touch here. At range 10 the far lane is out of reach and the near ones are
- * not. Kestrel's second lane is what opens the campaign there: the assembly
- * starts the player at the place the most lanes touch (ADR 0006 decision 16).
+ * not. The assembly starts the player at the place the most lanes touch
+ * (ADR 0006 decision 16); Kestrel and Bellwether have two each, and Kestrel
+ * takes the tie because the fixture lists it first (`aGalaxy`).
  */
 function aGalaxyOfFour(overrides: Record<string, unknown> = {}): ContentSet {
   return loadedContentSet(

@@ -142,8 +142,8 @@ function joinMotifs(
     const current = motifs[at];
     if (previous === undefined || current === undefined) continue;
 
-    const [from, afterFrom] = drawFrom([...previous.filled.values()], next);
-    const [to, afterTo] = drawFrom([...current.filled.values()], afterFrom);
+    const [from, afterFrom] = drawFrom(locationIdsOf(previous), next);
+    const [to, afterTo] = drawFrom(locationIdsOf(current), afterFrom);
     const [spans, afterSpan] = drawWithin(distance, afterTo);
     next = afterSpan;
     lanes.push({ ends: [from, to], distance: spans });
@@ -163,10 +163,21 @@ function lanesWithin(placed: Placement): readonly Lane[] {
   });
 }
 
-/** The locations a placed motif holds, in its slot order. */
-function placedLocations(placed: Placement, reserve: readonly Location[]): readonly Location[] {
+/**
+ * The ids of the locations a placed motif holds, in the order of its slots,
+ * which the loader has put in id order. Read off the slots rather than off the
+ * map's values, whose order is the order the slots happened to be filled in.
+ */
+function locationIdsOf(placed: Placement): readonly string[] {
   return placed.motif.slots.flatMap((slot) => {
     const drawn = placed.filled.get(slot.id);
+    return drawn === undefined ? [] : [drawn];
+  });
+}
+
+/** The locations a placed motif holds, in the order of its slots. */
+function placedLocations(placed: Placement, reserve: readonly Location[]): readonly Location[] {
+  return locationIdsOf(placed).flatMap((drawn) => {
     const location = reserve.find((candidate) => candidate.id === drawn);
     return location === undefined ? [] : [location];
   });
@@ -174,8 +185,11 @@ function placedLocations(placed: Placement, reserve: readonly Location[]): reado
 
 /**
  * Where the campaign opens: the drawn location the most lanes touch, and the
- * first of them when several tie. ADR 0006 decision 16 wants a start with
- * several neighbours inside baseline range, because a start on a **spur** makes
+ * first of them in placement order when several tie — which is **derived
+ * order**, from the seed and the content set alone (ADR 0009 decision 3).
+ *
+ * ADR 0006 decision 16 wants a start with several neighbours inside baseline
+ * range, because a start on a **spur** makes
  * the first decision "fly out, or fly out" — the best-connected place is the
  * reading of that the assembly can make on its own. The **guarantee**, including
  * that it is a market with a spur among its neighbours, is #12's to check.

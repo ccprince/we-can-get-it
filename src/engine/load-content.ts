@@ -135,7 +135,7 @@ export function loadContent(raw: unknown): LoadResult {
 
   return {
     ok: true,
-    content: {
+    content: inIdOrder({
       bounds,
       drawParameters,
       fareRate,
@@ -147,9 +147,62 @@ export function loadContent(raw: unknown): LoadResult {
       goods,
       buyers,
       start,
-    },
+    }),
     reports,
   };
+}
+
+/**
+ * The content set with its **written order** taken out: every collection of
+ * things with an authored id comes out sorted by that id, so where something
+ * sat in the file never decides an outcome or reaches the player, and the same
+ * seed gives the same galaxy however the file is arranged (ADR 0009 decision 3,
+ * iteration order). Ids are unique within each collection, which the readers
+ * check, so no tie is left for the written order to break.
+ *
+ * It runs after validation, so a problem still names the position the writer
+ * put the mistake at.
+ */
+function inIdOrder(content: ContentSet): ContentSet {
+  return {
+    ...content,
+    archetypes: sortedById(content.archetypes),
+    motifs: sortedById(content.motifs.map(motifInIdOrder)),
+    locations: sortedById(content.locations),
+    tags: sortedById(content.tags),
+    goods: sortedById(content.goods),
+    buyers: sortedById(content.buyers),
+  };
+}
+
+/**
+ * A motif's slots by id, and its lanes by their two ends. A lane is symmetric,
+ * so which end the writer put first means nothing: each lane's ends are put in
+ * id order before the lanes are sorted by them, and no two lanes join the same
+ * pair, which the reader checks.
+ */
+function motifInIdOrder(motif: Motif): Motif {
+  const lanes = motif.lanes.map(({ ends, distance }) => ({
+    ends: byId(ends[0], ends[1]) <= 0 ? ends : ([ends[1], ends[0]] as const),
+    distance,
+  }));
+  return {
+    ...motif,
+    slots: sortedById(motif.slots),
+    lanes: lanes.sort(
+      (one, other) => byId(one.ends[0], other.ends[0]) || byId(one.ends[1], other.ends[1]),
+    ),
+  };
+}
+
+function sortedById<T extends { readonly id: string }>(items: readonly T[]): readonly T[] {
+  return [...items].sort((one, other) => byId(one.id, other.id));
+}
+
+/** Code-unit order over authored ids, which no locale can change. */
+function byId(one: string, other: string): number {
+  if (one === other) return 0;
+  return one < other ? -1 : 1;
 }
 
 /**

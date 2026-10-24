@@ -107,7 +107,8 @@ describe('the map assembled from motifs', () => {
     // a lane the player can depart along and land at the far end of.
     const content = aPairedGalaxy();
     const campaign = startCampaign(content, SEED);
-    const departure = view(campaign).chart.lanes[0]?.depart;
+    const lane = view(campaign).chart.lanes[0];
+    const departure = lane?.depart;
     if (departure === undefined || departure === null) {
       throw new Error('the assembled chart offered no departure');
     }
@@ -118,7 +119,7 @@ describe('the map assembled from motifs', () => {
     }
     if (isRejected(flown)) throw new Error(flown.rejected.message);
 
-    expect(view(flown.campaign).here?.name).toBe('Bellwether Yards');
+    expect(view(flown.campaign).here?.name).toBe(lane?.destination);
     expect(view(flown.campaign).digest?.entries[0]?.text).toContain('you set down at');
   });
 });
@@ -187,6 +188,29 @@ describe('what the draw guarantees', () => {
     // A save carries a seed and never a galaxy (ADR 0008 decision 18), so a
     // reload has to rebuild the same one.
     expect(chartOf(aContentSetToDrawFrom(), 4)).toEqual(chartOf(aContentSetToDrawFrom(), 4));
+  });
+
+  it('gives the same galaxy whatever order the content file lists things in', () => {
+    // Written order never decides an outcome (ADR 0009 decision 3): the same
+    // content with its locations, motifs, slots, motif lanes and every lane's
+    // two ends written backwards draws the same galaxy, seed for seed.
+    const written = aContentSetToDrawFrom();
+    const backwards = loadedContentSet({
+      locations: [...written.locations].reverse(),
+      motifs: [...written.motifs].reverse().map((motif) => ({
+        ...motif,
+        slots: [...motif.slots].reverse(),
+        lanes: [...motif.lanes].reverse().map((lane) => ({
+          ...lane,
+          ends: [lane.ends[1], lane.ends[0]],
+        })),
+      })),
+      drawParameters: aDrawParameters({ motifsPerCampaign: 2 }),
+    });
+
+    for (const seed of SEEDS) {
+      expect(view(startCampaign(backwards, seed))).toEqual(view(startCampaign(written, seed)));
+    }
   });
 
   it('gives a different galaxy for every one of six seeds', () => {
