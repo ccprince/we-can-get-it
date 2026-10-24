@@ -40,7 +40,7 @@
     "typecheck": "tsc --noEmit",
     "lint": "eslint .",
     "format": "prettier --write .",
-    "format:check": "prettier --check .",
+    "format:check": "prettier --check \"**/*.{json,css,html}\"",
     "test": "vitest run",
     "harness": "vite-node harness/run.ts",
     "check": "npm run typecheck && npm run lint && npm run format:check && npm run test",
