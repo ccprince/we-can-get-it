@@ -282,9 +282,13 @@ describe('what the draw guarantees', () => {
       return theReserve.filter((location) => !drawn.has(location));
     });
 
-    for (const hidden of missed) {
+    SEEDS.forEach((seed, at) => {
+      const hidden = missed[at] ?? [];
+      const laneEnds = chartOf(content, seed).lanes.flatMap((lane) => lane.ends);
+
       expect(hidden).toHaveLength(2);
-    }
+      expect(laneEnds.filter((end) => hidden.includes(end))).toEqual([]);
+    });
     // And a different pair every time: a fixed hidden pair would be the galaxy
     // a returning player learns, which is the failure findings §2.5 names.
     expect(new Set(missed.map((hidden) => hidden.join(' and '))).size).toBe(6);

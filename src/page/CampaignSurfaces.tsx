@@ -48,7 +48,7 @@ export function CampaignSurfaces({
 
       <section className="mt-8">
         <h2 className="text-xs tracking-widest text-stone-500 uppercase">The chart</h2>
-        <ul aria-label="Places" className="mt-2 flex flex-wrap gap-x-4 text-sm text-stone-300">
+        <ul aria-label="Locations" className="mt-2 flex flex-wrap gap-x-4 text-sm text-stone-300">
           {view.chart.locations.map((location) => (
             <li key={location.name}>{location.name}</li>
           ))}
