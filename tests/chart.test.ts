@@ -1,7 +1,17 @@
 import { describe, expect, it } from 'vitest';
 import { startCampaign, view } from '../src/engine';
 import type { ContentSet, LocationView } from '../src/engine';
-import { aGalaxy, aMotifLane, aLocation, aShip, aStart, loadedContentSet } from './support/content';
+import { laneBetween } from './support/chart';
+import {
+  aGalaxy,
+  aMotif,
+  aMotifLane,
+  aLocation,
+  aShip,
+  aSlot,
+  aStart,
+  loadedContentSet,
+} from './support/content';
 
 /**
  * The chart does the arithmetic (ADR 0006 decision 20): it shows the numbers
@@ -13,8 +23,8 @@ const SEED = 20261022;
 /**
  * Kestrel, two places a lane from it and one beyond, so a lane can fail to
  * touch here. The campaign opens at the best-connected place the assembly drew
- * (ADR 0006 decision 16), and Kestrel's second lane is what makes it that
- * place — nothing else has two.
+ * (ADR 0006 decision 16). Kestrel and Bellwether have two lanes each, and
+ * Kestrel takes the tie because the fixture lists it first (`aGalaxy`).
  */
 function aFourPlaceGalaxy(overrides: Record<string, unknown> = {}): ContentSet {
   return loadedContentSet(
@@ -45,8 +55,8 @@ describe('the chart', () => {
     // a half (ADR 0006 decision 9).
     const chart = chartAt(aFourPlaceGalaxy());
 
-    expect(chart.lanes[0]?.days).toBe(2);
-    expect(chart.lanes[1]?.days).toBe(4);
+    expect(laneBetween(chart, 'Kestrel Reach', 'Bellwether Yards').days).toBe(2);
+    expect(laneBetween(chart, 'Bellwether Yards', "Grieve's Hollow").days).toBe(4);
   });
 
   it('never flies a lane in less than a day, however short it is', () => {
@@ -64,8 +74,8 @@ describe('the chart', () => {
   it('quotes the fare as the distance times the one galaxy-wide rate', () => {
     const chart = chartAt(aFourPlaceGalaxy({ fareRate: 10 }));
 
-    expect(chart.lanes[0]?.fare).toBe(60);
-    expect(chart.lanes[1]?.fare).toBe(160);
+    expect(laneBetween(chart, 'Kestrel Reach', 'Bellwether Yards').fare).toBe(60);
+    expect(laneBetween(chart, 'Bellwether Yards', "Grieve's Hollow").fare).toBe(160);
   });
 
   it('cuts days and not fare when the ship is faster', () => {
@@ -73,20 +83,25 @@ describe('the chart', () => {
     // (ADR 0006 decision 10).
     const faster = chartAt(aFourPlaceGalaxy({ start: aStart({ ship: aShip({ speed: 6 }) }) }));
 
-    expect(faster.lanes[0]?.days).toBe(1);
-    expect(faster.lanes[0]?.fare).toBe(60);
+    const toBellwether = laneBetween(faster, 'Kestrel Reach', 'Bellwether Yards');
+    expect(toBellwether.days).toBe(1);
+    expect(toBellwether.fare).toBe(60);
   });
 
   it('says of every lane whether this ship’s range reaches it at all', () => {
     const chart = chartAt(aFourPlaceGalaxy({ start: aStart({ ship: aShip({ range: 10 }) }) }));
 
-    expect(chart.lanes.map((lane) => lane.withinRange)).toEqual([true, false, true]);
+    expect(laneBetween(chart, 'Kestrel Reach', 'Bellwether Yards').withinRange).toBe(true);
+    expect(laneBetween(chart, 'Bellwether Yards', "Grieve's Hollow").withinRange).toBe(false);
+    expect(laneBetween(chart, 'Kestrel Reach', 'Thennet Shoals').withinRange).toBe(true);
   });
 
   it('names where a lane would take the player from where they are', () => {
     const chart = chartAt(aFourPlaceGalaxy());
 
-    expect(chart.lanes[0]?.destination).toBe('Bellwether Yards');
+    expect(laneBetween(chart, 'Kestrel Reach', 'Bellwether Yards').destination).toBe(
+      'Bellwether Yards',
+    );
   });
 
   it('shows the lanes that do not touch here, which are common knowledge too', () => {
@@ -95,20 +110,36 @@ describe('the chart', () => {
     const chart = chartAt(aFourPlaceGalaxy());
 
     expect(chart.lanes).toHaveLength(3);
-    expect(chart.lanes[1]?.ends).toEqual(['Bellwether Yards', "Grieve's Hollow"]);
-    expect(chart.lanes[1]?.destination).toBeNull();
+    expect(laneBetween(chart, 'Bellwether Yards', "Grieve's Hollow").destination).toBeNull();
   });
 
-  it('names every location the draw placed, in the order of their ids', () => {
-    // The draw placed Kestrel first; by id it is third. What the player reads
-    // never follows the order the draw happened to place things in (ADR 0009).
-    const chart = chartAt(aFourPlaceGalaxy());
+  it('names every location in placement order: by slot id, not location id', () => {
+    // Placement order is derived from the seed and the content set, and it is
+    // what the chart states (ADR 0009 decision 3). The slots are written `b`
+    // then `a`, and the places are Zenith in `a` and Ash in `b`: by slot id
+    // Zenith comes first, which neither the file's order nor the location ids
+    // would give.
+    const chart = chartAt(
+      loadedContentSet({
+        locations: [
+          aLocation({ id: 'ash', name: 'Ash Landing', archetype: 'processor' }),
+          aLocation({ id: 'zenith', name: 'Zenith Spire', archetype: 'extractor' }),
+        ],
+        motifs: [
+          aMotif({
+            slots: [
+              aSlot({ id: 'b', archetype: 'processor' }),
+              aSlot({ id: 'a', archetype: 'extractor' }),
+            ],
+            lanes: [aMotifLane({ ends: ['b', 'a'], distance: 6 })],
+          }),
+        ],
+      }),
+    );
 
     expect(chart.locations.map((location) => location.name)).toEqual([
-      'Bellwether Yards',
-      "Grieve's Hollow",
-      'Kestrel Reach',
-      'Thennet Shoals',
+      'Zenith Spire',
+      'Ash Landing',
     ]);
   });
 
@@ -138,7 +169,7 @@ describe('the chart', () => {
   });
 });
 
-/** The names on the chart, sorted: the order the engine gives them means nothing. */
+/** The names on the chart, sorted, for a test about which places and not their order. */
 function namesOf(locations: readonly LocationView[]): readonly string[] {
   return locations.map((location) => location.name).sort();
 }

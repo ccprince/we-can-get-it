@@ -178,8 +178,15 @@ export function aMotifLane(overrides: RawObject = {}): RawObject {
  * about the chart and not about what came up. A test whose subject *is* what
  * came up states its own motifs and lets several locations fit a slot.
  *
- * Lanes are stated between location ids, which are also the slot ids here, so a
- * fixture reads the way a chart does.
+ * Lanes are stated between location ids, so a fixture reads the way a chart
+ * does, and are rewritten here to the slots those locations fill.
+ *
+ * **The first location listed opens the campaign** when no place is better
+ * connected. The start is the best-connected place, with ties going to the
+ * first in placement order, which is the motif's slots in id order (ADR 0009
+ * decision 3). So each slot's id is the location's position in this list and
+ * then its id, `00-kestrel` before `01-bellwether`, and the order a fixture
+ * lists its places in is authored order on purpose, through the ids.
  */
 export function aGalaxy(overrides: RawObject = {}): RawObject {
   const { locations, lanes, ...rest } = overrides;
@@ -199,14 +206,25 @@ export function aGalaxy(overrides: RawObject = {}): RawObject {
     archetype: `only-${String(location.id)}`,
   }));
 
+  const slotOf = new Map(
+    placed.map((location, at) => [location.id, `${String(at).padStart(2, '0')}-${location.id}`]),
+  );
+  const slotFor = (end: unknown): unknown => slotOf.get(String(end)) ?? end;
+
   return {
     archetypes: placed.map((location) => ({ id: location.archetype })),
     locations: placed,
     motifs: [
       {
         id: 'the-whole-map',
-        slots: placed.map((location) => ({ id: location.id, archetype: location.archetype })),
-        lanes: asObjects(lanes) ?? [aMotifLane()],
+        slots: placed.map((location) => ({
+          id: slotOf.get(location.id),
+          archetype: location.archetype,
+        })),
+        lanes: (asObjects(lanes) ?? [aMotifLane()]).map((lane) => ({
+          ...lane,
+          ends: Array.isArray(lane.ends) ? lane.ends.map(slotFor) : lane.ends,
+        })),
       },
     ],
     drawParameters: aDrawParameters({ motifsPerCampaign: 1 }),

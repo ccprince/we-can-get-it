@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { isRejected, startCampaign, takeCommand, view } from '../src/engine';
 import type { Campaign, Command, ContentSet, Reason } from '../src/engine';
+import { laneBetween } from './support/chart';
 import { aGalaxy, aMotifLane, aLocation, aShip, aStart, loadedContentSet } from './support/content';
 
 /**
@@ -14,7 +15,8 @@ const SEED = 20261022;
  * Kestrel, two places a lane from it and one beyond. The campaign opens at the
  * best-connected place the assembly drew (ADR 0006 decision 16), so a test
  * about departing from Kestrel has to make Kestrel that place — here by giving
- * it two lanes where nowhere else has more. The Hollow is deliberately not one
+ * it two lanes, as many as Bellwether, and listing it first so it takes the tie
+ * (`aGalaxy`). The Hollow is deliberately not one
  * of them: it is the destination no lane from here reaches.
  */
 function aGalaxyOfFour(overrides: Record<string, unknown> = {}): ContentSet {
@@ -57,28 +59,32 @@ describe('the chart’s departures', () => {
   it('offers a departure along a lane that leaves from here', () => {
     const chart = view(startCampaign(aGalaxyOfFour(), SEED)).chart;
 
-    expect(chart.lanes[0]?.depart).toEqual({ kind: 'depart', toId: 'bellwether' });
+    expect(laneBetween(chart, 'Kestrel Reach', 'Bellwether Yards').depart).toEqual({
+      kind: 'depart',
+      toId: 'bellwether',
+    });
   });
 
   it('offers none along a lane that does not leave from here', () => {
     const chart = view(startCampaign(aGalaxyOfFour(), SEED)).chart;
 
-    expect(chart.lanes[1]?.depart).toBeNull();
+    expect(laneBetween(chart, 'Bellwether Yards', "Grieve's Hollow").depart).toBeNull();
   });
 
   it('offers none along a lane beyond this ship’s range, at any price', () => {
     const content = aGalaxyOfFour({ start: aStart({ ship: aShip({ range: 10 }) }) });
 
     const chart = view(startCampaign(content, SEED)).chart;
-    expect(chart.lanes[0]?.withinRange).toBe(false);
-    expect(chart.lanes[0]?.depart).toBeNull();
+    const toBellwether = laneBetween(chart, 'Kestrel Reach', 'Bellwether Yards');
+    expect(toBellwether.withinRange).toBe(false);
+    expect(toBellwether.depart).toBeNull();
   });
 });
 
 describe('departing', () => {
   it('charges the fare it quoted, at departure', () => {
     const campaign = startCampaign(aGalaxyOfFour({ start: aStart({ credits: 500 }) }), SEED);
-    const quoted = view(campaign).chart.lanes[0]?.fare;
+    const quoted = laneBetween(view(campaign).chart, 'Kestrel Reach', 'Bellwether Yards').fare;
 
     const underway = view(accepted(campaign, TO_BELLWETHER));
 

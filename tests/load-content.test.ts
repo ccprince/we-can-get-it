@@ -26,6 +26,49 @@ describe('loadContent', () => {
     expect(result.ok).toBe(true);
   });
 
+  it('hands over every collection in id order, whatever order it was written in', () => {
+    // Where a thing sat in the file is written order, and the loader takes it
+    // out (ADR 0009 decision 3): collections by id, a motif's lanes by their
+    // ends, each lane's ends in id order. The calendar's months are authored
+    // order and stay as written.
+    const result = loadContent(
+      aContentSet({
+        calendar: aCalendar({
+          months: [
+            { name: 'Thaw', days: 24 },
+            { name: 'Ashfall', days: 24 },
+          ],
+        }),
+        archetypes: [anArchetype({ id: 'processor' }), anArchetype()],
+        locations: [aLocation({ id: 'shoals', name: 'Thennet Shoals' }), aLocation()],
+        motifs: [
+          aMotif({
+            id: 'spur',
+            slots: [aSlot({ id: 'pit' }), aSlot({ id: 'dead-end' }), aSlot()],
+            lanes: [
+              aMotifLane({ ends: ['pit', 'dead-end'], distance: 3 }),
+              aMotifLane({ ends: ['pit', 'berth'], distance: 4 }),
+            ],
+          }),
+          aMotif(),
+        ],
+      }),
+    );
+    if (!result.ok) throw new Error(JSON.stringify(result.problems));
+    const { content } = result;
+    const spur = content.motifs.find((motif) => motif.id === 'spur');
+
+    expect(content.calendar.months.map((month) => month.name)).toEqual(['Thaw', 'Ashfall']);
+    expect(content.archetypes.map((archetype) => archetype.id)).toEqual(['market', 'processor']);
+    expect(content.locations.map((location) => location.id)).toEqual(['kestrel', 'shoals']);
+    expect(content.motifs.map((motif) => motif.id)).toEqual(['lone-berth', 'spur']);
+    expect(spur?.slots.map((slot) => slot.id)).toEqual(['berth', 'dead-end', 'pit']);
+    expect(spur?.lanes.map((lane) => lane.ends)).toEqual([
+      ['berth', 'pit'],
+      ['dead-end', 'pit'],
+    ]);
+  });
+
   it('refuses a month that is not a whole number of weeks', () => {
     const result = loadContent(
       aContentSet({
