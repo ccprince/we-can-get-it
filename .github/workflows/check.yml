@@ -15,5 +15,5 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
-      # The same command the pre-commit hook runs: typecheck, lint, tests.
+      # The same command the pre-commit hook runs: typecheck, lint, formatting, tests.
       - run: npm run check

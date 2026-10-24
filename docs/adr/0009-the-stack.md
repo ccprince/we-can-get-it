@@ -107,6 +107,33 @@ because a seed plus a command sequence is already the harness's input shape and 
 **12. Tailwind for styling.** Layout iteration speed on dense surfaces is the thing being bought, and it is
 bought at the cost of layout decisions living in the markup, which is accepted.
 
+### Formatting
+
+**13. Prettier at width 100, run as an ESLint rule.** Added as a decision rather than left to taste because
+it buys a dependency, which decision 1's one-package frugality otherwise argues against. Two things in #10
+paid for it: an agent reached for a Prettier that was not installed and got its defaults, reverted the file
+and rewrapped by hand; and `/code-review` spent attention finding long lines by eye, which became a commit
+of its own. Formatting is a fixed syntactic property, and `CODING_STANDARDS.md` already says those are checks
+rather than judgement calls.
+
+- **The width is 100 because that is what the code already is**, read off the source rather than taken from
+  a default. Reformatting `src/` at each candidate measures the distance: 80 costs +72/-300 lines, 90
+  +31/-103, 110 +99/-26, and 100 costs +26/-15. Only 15 lines in the repo exceeded 100; 272 exceeded 80.
+- **It runs inside `eslint .`, so it is already inside `npm run check`** and therefore inside both the
+  pre-commit hook and CI (consequences, above). As an ESLint rule a violation reports as `file:line:col`,
+  which `prettier --check` does not — it names only the file. `prettier --check .` is in `check` too, for the
+  JSON, CSS and HTML that ESLint does not read.
+- **`max-len` covers what Prettier will not.** Prettier reflows structure and leaves a long string or comment
+  alone by design, and four of the lines over 100 were exactly that. The rule carries ESLint's
+  "formatting rules are being moved out of core" notice; its removal would fail `eslint .` on an unknown
+  rule, loudly and at upgrade time, which is cheaper than a third dependency for one rule.
+- **Markdown is not formatted.** Prettier pads every table to aligned columns — 428 changed lines across the
+  canon, and padded rows past 100 columns, since table padding ignores `printWidth`. The canon is prose,
+  hand-wrapped by its author, and both incidents above were TypeScript. The reason is in `.prettierignore`.
+- **Authored prose in content is not width-checked.** ESLint does not read JSON and Prettier cannot break a
+  string, so the six flavour-text lines in `content/walking-skeleton.json` stay long. That is correct: a
+  **tell** is written to read well, not to fit a column.
+
 ## Rejected alternatives
 
 - **Python.** The fastest way to write the harness and plot the curve, and the wrong trade overall: the

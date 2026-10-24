@@ -3,7 +3,8 @@
  * the seed-finder and every test (ADR 0003 decision 1, ADR 0009 decision 1).
  * Nothing reaches inside it, and no rule lives outside it.
  *
- *   loadContent(raw)             -> { ok: true, content, reports } | { ok: false, problems, reports }
+ *   loadContent(raw)             -> { ok: true, content, reports }
+ *                                  | { ok: false, problems, reports }
  *   startCampaign(content, seed) -> Campaign
  *   takeCommand(campaign, cmd)   -> { campaign } | { rejected: Reason }
  *   view(campaign)               -> View

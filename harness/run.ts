@@ -54,7 +54,8 @@ function main(): void {
   write(config.out, toCsv(rows));
 
   console.log(
-    `tourist: ${many(seedsOf(config).length, 'seed')} × ${many(config.settings.length, 'setting')}` +
+    `tourist: ${many(seedsOf(config).length, 'seed')}` +
+      ` × ${many(config.settings.length, 'setting')}` +
       ` × ${many(config.days, 'day')} = ${many(rows.length, 'row')} -> ${config.out}`,
   );
 }
