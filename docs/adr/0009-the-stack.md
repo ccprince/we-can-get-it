@@ -1,6 +1,7 @@
 # ADR 0009: TypeScript on Node, with the engine as a library three consumers import
 
-**Status:** accepted, 2026-10-22
+**Status:** accepted, 2026-10-22; decision 3's iteration-order rule amended 2026-10-24 (#47): written,
+authored and derived order are told apart, and only written order is denied an outcome or the player
 **Context:** `docs/design-overview.md` §4 chunk 8 (the surfaces this stack has to carry), §6 item 5 (the
 milestone this unblocks); `docs/prototype-findings.md` §2.5, §5.3, §5.4; ADR 0003 (the seam this chooses a
 language for); ADR 0006 decision 20 (the chart, and the read model it implies)
@@ -40,9 +41,31 @@ one seed played twice at two settings — is worthless the moment that slips.
 
 - **Randomness** comes from a seeded generator created in start-a-campaign from the seed and threaded
   explicitly. Never a module-level generator, which would make two campaigns in one page load differ.
-- **Iteration order** never decides an outcome. Anything that affects what the player sees is ordered by an
-  explicit sort over stable authored ids, never by object key order, `Map`/`Set` insertion order, or the order
-  content happened to be written in. This is the rule the **draw**'s ordered cascade (ADR 0008) depends on.
+- **Iteration order** is judged by where an order came from, never by what container holds it. Three orders
+  are in play:
+  - **Written order** is where something happens to sit in a content file: its position in an array, or
+    object key order. Nobody chose it and nobody has to preserve it. It is the default for every content
+    array.
+  - **Authored order** is an order an author chose because it means something, such as a calendar's months.
+    It exists only where a content type's doc comment declares it. A motif's slots and a lane's two ends
+    are written order: lanes are symmetric, and no rule gives a slot's position any meaning.
+  - **Derived order** is what the rules produce from the seed and canonical content, such as the order the
+    draw placed locations or laid lanes.
+
+  **Written order never decides an outcome and never reaches the player.** The loader canonicalises it (#49)
+  away: every content collection without a declared authored order comes out of `loadContent` sorted by
+  authored id (slots within a motif, motif lanes by their pair of ends, and each lane's two ends
+  included), so the engine never sees it and reordering a content file, with nothing else changed, gives
+  the same seed the same galaxy. **Authored and derived order may do both.** A `Map`, a `Set` or key order
+  may decide an outcome when what went in arrived in an allowed order. Code like that either makes the
+  order visible, for example by iterating the canonical list it was built from, or carries a one-line
+  comment naming the order's source. **Every list in a read model states its order in its doc comment.**
+  That order may be derived. Sorting for display, by name or by days, is view state (decision 10), so the
+  engine does not add an id sort the player cannot read anyway. This is the rule the **draw**'s ordered
+  cascade (ADR 0008) depends on. *(Amended 2026-10-24, #47. It had read: anything the player sees is
+  ordered by an explicit sort over stable authored ids, never by key order, `Map`/`Set` insertion order
+  or the order content happened to be written in. That wording forbade correct derived order and missed
+  written order getting in through an array index.)*
 - **Money and worth are integers.** Credits are whole numbers and every derived price — the **offer**, the
   fare, an **advance** — lands on an integer by a stated rounding rule. Float accumulation drifts, and a price
   the player cannot reproduce by the arithmetic on their own reading surface is worse than a wrong price.

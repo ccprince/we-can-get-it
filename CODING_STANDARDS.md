@@ -36,6 +36,12 @@ These need a reader; no check substitutes for them.
 - **Tests go through the public seam only** (ADR 0003 decision 5), with fixed seeds and purpose-built
   content from the fixture helper, and new-field defaults in one place. A test reaching inside
   `src/engine/` past `index.ts` is a finding.
+- **Order** (ADR 0009 decision 3, iteration order). **Written order**, meaning where something sits
+  in a content file, deciding an outcome or reaching a surface is a finding. Derived order is not: a
+  draw's placement order, or a `Map` filled in an allowed order, is fine. Two things to look for: a
+  read-model list with no stated order in its doc comment, and container order deciding an outcome
+  with neither the order visible in the code nor a comment naming its source. An engine-side id sort
+  added "for determinism" is not a fix: the loader already canonicalises content.
 - **Unreachable code.** A branch, parameter or export with no caller through the seam cannot be
   tested through it. The skeleton review found four; they are cheaper to delete than to carry.
 
