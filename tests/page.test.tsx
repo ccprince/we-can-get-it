@@ -176,6 +176,19 @@ describe('the chart on the page', () => {
     expect(screen.queryByRole('button', { name: /Depart/ })).toBeNull();
   });
 
+  it('lists every place on the chart, including one no lane touches', () => {
+    const content = aGalaxyOfTwo({
+      locations: [aLocation(), aLocation({ id: 'caravel', name: 'Caravel Station' })],
+      lanes: [],
+    });
+    surfaces({ campaign: startCampaign(content, SEED) });
+
+    const places = screen.getByRole('list', { name: 'Places' });
+    expect(places.textContent).toContain('Kestrel Reach');
+    expect(places.textContent).toContain('Caravel Station');
+    expect(screen.getByText('No lanes are charted.')).toBeDefined();
+  });
+
   it('says where the player is while underway, and offers no departure', () => {
     surfaces({ campaign: flying(aGalaxyOfTwo(), { kind: 'depart', toId: 'bellwether' }) });
 

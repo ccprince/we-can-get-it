@@ -40,6 +40,7 @@ export type {
   DigestView,
   HereView,
   LaneView,
+  LocationView,
   MenuView,
   TodayView,
   TransitView,

@@ -48,8 +48,13 @@ export function CampaignSurfaces({
 
       <section className="mt-8">
         <h2 className="text-xs tracking-widest text-stone-500 uppercase">The chart</h2>
+        <ul aria-label="Places" className="mt-2 flex flex-wrap gap-x-4 text-sm text-stone-300">
+          {view.chart.locations.map((location) => (
+            <li key={location.name}>{location.name}</li>
+          ))}
+        </ul>
         {view.chart.lanes.length === 0 ? (
-          <p className="mt-2 text-stone-500">No lane leaves here.</p>
+          <p className="mt-2 text-stone-500">No lanes are charted.</p>
         ) : (
           <table className="mt-2 w-full text-left text-sm">
             <thead className="text-xs tracking-wide text-stone-500 uppercase">
