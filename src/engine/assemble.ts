@@ -1,5 +1,5 @@
 import type { ContentSet, Lane, Location, Motif, Range, Slot } from './content';
-import type { DrawnGalaxy, PlacedMotif } from './galaxy';
+import type { DrawnGalaxy } from './galaxy';
 import { drawInt, type Rng } from './rng';
 
 /**
@@ -25,10 +25,7 @@ export function assembleMap(content: ContentSet, rng: Rng): readonly [DrawnGalax
   const locations = placed.flatMap((motif) => placedLocations(motif, content.locations));
   const lanes = [...placed.flatMap(lanesWithin), ...joining];
 
-  return [
-    { locations, lanes, startId: hubOf(locations, lanes), motifs: placed.map(recordOf) },
-    afterJoining,
-  ];
+  return [{ locations, lanes, startId: hubOf(locations, lanes) }, afterJoining];
 }
 
 /**
@@ -173,16 +170,6 @@ function placedLocations(placed: Placement, reserve: readonly Location[]): reado
     const location = reserve.find((candidate) => candidate.id === drawn);
     return location === undefined ? [] : [location];
   });
-}
-
-function recordOf(placed: Placement): PlacedMotif {
-  return {
-    motifId: placed.motif.id,
-    locationIds: placed.motif.slots.flatMap((slot) => {
-      const drawn = placed.filled.get(slot.id);
-      return drawn === undefined ? [] : [drawn];
-    }),
-  };
 }
 
 /**

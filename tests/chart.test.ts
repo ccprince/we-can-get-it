@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { startCampaign, view } from '../src/engine';
 import type { ContentSet } from '../src/engine';
-import { aGalaxy, aLane, aLocation, aShip, aStart, loadedContentSet } from './support/content';
+import { aGalaxy, aMotifLane, aLocation, aShip, aStart, loadedContentSet } from './support/content';
 
 /**
  * The chart does the arithmetic (ADR 0006 decision 20): it shows the numbers
@@ -26,9 +26,9 @@ function aFourPlaceGalaxy(overrides: Record<string, unknown> = {}): ContentSet {
         aLocation({ id: 'shoals', name: 'Thennet Shoals', prose: 'Tenders and tank farms.' }),
       ],
       lanes: [
-        aLane({ ends: ['kestrel', 'bellwether'], distance: 6 }),
-        aLane({ ends: ['bellwether', 'hollow'], distance: 16 }),
-        aLane({ ends: ['kestrel', 'shoals'], distance: 2 }),
+        aMotifLane({ ends: ['kestrel', 'bellwether'], distance: 6 }),
+        aMotifLane({ ends: ['bellwether', 'hollow'], distance: 16 }),
+        aMotifLane({ ends: ['kestrel', 'shoals'], distance: 2 }),
       ],
       ...overrides,
     }),
@@ -54,7 +54,7 @@ describe('the chart', () => {
     // system would be a free shopping trip.
     const chart = chartAt(
       aFourPlaceGalaxy({
-        lanes: [aLane({ ends: ['kestrel', 'bellwether'], distance: 1 })],
+        lanes: [aMotifLane({ ends: ['kestrel', 'bellwether'], distance: 1 })],
       }),
     );
 

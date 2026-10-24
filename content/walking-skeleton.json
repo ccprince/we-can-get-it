@@ -174,37 +174,10 @@
       "archetype": "extractor"
     }
   ],
-  "lanes": [
-    {
-      "ends": ["bellwether", "kestrel"],
-      "distance": 6
-    },
-    {
-      "ends": ["bellwether", "shoals"],
-      "distance": 3
-    },
-    {
-      "ends": ["bellwether", "caravel"],
-      "distance": 11
-    },
-    {
-      "ends": ["shoals", "caravel"],
-      "distance": 9
-    },
-    {
-      "ends": ["kestrel", "hollow"],
-      "distance": 16
-    },
-    {
-      "ends": ["caravel", "lament"],
-      "distance": 26
-    }
-  ],
   "tags": [],
   "goods": [],
   "buyers": [],
   "start": {
-    "locationId": "bellwether",
     "credits": 400,
     "day": 1,
     "ship": {

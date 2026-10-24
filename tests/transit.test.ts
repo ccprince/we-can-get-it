@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { isRejected, startCampaign, takeCommand, view } from '../src/engine';
 import type { Campaign, Command, ContentSet } from '../src/engine';
-import { aGalaxy, aLane, aLocation, aShip, aStart, loadedContentSet } from './support/content';
+import { aGalaxy, aMotifLane, aLocation, aShip, aStart, loadedContentSet } from './support/content';
 
 /**
  * **Transit is a place, played day by day**: a multi-day haul is not one
@@ -22,7 +22,7 @@ function aGalaxyOfTwo(overrides: Record<string, unknown> = {}): ContentSet {
         aLocation(),
         aLocation({ id: 'bellwether', name: 'Bellwether Yards', prose: 'A repair yard.' }),
       ],
-      lanes: [aLane({ ends: ['kestrel', 'bellwether'], distance: 12 })],
+      lanes: [aMotifLane({ ends: ['kestrel', 'bellwether'], distance: 12 })],
       start: aStart({ credits: 500 }),
       ...overrides,
     }),
@@ -74,7 +74,7 @@ describe('a leg flown day by day', () => {
 
   it('lands the next day when the lane is a single day long', () => {
     const content = aGalaxyOfTwo({
-      lanes: [aLane({ ends: ['kestrel', 'bellwether'], distance: 3 })],
+      lanes: [aMotifLane({ ends: ['kestrel', 'bellwether'], distance: 3 })],
     });
     const campaign = startCampaign(content, SEED);
 
@@ -133,7 +133,7 @@ describe('the digest of a leg', () => {
 
   it('counts the span in the days the leg actually took', () => {
     const content = aGalaxyOfTwo({
-      lanes: [aLane({ ends: ['kestrel', 'bellwether'], distance: 3 })],
+      lanes: [aMotifLane({ ends: ['kestrel', 'bellwether'], distance: 3 })],
     });
 
     const landed = view(accepted(startCampaign(content, SEED), TO_BELLWETHER));

@@ -17,23 +17,6 @@ export type DrawnGalaxy = {
   readonly lanes: readonly Lane[];
   /** Where the campaign opens, which is a location the draw placed. */
   readonly startId: string;
-  /**
-   * The **motifs** placed, in placement order, each with the locations drawn
-   * into its slots. A location appears under exactly one of them, which is what
-   * ADR 0008 decision 6 asks of an assembly, and an **inter-motif lane** is a
-   * lane whose ends sit under two different ones.
-   */
-  readonly motifs: readonly PlacedMotif[];
-};
-
-/**
- * A **motif** as this campaign placed it: which motif was drawn, and the
- * locations drawn into its slots, in slot order. A motif may be placed more
- * than once, so this is an instance and not the motif (ADR 0008 decision 7).
- */
-export type PlacedMotif = {
-  readonly motifId: string;
-  readonly locationIds: readonly string[];
 };
 
 /**

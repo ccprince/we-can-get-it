@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { isRejected, startCampaign, takeCommand, view } from '../src/engine';
 import type { Command, ContentSet, View } from '../src/engine';
-import { aGalaxy, aLane, aLocation, aStart, loadedContentSet } from './support/content';
+import { aGalaxy, aMotifLane, aLocation, aStart, loadedContentSet } from './support/content';
 
 /**
  * Determinism is a test, not a convention: the measurement method this project
@@ -37,7 +37,7 @@ function aFlyableGalaxy(): ContentSet {
         aLocation(),
         aLocation({ id: 'bellwether', name: 'Bellwether Yards', prose: 'A repair yard.' }),
       ],
-      lanes: [aLane({ ends: ['kestrel', 'bellwether'], distance: 12 })],
+      lanes: [aMotifLane({ ends: ['kestrel', 'bellwether'], distance: 12 })],
       start: aStart({ credits: 500 }),
     }),
   );

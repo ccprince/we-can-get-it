@@ -85,6 +85,27 @@ export function loadContent(raw: unknown): LoadResult {
       : readBuyers(raw.buyers, tags, goods, problems);
   const start = readStart(raw.start, problems);
 
+  // An inter-motif lane beyond the baseline ship's range would be a lane no
+  // ship can fly, and a galaxy not flyable end to end. **Range** is the only
+  // gate on the map (ADR 0006 decision 14), so this is a content mistake rather
+  // than a hard campaign — and it is checkable statically, which ADR 0008
+  // decision 16 says to do wherever it can be done. Whether a *drawn* galaxy is
+  // connected at baseline range is the draw-time pass's, and is #12's.
+  // Only when the draw places more than one motif: with a single motif there is
+  // nothing to join and the range is never read.
+  if (drawParameters !== undefined && start !== undefined && drawParameters.motifsPerCampaign > 1) {
+    const { most } = drawParameters.interMotifDistance;
+    if (most > start.ship.range) {
+      problems.push(
+        fails(
+          'drawParameters.interMotifDistance.most',
+          `is ${most}, which is beyond the baseline ship's range of ${start.ship.range}: ` +
+            'no ship could fly the lane',
+        ),
+      );
+    }
+  }
+
   // The whole-set checks and the distributions read the vocabulary, the
   // catalogue, the cast and the bounds, and nothing else — so a content set
   // whose calendar or chart would not read still gets both, which is the half

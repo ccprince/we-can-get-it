@@ -13,7 +13,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { isRejected, startCampaign, takeCommand, view } from '../src/engine';
 import type { Campaign, Command, ContentSet } from '../src/engine';
 import { CampaignSurfaces } from '../src/page/CampaignSurfaces';
-import { aGalaxy, aLane, aLocation, aShip, aStart, loadedContentSet } from './support/content';
+import { aGalaxy, aMotifLane, aLocation, aShip, aStart, loadedContentSet } from './support/content';
 
 afterEach(cleanup);
 
@@ -92,7 +92,7 @@ function aGalaxyOfTwo(overrides: Record<string, unknown> = {}): ContentSet {
         aLocation(),
         aLocation({ id: 'bellwether', name: 'Bellwether Yards', prose: 'A repair yard.' }),
       ],
-      lanes: [aLane({ ends: ['kestrel', 'bellwether'], distance: 12 })],
+      lanes: [aMotifLane({ ends: ['kestrel', 'bellwether'], distance: 12 })],
       start: aStart({ credits: 500 }),
       ...overrides,
     }),
@@ -115,9 +115,9 @@ function aGalaxyOfFour(overrides: Record<string, unknown> = {}): ContentSet {
         aLocation({ id: 'shoals', name: 'Thennet Shoals', prose: 'Tenders and tank farms.' }),
       ],
       lanes: [
-        aLane({ ends: ['kestrel', 'bellwether'], distance: 6 }),
-        aLane({ ends: ['bellwether', 'hollow'], distance: 16 }),
-        aLane({ ends: ['kestrel', 'shoals'], distance: 2 }),
+        aMotifLane({ ends: ['kestrel', 'bellwether'], distance: 6 }),
+        aMotifLane({ ends: ['bellwether', 'hollow'], distance: 16 }),
+        aMotifLane({ ends: ['kestrel', 'shoals'], distance: 2 }),
       ],
       start: aStart({ credits: 500, ship: aShip({ range: 10 }) }),
       ...overrides,

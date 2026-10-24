@@ -10,7 +10,7 @@ import {
   aDrawParameters,
   aGalaxy,
   aGood,
-  aLane,
+  aMotifLane,
   aLocation,
   aMotif,
   aSlot,
@@ -643,7 +643,7 @@ describe('the motifs the map is assembled from', () => {
         motifs: [
           aMotif({
             slots: [aSlot(), aSlot({ id: 'pit' })],
-            lanes: [aLane({ ends: ['berth', 'gate'] })],
+            lanes: [aMotifLane({ ends: ['berth', 'gate'] })],
           }),
         ],
       }),
@@ -668,7 +668,7 @@ describe('the motifs the map is assembled from', () => {
         motifs: [
           aMotif({
             slots: [aSlot(), aSlot({ id: 'pit' })],
-            lanes: [aLane({ ends: ['berth', 'pit'] }), aLane({ ends: ['pit', 'berth'] })],
+            lanes: [aMotifLane({ ends: ['berth', 'pit'] }), aMotifLane({ ends: ['pit', 'berth'] })],
           }),
         ],
       }),
@@ -691,7 +691,7 @@ describe('the motifs the map is assembled from', () => {
         motifs: [
           aMotif({
             slots: [aSlot(), aSlot({ id: 'pit' })],
-            lanes: [aLane({ ends: ['berth', 'pit'], distance: 0 })],
+            lanes: [aMotifLane({ ends: ['berth', 'pit'], distance: 0 })],
           }),
         ],
       }),
@@ -708,10 +708,26 @@ describe('the motifs the map is assembled from', () => {
     ]);
   });
 
+  it('refuses a motif holding the same slot id twice, since its lanes name them', () => {
+    // A motif's lanes name its slots, so two slots of one name is a lane with
+    // an ambiguous end. Every list of nodes in a content set reads this way.
+    const result = loadContent(aContentSet({ motifs: [aMotif({ slots: [aSlot(), aSlot()] })] }));
+
+    expect(result.ok).toBe(false);
+    if (result.ok) return;
+    expect(result.problems).toEqual([
+      {
+        verdict: 'fails',
+        where: 'motifs[0].slots[1].id',
+        what: 'repeats an id already used: berth',
+      },
+    ]);
+  });
+
   it('refuses a motif lane from a slot to itself', () => {
     const result = loadContent(
       aContentSet({
-        motifs: [aMotif({ lanes: [aLane({ ends: ['berth', 'berth'] })] })],
+        motifs: [aMotif({ lanes: [aMotifLane({ ends: ['berth', 'berth'] })] })],
       }),
     );
 
@@ -770,6 +786,45 @@ describe('the dial the draw is set by', () => {
         what: 'is 0, which is less than 1',
       },
     ]);
+  });
+
+  it('refuses joining motifs further than the baseline ship can fly', () => {
+    // An inter-motif lane beyond range is a lane no ship can fly, so the galaxy
+    // would not be flyable end to end. Range is the only gate on the map
+    // (ADR 0006 decision 14), and this much is checkable before any draw.
+    const result = loadContent(
+      aContentSet({
+        drawParameters: aDrawParameters({
+          motifsPerCampaign: 2,
+          interMotifDistance: { least: 14, most: 40 },
+        }),
+      }),
+    );
+
+    expect(result.ok).toBe(false);
+    if (result.ok) return;
+    expect(result.problems).toEqual([
+      {
+        verdict: 'fails',
+        where: 'drawParameters.interMotifDistance.most',
+        what: "is 40, which is beyond the baseline ship's range of 20: no ship could fly the lane",
+      },
+    ]);
+  });
+
+  it('says nothing about that range when the draw places a single motif', () => {
+    // With one motif there is nothing to join, so the range is never read and
+    // a wide declaration is not a mistake.
+    const result = loadContent(
+      aContentSet({
+        drawParameters: aDrawParameters({
+          motifsPerCampaign: 1,
+          interMotifDistance: { least: 14, most: 40 },
+        }),
+      }),
+    );
+
+    expect(result.ok ? [] : result.problems).toEqual([]);
   });
 
   it('refuses an archetype enumerated twice, since an id means one thing', () => {

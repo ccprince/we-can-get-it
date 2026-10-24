@@ -3,7 +3,7 @@ import { isRejected, startCampaign, takeCommand, view } from '../src/engine';
 import type { ContentSet } from '../src/engine';
 import {
   aDrawParameters,
-  aLane,
+  aMotifLane,
   aLocation,
   aMotif,
   aSlot,
@@ -30,7 +30,7 @@ function aPairedGalaxy(overrides: Record<string, unknown> = {}): ContentSet {
       aMotif({
         id: 'pair',
         slots: [aSlot(), aSlot({ id: 'pit' })],
-        lanes: [aLane({ ends: ['berth', 'pit'], distance: 6 })],
+        lanes: [aMotifLane({ ends: ['berth', 'pit'], distance: 6 })],
       }),
     ],
     ...overrides,

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { startCampaign, view } from '../src/engine';
-import { aGalaxy, aLane, aLocation, aStart, loadedContentSet } from './support/content';
+import { aGalaxy, aMotifLane, aLocation, aStart, loadedContentSet } from './support/content';
 
 const SEED = 20261022;
 
@@ -82,8 +82,8 @@ describe('startCampaign', () => {
           aLocation({ id: 'hollow', name: "Grieve's Hollow", prose: 'A cut in a dead moon.' }),
         ],
         lanes: [
-          aLane({ ends: ['kestrel', 'ladder'], distance: 6 }),
-          aLane({ ends: ['ladder', 'hollow'], distance: 8 }),
+          aMotifLane({ ends: ['kestrel', 'ladder'], distance: 6 }),
+          aMotifLane({ ends: ['ladder', 'hollow'], distance: 8 }),
         ],
       }),
     );

@@ -11,6 +11,11 @@ import type { ContentSet } from '../../src/engine';
 
 export type RawObject = Record<string, unknown>;
 
+/** An override that is a list of nodes, or nothing if it was not given. */
+function asObjects(value: unknown): RawObject[] | undefined {
+  return Array.isArray(value) ? (value as RawObject[]) : undefined;
+}
+
 /** A calendar whose months are a whole number of weeks (ADR 0005 decision 2). */
 export function aCalendar(overrides: RawObject = {}): RawObject {
   return {
@@ -96,7 +101,7 @@ export function aStart(overrides: RawObject = {}): RawObject {
 /**
  * The baseline ship: **speed** is distance per day and **range** the largest
  * distance it can fly in one leg (ADR 0006 decision 9). Both are placeholders
- * to be measured, and both are chosen here so `aLane`'s distance is within
+ * to be measured, and both are chosen here so `aMotifLane`'s distance is within
  * range and takes more than one day — the case a test about travel wants.
  */
 export function aShip(overrides: RawObject = {}): RawObject {
@@ -145,12 +150,16 @@ export function aContentSet(overrides: RawObject = {}): RawObject {
 }
 
 /**
- * A lane, carrying the one authored number it has (ADR 0006 decision 8). Its
- * ends are **slot** ids, since that is where a lane is now authored — and in
- * `aGalaxy` a slot is named for the location that fills it, so a lane in a
- * fixture reads as the lane between two places.
+ * A lane inside a **motif**, carrying the one authored number a lane has
+ * (ADR 0006 decision 8). Its **ends are slot ids**, not location ids, which is
+ * where a lane is authored now — `aLane` would be the wrong name for it, since
+ * a **lane** joins two locations and which locations these are is the draw's
+ * answer.
+ *
+ * In `aGalaxy` a slot is named for the location that fills it, so these read as
+ * place names there, which is why most fixtures needed no change.
  */
-export function aLane(overrides: RawObject = {}): RawObject {
+export function aMotifLane(overrides: RawObject = {}): RawObject {
   return {
     ends: ['kestrel', 'bellwether'],
     distance: 12,
@@ -173,21 +182,18 @@ export function aLane(overrides: RawObject = {}): RawObject {
  * fixture reads the way a chart does.
  */
 export function aGalaxy(overrides: RawObject = {}): RawObject {
-  const { locations, lanes, ...rest } = {
-    locations: [
-      aLocation(),
-      aLocation({
-        id: 'bellwether',
-        name: 'Bellwether Yards',
-        prose: 'A repair yard that outgrew its own harbour and never admitted it.',
-      }),
-    ],
-    lanes: [aLane()],
-    ...overrides,
-  } as { locations: RawObject[]; lanes: RawObject[] } & RawObject;
+  const { locations, lanes, ...rest } = overrides;
+  const places = asObjects(locations) ?? [
+    aLocation(),
+    aLocation({
+      id: 'bellwether',
+      name: 'Bellwether Yards',
+      prose: 'A repair yard that outgrew its own harbour and never admitted it.',
+    }),
+  ];
 
   // One archetype per place, so every slot has exactly one location that fits.
-  const placed = locations.map((location) => ({
+  const placed = places.map((location) => ({
     ...location,
     id: String(location.id),
     archetype: `only-${String(location.id)}`,
@@ -200,7 +206,7 @@ export function aGalaxy(overrides: RawObject = {}): RawObject {
       {
         id: 'the-whole-map',
         slots: placed.map((location) => ({ id: location.id, archetype: location.archetype })),
-        lanes,
+        lanes: asObjects(lanes) ?? [aMotifLane()],
       },
     ],
     drawParameters: aDrawParameters({ motifsPerCampaign: 1 }),

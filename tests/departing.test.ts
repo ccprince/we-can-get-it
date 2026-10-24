@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { isRejected, startCampaign, takeCommand, view } from '../src/engine';
 import type { Campaign, Command, ContentSet, Reason } from '../src/engine';
-import { aGalaxy, aLane, aLocation, aShip, aStart, loadedContentSet } from './support/content';
+import { aGalaxy, aMotifLane, aLocation, aShip, aStart, loadedContentSet } from './support/content';
 
 /**
  * Departing along a **lane**: the **fare** is quoted before departure and paid
@@ -28,9 +28,9 @@ function aGalaxyOfFour(overrides: Record<string, unknown> = {}): ContentSet {
       ],
       lanes: [
         // Distance 12 at speed 4: three days, and a fare of 120 at a rate of 10.
-        aLane({ ends: ['kestrel', 'bellwether'], distance: 12 }),
-        aLane({ ends: ['bellwether', 'hollow'], distance: 8 }),
-        aLane({ ends: ['kestrel', 'shoals'], distance: 4 }),
+        aMotifLane({ ends: ['kestrel', 'bellwether'], distance: 12 }),
+        aMotifLane({ ends: ['bellwether', 'hollow'], distance: 8 }),
+        aMotifLane({ ends: ['kestrel', 'shoals'], distance: 4 }),
       ],
       ...overrides,
     }),
