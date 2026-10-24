@@ -8,6 +8,7 @@ import {
   aMotif,
   aSlot,
   loadedContentSet,
+  type RawObject,
 } from './support/content';
 
 /**
@@ -23,7 +24,7 @@ function chartOf(content: ContentSet, seed = SEED) {
 }
 
 /** Two slots, one lane between them, and two locations to fill them with. */
-function aPairedGalaxy(overrides: Record<string, unknown> = {}): ContentSet {
+function aPairedGalaxy(overrides: RawObject = {}): ContentSet {
   return loadedContentSet({
     locations: [aLocation(), aLocation({ id: 'bellwether', name: 'Bellwether Yards' })],
     motifs: [
@@ -123,14 +124,27 @@ describe('the map assembled from motifs', () => {
 });
 
 /**
- * What the draw guarantees, all of it read through the chart: the engine's own
- * record of which motif a location came from is deliberately not there to be
- * asserted on (#6 — no test asserts on internal structure), so these say what
- * a player could see.
+ * What the draw guarantees, all of it read through the chart: the engine keeps
+ * no record of which motif a location came from, so there is nothing to assert
+ * on but what a player could see (ADR 0003 decision 5).
+ *
+ * Six seeds, because a shape needs more than one instance before it says
+ * anything and six is enough for both motifs of three to come up (CLAUDE.md).
  */
+const SEEDS = [1, 2, 3, 4, 5, 6];
+
+/** The paired motif these tests draw from: two slots, one lane, distance 6. */
+function aPair(): RawObject {
+  return aMotif({
+    id: 'pair',
+    slots: [aSlot(), aSlot({ id: 'pit' })],
+    lanes: [aMotifLane({ ends: ['berth', 'pit'], distance: 6 })],
+  });
+}
+
 describe('what the draw guarantees', () => {
   /** Three motifs of two slots and a reserve of six: room to vary. */
-  function aContentSetToDrawFrom(overrides: Record<string, unknown> = {}): ContentSet {
+  function aContentSetToDrawFrom(overrides: RawObject = {}): ContentSet {
     return loadedContentSet({
       locations: [
         aLocation(),
@@ -141,11 +155,7 @@ describe('what the draw guarantees', () => {
         aLocation({ id: 'lament', name: 'Lamentation' }),
       ],
       motifs: [
-        aMotif({
-          id: 'pair',
-          slots: [aSlot(), aSlot({ id: 'pit' })],
-          lanes: [aMotifLane({ ends: ['berth', 'pit'], distance: 6 })],
-        }),
+        aPair(),
         aMotif({
           id: 'spur',
           slots: [aSlot({ id: 'junction' }), aSlot({ id: 'dead-end' })],
@@ -157,16 +167,18 @@ describe('what the draw guarantees', () => {
           lanes: [aMotifLane({ ends: ['near', 'far'], distance: 3 })],
         }),
       ],
-      drawParameters: aDrawParameters({
-        motifsPerCampaign: 2,
-        interMotifDistance: { least: 14, most: 18 },
-      }),
+      drawParameters: aDrawParameters({ motifsPerCampaign: 2 }),
       ...overrides,
     });
   }
 
-  /** Every place on the chart, which is every place the draw placed. */
-  function placesOn(content: ContentSet, seed: number): readonly string[] {
+  /**
+   * Every location named on the chart. The chart carries lanes, so this reads
+   * the locations off their ends — which holds only while every drawn location
+   * is an end of some lane. A `chart.locations` would say it directly, and is
+   * #42.
+   */
+  function locationsOn(content: ContentSet, seed: number): readonly string[] {
     return view(startCampaign(content, seed)).chart.lanes.flatMap((lane) => [...lane.ends]);
   }
 
@@ -182,12 +194,17 @@ describe('what the draw guarantees', () => {
     expect(chartOf(aContentSetToDrawFrom(), 4)).toEqual(chartOf(aContentSetToDrawFrom(), 4));
   });
 
-  it('gives different galaxies for different seeds', () => {
+  it('gives a different galaxy for every one of six seeds', () => {
+    // Not merely "more than one of them differs": all six differ, and they
+    // differ in **which locations were drawn** and not only in the length of
+    // the lane joining the motifs.
     const content = aContentSetToDrawFrom();
 
-    const charts = [1, 2, 3, 4, 5, 6].map((seed) => JSON.stringify(chartOf(content, seed)));
+    const charts = SEEDS.map((seed) => JSON.stringify(chartOf(content, seed)));
+    const drawn = SEEDS.map((seed) => [...new Set(locationsOn(content, seed))].sort().join(','));
 
-    expect(new Set(charts).size).toBeGreaterThan(1);
+    expect(new Set(charts).size).toBe(6);
+    expect(new Set(drawn).size).toBe(6);
   });
 
   it('places as many locations as the motifs it drew have slots between them', () => {
@@ -196,36 +213,40 @@ describe('what the draw guarantees', () => {
     // two slots is four places, whichever two came up.
     const content = aContentSetToDrawFrom();
 
-    for (const seed of [1, 2, 3, 4, 5, 6]) {
-      expect(new Set(placesOn(content, seed)).size).toBe(4);
+    for (const seed of SEEDS) {
+      expect(new Set(locationsOn(content, seed)).size).toBe(4);
     }
   });
 
-  it('follows the dial: more motifs, more places', () => {
+  it('follows the dial: three motifs place more locations than two', () => {
     const three = aContentSetToDrawFrom({
-      drawParameters: aDrawParameters({
-        motifsPerCampaign: 3,
-        interMotifDistance: { least: 14, most: 18 },
-      }),
+      drawParameters: aDrawParameters({ motifsPerCampaign: 3 }),
     });
 
-    expect(new Set(placesOn(three, 4)).size).toBe(6);
+    expect(new Set(locationsOn(three, 4)).size).toBe(6);
   });
 
-  it('never places one location twice, however the motifs fell', () => {
+  it('never places one location twice, even when the same motif is placed twice', () => {
     // A location belongs to exactly one motif and no two motifs share one
-    // (ADR 0008 decision 6), so no place is ever on the chart twice over.
-    const content = aContentSetToDrawFrom();
+    // (ADR 0008 decision 6). The hard case is one motif placed twice, since
+    // both placements want the same archetypes out of the same reserve: were
+    // the second to reuse the first's locations, four distinct names would
+    // become two. The reserve is left at exactly twice the slots, so there is
+    // no slack to hide a reuse in.
+    const content = aContentSetToDrawFrom({
+      motifs: [aPair()],
+      locations: [
+        aLocation(),
+        aLocation({ id: 'bellwether', name: 'Bellwether Yards' }),
+        aLocation({ id: 'shoals', name: 'Thennet Shoals' }),
+        aLocation({ id: 'caravel', name: 'Caravel Station' }),
+      ],
+    });
 
-    for (const seed of [1, 2, 3, 4, 5, 6]) {
-      const places = placesOn(content, seed);
-      const laneCount = view(startCampaign(content, seed)).chart.lanes.length;
+    for (const seed of SEEDS) {
+      const named = locationsOn(content, seed);
 
-      // Four places, two motif lanes and the lane joining them: each place is
-      // an end of a lane, and no place is repeated beyond those three lanes.
-      expect(laneCount).toBe(3);
-      expect(places).toHaveLength(6);
-      expect(new Set(places).size).toBe(4);
+      expect(new Set(named).size).toBe(4);
     }
   });
 
@@ -234,21 +255,15 @@ describe('what the draw guarantees', () => {
     // content set whose only shape is needed twice must be able to have it
     // twice (ADR 0008 decision 7). With one motif in the reserve, both
     // placements are necessarily it.
-    const content = aContentSetToDrawFrom({
-      motifs: [
-        aMotif({
-          id: 'pair',
-          slots: [aSlot(), aSlot({ id: 'pit' })],
-          lanes: [aMotifLane({ ends: ['berth', 'pit'], distance: 6 })],
-        }),
-      ],
-    });
+    const content = aContentSetToDrawFrom({ motifs: [aPair()] });
 
     const chart = chartOf(content, 4);
-    const sixes = chart.lanes.filter((lane) => lane.fare === 60);
+    // The pair's own lane is distance 6, so a fare of 60 at a rate of 10: one
+    // per placement, and the inter-motif lane is dearer than either.
+    const pairLanes = chart.lanes.filter((lane) => lane.fare === 60);
 
-    expect(new Set(placesOn(content, 4)).size).toBe(4);
-    expect(sixes).toHaveLength(2);
+    expect(new Set(locationsOn(content, 4)).size).toBe(4);
+    expect(pairLanes).toHaveLength(2);
   });
 
   it('leaves what it did not draw out of the galaxy entirely', () => {
@@ -257,7 +272,7 @@ describe('what the draw guarantees', () => {
     // Six places in the reserve and four drawn, so two are missing from
     // everything a player can read, and which two moves with the seed.
     const content = aContentSetToDrawFrom();
-    const everywhere = [
+    const theReserve = [
       'Kestrel Reach',
       'Bellwether Yards',
       'Thennet Shoals',
@@ -266,14 +281,16 @@ describe('what the draw guarantees', () => {
       'Lamentation',
     ];
 
-    const missed = [1, 2, 3, 4, 5, 6].map((seed) => {
-      const drawn = new Set(placesOn(content, seed));
-      return everywhere.filter((place) => !drawn.has(place));
+    const missed = SEEDS.map((seed) => {
+      const drawn = new Set(locationsOn(content, seed));
+      return theReserve.filter((location) => !drawn.has(location));
     });
 
     for (const hidden of missed) {
       expect(hidden).toHaveLength(2);
     }
-    expect(new Set(missed.map((hidden) => hidden.join(' and '))).size).toBeGreaterThan(1);
+    // And a different pair every time: a fixed hidden pair would be the galaxy
+    // a returning player learns, which is the failure findings §2.5 names.
+    expect(new Set(missed.map((hidden) => hidden.join(' and '))).size).toBe(6);
   });
 });
