@@ -121,3 +121,159 @@ describe('the map assembled from motifs', () => {
     expect(view(flown.campaign).digest?.entries[0]?.text).toContain('you set down at');
   });
 });
+
+/**
+ * What the draw guarantees, all of it read through the chart: the engine's own
+ * record of which motif a location came from is deliberately not there to be
+ * asserted on (#6 — no test asserts on internal structure), so these say what
+ * a player could see.
+ */
+describe('what the draw guarantees', () => {
+  /** Three motifs of two slots and a reserve of six: room to vary. */
+  function aContentSetToDrawFrom(overrides: Record<string, unknown> = {}): ContentSet {
+    return loadedContentSet({
+      locations: [
+        aLocation(),
+        aLocation({ id: 'bellwether', name: 'Bellwether Yards' }),
+        aLocation({ id: 'shoals', name: 'Thennet Shoals' }),
+        aLocation({ id: 'caravel', name: 'Caravel Station' }),
+        aLocation({ id: 'hollow', name: "Grieve's Hollow" }),
+        aLocation({ id: 'lament', name: 'Lamentation' }),
+      ],
+      motifs: [
+        aMotif({
+          id: 'pair',
+          slots: [aSlot(), aSlot({ id: 'pit' })],
+          lanes: [aMotifLane({ ends: ['berth', 'pit'], distance: 6 })],
+        }),
+        aMotif({
+          id: 'spur',
+          slots: [aSlot({ id: 'junction' }), aSlot({ id: 'dead-end' })],
+          lanes: [aMotifLane({ ends: ['junction', 'dead-end'], distance: 9 })],
+        }),
+        aMotif({
+          id: 'run',
+          slots: [aSlot({ id: 'near' }), aSlot({ id: 'far' })],
+          lanes: [aMotifLane({ ends: ['near', 'far'], distance: 3 })],
+        }),
+      ],
+      drawParameters: aDrawParameters({
+        motifsPerCampaign: 2,
+        interMotifDistance: { least: 14, most: 18 },
+      }),
+      ...overrides,
+    });
+  }
+
+  /** Every place on the chart, which is every place the draw placed. */
+  function placesOn(content: ContentSet, seed: number): readonly string[] {
+    return view(startCampaign(content, seed)).chart.lanes.flatMap((lane) => [...lane.ends]);
+  }
+
+  it('gives the same galaxy for the same seed, lane for lane', () => {
+    const content = aContentSetToDrawFrom();
+
+    expect(chartOf(content, 4)).toEqual(chartOf(content, 4));
+  });
+
+  it('gives the same galaxy when the content set is loaded a second time', () => {
+    // A save carries a seed and never a galaxy (ADR 0008 decision 18), so a
+    // reload has to rebuild the same one.
+    expect(chartOf(aContentSetToDrawFrom(), 4)).toEqual(chartOf(aContentSetToDrawFrom(), 4));
+  });
+
+  it('gives different galaxies for different seeds', () => {
+    const content = aContentSetToDrawFrom();
+
+    const charts = [1, 2, 3, 4, 5, 6].map((seed) => JSON.stringify(chartOf(content, seed)));
+
+    expect(new Set(charts).size).toBeGreaterThan(1);
+  });
+
+  it('places as many locations as the motifs it drew have slots between them', () => {
+    // The motif count is the single dial, and the location count follows from
+    // it as the sum of those placed (ADR 0008 decisions 5 and 7). Two motifs of
+    // two slots is four places, whichever two came up.
+    const content = aContentSetToDrawFrom();
+
+    for (const seed of [1, 2, 3, 4, 5, 6]) {
+      expect(new Set(placesOn(content, seed)).size).toBe(4);
+    }
+  });
+
+  it('follows the dial: more motifs, more places', () => {
+    const three = aContentSetToDrawFrom({
+      drawParameters: aDrawParameters({
+        motifsPerCampaign: 3,
+        interMotifDistance: { least: 14, most: 18 },
+      }),
+    });
+
+    expect(new Set(placesOn(three, 4)).size).toBe(6);
+  });
+
+  it('never places one location twice, however the motifs fell', () => {
+    // A location belongs to exactly one motif and no two motifs share one
+    // (ADR 0008 decision 6), so no place is ever on the chart twice over.
+    const content = aContentSetToDrawFrom();
+
+    for (const seed of [1, 2, 3, 4, 5, 6]) {
+      const places = placesOn(content, seed);
+      const laneCount = view(startCampaign(content, seed)).chart.lanes.length;
+
+      // Four places, two motif lanes and the lane joining them: each place is
+      // an end of a lane, and no place is repeated beyond those three lanes.
+      expect(laneCount).toBe(3);
+      expect(places).toHaveLength(6);
+      expect(new Set(places).size).toBe(4);
+    }
+  });
+
+  it('may place one motif twice, filled by different locations', () => {
+    // Two spurs filled by different locations is a legible galaxy, and a
+    // content set whose only shape is needed twice must be able to have it
+    // twice (ADR 0008 decision 7). With one motif in the reserve, both
+    // placements are necessarily it.
+    const content = aContentSetToDrawFrom({
+      motifs: [
+        aMotif({
+          id: 'pair',
+          slots: [aSlot(), aSlot({ id: 'pit' })],
+          lanes: [aMotifLane({ ends: ['berth', 'pit'], distance: 6 })],
+        }),
+      ],
+    });
+
+    const chart = chartOf(content, 4);
+    const sixes = chart.lanes.filter((lane) => lane.fare === 60);
+
+    expect(new Set(placesOn(content, 4)).size).toBe(4);
+    expect(sixes).toHaveLength(2);
+  });
+
+  it('leaves what it did not draw out of the galaxy entirely', () => {
+    // Hidden content leaves no trace: not greyed on the chart, not unreachable,
+    // not hinted at — it does not exist this campaign (ADR 0008 decision 4).
+    // Six places in the reserve and four drawn, so two are missing from
+    // everything a player can read, and which two moves with the seed.
+    const content = aContentSetToDrawFrom();
+    const everywhere = [
+      'Kestrel Reach',
+      'Bellwether Yards',
+      'Thennet Shoals',
+      'Caravel Station',
+      "Grieve's Hollow",
+      'Lamentation',
+    ];
+
+    const missed = [1, 2, 3, 4, 5, 6].map((seed) => {
+      const drawn = new Set(placesOn(content, seed));
+      return everywhere.filter((place) => !drawn.has(place));
+    });
+
+    for (const hidden of missed) {
+      expect(hidden).toHaveLength(2);
+    }
+    expect(new Set(missed.map((hidden) => hidden.join(' and '))).size).toBeGreaterThan(1);
+  });
+});
