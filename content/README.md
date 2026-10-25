@@ -94,6 +94,26 @@ per day — its `range`, the largest distance it can fly in one **leg**, and its
 cargo it carries, one to a unit of any good (ADR 0006 decision 9). Ship upgrades are outside this
 milestone, so the ship a campaign opens with is the ship it has.
 
+### `shops`
+
+Every drawn location has one shop, stocked at campaign start with **lots** of the drawn goods whose
+**kind** its **archetype** `supplies`. A lot is finite and depletable, and one bought out is gone
+for the rest of the campaign. Nothing about a lot is authored: its good, its size and its price all
+come from the draw and from these:
+
+| Field | What it declares |
+| --- | --- |
+| `lotsPerShop` | How many lots a shop stocks, drawn per shop. A shop with fewer goods to offer stocks all of them. |
+| `lotQuantity` | The units a lot opens with, drawn per lot. The least is 1: a lot that opens empty is already gone. |
+| `markupPercent` | What a shop charges above **worth**, in whole percent, drawn once per location. Never below worth; either end may pass 100. |
+| `scarcityPercent` | The most a lot adds for being small, in whole percent, and may pass 100. A lot opening at `lotQuantity.most` adds nothing. |
+
+A unit's price is `ceil(worth × (100 + markup + scarcity) / 100)` credits, where `scarcity` is
+`scarcityPercent × (most − opening) / most` for a lot that opened at `opening` units. It is fixed
+when the shop is stocked, so buying never moves it: the stock a price reads is the size the lot
+opened at, which keeps a purchase of several units at a number the player can reproduce from what
+the shop shows them (ADR 0009 decision 3).
+
 ### `tags`
 
 Every tag declares its `id`, its `class` — `kind`, `quality`, `origin` or `quirk` (ADR 0007

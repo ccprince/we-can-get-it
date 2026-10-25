@@ -1082,7 +1082,7 @@ describe('what the draw fills the map with', () => {
 });
 
 describe('what the shops stock', () => {
-  it('reads the shop parameters a content set declares, since the engine holds none', () => {
+  it('refuses a content set with no shop parameters, since the engine holds none', () => {
     const result = loadContent(aContentSet({ shops: undefined }));
 
     expect(result.ok ? [] : result.problems).toEqual([
@@ -1092,8 +1092,8 @@ describe('what the shops stock', () => {
 
   it('refuses a lot of nothing, and accepts a shop that stocks no lots at all', () => {
     // A lot is finite and depletable, so one that opens empty is already gone.
-    // A shop of no lots is a place with nothing worth carrying out, which thin
-    // supply needs to be able to say (findings §2.1).
+    // A shop of no lots is a place with nothing worth carrying out: scarcer
+    // outbound cargo is one way to let a jump be unproductive (findings §2.1).
     const empty = loadContent(
       aContentSet({ shops: aShopParameters({ lotQuantity: { least: 0, most: 4 } }) }),
     );
