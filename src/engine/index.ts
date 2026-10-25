@@ -49,6 +49,7 @@ export type {
   HereView,
   LaneView,
   LocationView,
+  LotView,
   MenuView,
   TodayView,
   TransitView,

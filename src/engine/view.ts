@@ -2,7 +2,7 @@ import { dateOf, type CalendarDate } from './calendar';
 import type { Campaign, DigestEntry } from './campaign';
 import { departureTo, offeredCommands, type Command } from './commands';
 import type { Lane } from './content';
-import { locationNamed, type DrawnGalaxy } from './galaxy';
+import { goodNamed, locationNamed, type DrawnGalaxy } from './galaxy';
 import { daysToFly, fareToFly, otherEnd, withinRange } from './map';
 
 /**
@@ -19,6 +19,23 @@ import { daysToFly, fareToFly, otherEnd, withinRange } from './map';
 export type HereView = {
   readonly name: string;
   readonly prose: string;
+  /** What the shop here has on sale, in good-id order. Empty when it has nothing. */
+  readonly lots: readonly LotView[];
+};
+
+/**
+ * One **lot** on sale where the player is: the good, how many units are left,
+ * and what one costs, in credits. The price is computed from the good's
+ * **worth**, the location and the lot's stock, and is never authored (#14).
+ */
+export type LotView = {
+  /** What a command names the lot by. */
+  readonly lot: string;
+  readonly good: string;
+  /** The good's **kind**, which is public vocabulary (ADR 0007 decision 3). */
+  readonly kind: string;
+  readonly quantity: number;
+  readonly price: number;
 };
 
 /**
@@ -143,7 +160,7 @@ export function view(campaign: Campaign): View {
   const where = campaign.where;
 
   return {
-    here: where.kind === 'at' ? hereAt(galaxy, where.locationId) : null,
+    here: where.kind === 'at' ? hereAt(campaign, where.locationId) : null,
     transit:
       where.kind === 'in-transit'
         ? {
@@ -208,7 +225,13 @@ function nameOf(galaxy: DrawnGalaxy, locationId: string): string {
   return locationNamed(galaxy, locationId).name;
 }
 
-function hereAt(galaxy: DrawnGalaxy, locationId: string): HereView {
-  const { name, prose } = locationNamed(galaxy, locationId);
-  return { name, prose };
+function hereAt(campaign: Campaign, locationId: string): HereView {
+  const { name, prose } = locationNamed(campaign.galaxy, locationId);
+  const lots = campaign.lots
+    .filter((lot) => lot.locationId === locationId)
+    .map(({ id, goodId, quantity, price }): LotView => {
+      const good = goodNamed(campaign.galaxy, goodId);
+      return { lot: id, good: good.name, kind: good.kind, quantity, price };
+    });
+  return { name, prose, lots };
 }
