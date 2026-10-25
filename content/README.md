@@ -51,6 +51,14 @@ argument, and both ends of both ranges are expected to widen as it grows.
 
 A range is `{ "least": n, "most": n }`, both ends inclusive.
 
+### What the draw hides
+
+An **archetype** declares the **kinds** it `supplies` and `demands`, each a tag of class kind. A kind
+that some drawn archetype supplies or demands stays in circulation; one that none does may be dropped
+entire. Within a kind, `drawParameters.goodsHiddenPercent` is the chance any one good is hidden, and
+the draw never takes a kind below the usability floor to do it (ADR 0008 decision 11). Both rates
+are whole percentages, `0` to `100`.
+
 ### `lanes`
 
 A **lane** is the only way between the two **locations** it joins (ADR 0006 decision 1), and it
@@ -107,6 +115,11 @@ A buyer has an `id`, a `name`, their `wants`, and the tags they hold in a role: 
 more for and `refusalTags` that make them say no. The role is a property of this buyer's
 relationship to a tag rather than a class of tag (decision 7), so the same tag may be a bonus at one
 buyer and a refusal at another — but not both at one buyer.
+
+A buyer stands somewhere: `locationId` names a location in the reserve. A campaign that does not draw
+that location takes the buyer out with it, and one that does still **hides** them at the rate
+`drawParameters.peopleHiddenPercent` declares, per person and independently of the location (ADR
+0008 decision 10).
 
 A **want** is either a `predicate` or one good by identity, never both and never neither:
 

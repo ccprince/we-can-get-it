@@ -82,7 +82,9 @@ describe('the page', () => {
   it('says plainly when the content set will not load, naming what and where', async () => {
     // Archetypes enough to read the locations against, so the problem the page
     // shows is the empty chart and not the missing enumeration above it.
-    serve(JSON.stringify({ archetypes: [{ id: 'market' }], locations: [] }));
+    serve(
+      JSON.stringify({ archetypes: [{ id: 'market', supplies: [], demands: [] }], locations: [] }),
+    );
     render(<App />);
 
     expect(await screen.findByText('The content set will not load.')).toBeDefined();

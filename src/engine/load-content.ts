@@ -32,6 +32,7 @@ import {
   readInteger,
   readNonEmptyTexts,
   readText,
+  readTexts,
   type Problem,
   type Report,
 } from './verdicts';
@@ -108,6 +109,12 @@ export function loadContent(raw: unknown): LoadResult {
 
   if (motifs !== undefined && locations !== undefined) {
     problems.push(...unfillableSlots(motifs, locations));
+  }
+  if (archetypes !== undefined && tags !== undefined) {
+    problems.push(...unknownKinds(archetypes, tags));
+  }
+  if (buyers !== undefined && locations !== undefined) {
+    problems.push(...homelessBuyers(buyers, locations));
   }
 
   // The whole-set checks and the distributions read the vocabulary, the
@@ -393,11 +400,23 @@ function readDrawParameters(raw: unknown, problems: Problem[]): DrawParameters |
   const locationCount = readRange(raw.locationCount, 'drawParameters.locationCount', problems);
   // Nought re-rolls is a bound like any other: the first draw has to pass.
   const rerolls = readInteger(raw.rerolls, 'drawParameters.rerolls', 0, problems);
+  const goodsHiddenPercent = readPercent(
+    raw.goodsHiddenPercent,
+    'drawParameters.goodsHiddenPercent',
+    problems,
+  );
+  const peopleHiddenPercent = readPercent(
+    raw.peopleHiddenPercent,
+    'drawParameters.peopleHiddenPercent',
+    problems,
+  );
   if (
     motifsPerCampaign === undefined ||
     interMotifDistance === undefined ||
     locationCount === undefined ||
-    rerolls === undefined
+    rerolls === undefined ||
+    goodsHiddenPercent === undefined ||
+    peopleHiddenPercent === undefined
   ) {
     return undefined;
   }
@@ -413,7 +432,25 @@ function readDrawParameters(raw: unknown, problems: Problem[]): DrawParameters |
     );
     return undefined;
   }
-  return { motifsPerCampaign, interMotifDistance, locationCount, rerolls };
+  return {
+    motifsPerCampaign,
+    interMotifDistance,
+    locationCount,
+    rerolls,
+    goodsHiddenPercent,
+    peopleHiddenPercent,
+  };
+}
+
+/** A whole percentage: none, all, or something between. */
+function readPercent(raw: unknown, where: string, problems: Problem[]): number | undefined {
+  const percent = readInteger(raw, where, 0, problems);
+  if (percent === undefined) return undefined;
+  if (percent > 100) {
+    problems.push(fails(where, `is ${percent}, which is more than 100`));
+    return undefined;
+  }
+  return percent;
 }
 
 /**
@@ -425,7 +462,10 @@ function readDrawParameters(raw: unknown, problems: Problem[]): DrawParameters |
 function readArchetypes(raw: unknown, problems: Problem[]): readonly Archetype[] | undefined {
   const archetypes = readEach(raw, 'archetypes', problems, (entry, where) => {
     const id = readText(entry.id, `${where}.id`, problems);
-    return id === undefined ? undefined : { id };
+    const supplies = readTexts(entry.supplies, `${where}.supplies`, problems);
+    const demands = readTexts(entry.demands, `${where}.demands`, problems);
+    if (id === undefined || supplies === undefined || demands === undefined) return undefined;
+    return { id, supplies, demands };
   });
 
   if (archetypes !== undefined && archetypes.length === 0) {
@@ -433,6 +473,50 @@ function readArchetypes(raw: unknown, problems: Problem[]): readonly Archetype[]
     return undefined;
   }
   return archetypes;
+}
+
+/**
+ * Every kind an archetype supplies or demands is a declared **kind**: a kind is
+ * the one public class of tag, and the only one a trade guide may say (ADR 0007
+ * decision 17). Checked once both have read, so a vocabulary that did not read
+ * leaves the archetypes, and the map that types against them, still checked.
+ */
+function unknownKinds(archetypes: readonly Archetype[], tags: readonly Tag[]): readonly Problem[] {
+  return archetypes.flatMap((archetype, at) =>
+    (['supplies', 'demands'] as const).flatMap((side) =>
+      archetype[side].flatMap((named, index) => {
+        const where = `archetypes[${at}].${side}[${index}]`;
+        const tag = tags.find((candidate) => candidate.id === named);
+        if (tag === undefined) return [fails(where, `names a kind that does not exist: ${named}`)];
+        if (tag.class !== 'kind') {
+          return [fails(where, `names ${named}, which is a ${tag.class} tag and not a kind`)];
+        }
+        return [];
+      }),
+    ),
+  );
+}
+
+/**
+ * Every buyer stands at a location in the reserve. Checked once both have read,
+ * for the same reason as the kinds above: the cast and the chart are read
+ * independently, and a mistake in one leaves the other still checked.
+ */
+function homelessBuyers(
+  buyers: readonly Buyer[],
+  locations: readonly Location[],
+): readonly Problem[] {
+  const held = new Set(locations.map((location) => location.id));
+  return buyers.flatMap((buyer, at) =>
+    held.has(buyer.locationId)
+      ? []
+      : [
+          fails(
+            `buyers[${at}].locationId`,
+            `names a location the reserve does not hold: ${buyer.locationId}`,
+          ),
+        ],
+  );
 }
 
 /** An archetype id the content set enumerates. */
@@ -770,19 +854,21 @@ function readBuyers(
   return readEach(raw, 'buyers', problems, (entry, where) => {
     const id = readText(entry.id, `${where}.id`, problems);
     const name = readText(entry.name, `${where}.name`, problems);
+    const locationId = readText(entry.locationId, `${where}.locationId`, problems);
     const wants = readWants(entry.wants, `${where}.wants`, tags, goods, problems);
     const bonusTags = readRoleTags(entry.bonusTags, `${where}.bonusTags`, tags, problems);
     const refusalTags = readRoleTags(entry.refusalTags, `${where}.refusalTags`, tags, problems);
     if (
       id === undefined ||
       name === undefined ||
+      locationId === undefined ||
       wants === undefined ||
       bonusTags === undefined ||
       refusalTags === undefined
     ) {
       return undefined;
     }
-    return { id, name, wants, bonusTags, refusalTags };
+    return { id, name, locationId, wants, bonusTags, refusalTags };
   });
 }
 

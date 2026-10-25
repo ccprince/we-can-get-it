@@ -66,10 +66,16 @@ export function aMotif(overrides: RawObject = {}): RawObject {
   };
 }
 
-/** An **archetype**, which is what a location is (ADR 0007 decision 17). */
+/**
+ * An **archetype**, which is what a location is (ADR 0007 decision 17). It
+ * supplies and demands no **kind** by default, so it anchors nothing and a
+ * fixture about the catalogue states the kinds it means.
+ */
 export function anArchetype(overrides: RawObject = {}): RawObject {
   return {
     id: 'market',
+    supplies: [],
+    demands: [],
     ...overrides,
   };
 }
@@ -77,8 +83,9 @@ export function anArchetype(overrides: RawObject = {}): RawObject {
 /**
  * The parameters the **draw** reads: the **motif count**, which is the one dial
  * (ADR 0008 decision 5), how far apart the motifs it places are strung, the
- * range the location count must land in and how many re-rolls it may take to
- * land there. All are placeholders to be measured.
+ * range the location count must land in, how many re-rolls it may take to land
+ * there, and how much of the catalogue and the cast it hides. All are
+ * placeholders to be measured.
  */
 export function aDrawParameters(overrides: RawObject = {}): RawObject {
   return {
@@ -87,6 +94,10 @@ export function aDrawParameters(overrides: RawObject = {}): RawObject {
     // Wide enough that no fixture about something else lands outside it.
     locationCount: { least: 1, most: 30 },
     rerolls: 8,
+    // Nothing hidden, so a fixture about something else draws the whole
+    // catalogue and cast. A test about hiding states the rate it means.
+    goodsHiddenPercent: 0,
+    peopleHiddenPercent: 0,
     ...overrides,
   };
 }
@@ -215,7 +226,7 @@ export function aGalaxy(overrides: RawObject = {}): RawObject {
   );
 
   return {
-    archetypes: placed.map((location) => ({ id: location.archetype })),
+    archetypes: placed.map((location) => anArchetype({ id: location.archetype })),
     locations: placed,
     motifs: [
       {
@@ -281,6 +292,9 @@ export function aBuyer(overrides: RawObject = {}): RawObject {
   return {
     id: 'ilse',
     name: 'Ilse Vantry',
+    // The location `aLocation` is, so a fixture about something else has
+    // somewhere for its buyer to stand.
+    locationId: 'kestrel',
     wants: [aWant()],
     bonusTags: ['warm'],
     refusalTags: [],
