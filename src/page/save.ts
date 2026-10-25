@@ -1,4 +1,5 @@
 import {
+  identify,
   isRejected,
   startCampaign,
   takeCommand,
@@ -9,12 +10,15 @@ import {
 } from '../engine';
 
 /**
- * A save is a seed and a command sequence, and never a galaxy (ADR 0009
- * decision 11, GLOSSARY **draw**). It is the harness's input shape, so resuming
- * one is the harness's code path: `startCampaign`, then `takeCommand` once per
- * command, and no restore logic of its own.
+ * A save is a seed, a command sequence and the identity of the content set it
+ * was played on, and never a galaxy (ADR 0009 decision 11, GLOSSARY **draw**).
+ * It is the harness's input shape, so resuming one is the harness's code path:
+ * `startCampaign`, then `takeCommand` once per command, and no restore logic of
+ * its own.
  */
 export type Save = {
+  /** What `identify` gave for the content set the campaign was played on. */
+  readonly content: string;
   readonly seed: number;
   readonly commands: readonly Command[];
 };
@@ -22,16 +26,20 @@ export type Save = {
 const KEY = 'we-can-get-it/campaign';
 
 /**
- * What a save replays to: the campaign, or the command the engine refused,
- * counted from one, and why. A refusal stops the replay rather than skipping
- * the command, since every command after it was taken against a campaign that
- * had it.
+ * What a save replays to: the campaign, the command the engine refused,
+ * counted from one, and why, or nothing, because the save was played on a
+ * different content set. A refusal stops the replay rather than skipping the
+ * command, since every command after it was taken against a campaign that had
+ * it. A different content set is refused before any replay: the same seed
+ * draws a different galaxy on it, and every command may still be accepted.
  */
 export type Resumed =
   | { readonly campaign: Campaign }
-  | { readonly rejected: Reason; readonly at: number; readonly of: number };
+  | { readonly rejected: Reason; readonly at: number; readonly of: number }
+  | { readonly otherContent: true };
 
 export function resume(content: ContentSet, save: Save): Resumed {
+  if (save.content !== identify(content)) return { otherContent: true };
   let campaign = startCampaign(content, save.seed);
   for (const [index, command] of save.commands.entries()) {
     const result = takeCommand(campaign, command);
@@ -81,9 +89,15 @@ function parse(stored: string): Save | null {
     return null;
   }
   if (typeof candidate !== 'object' || candidate === null) return null;
-  const { seed, commands } = candidate as { seed?: unknown; commands?: unknown };
-  if (!Number.isSafeInteger(seed) || !Array.isArray(commands)) return null;
-  return { seed: seed as number, commands: commands as Command[] };
+  const { content, seed, commands } = candidate as {
+    content?: unknown;
+    seed?: unknown;
+    commands?: unknown;
+  };
+  if (typeof content !== 'string' || !Number.isSafeInteger(seed) || !Array.isArray(commands)) {
+    return null;
+  }
+  return { content, seed: seed as number, commands: commands as Command[] };
 }
 
 /**

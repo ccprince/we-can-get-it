@@ -8,6 +8,7 @@
  *   startCampaign(content, seed) -> Campaign
  *   takeCommand(campaign, cmd)   -> { campaign } | { rejected: Reason }
  *   view(campaign)               -> View
+ *   identify(content)            -> string
  */
 export { loadContent } from './load-content';
 export type { LoadResult, Problem, Report } from './load-content';
@@ -26,6 +27,8 @@ export type {
   Term,
   Want,
 } from './content';
+
+export { identify } from './identify';
 
 export { startCampaign } from './campaign';
 export type { Campaign, Digest, DigestEntry } from './campaign';

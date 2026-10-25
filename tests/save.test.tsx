@@ -1,20 +1,27 @@
 /**
  * @vitest-environment jsdom
  *
- * Save and resume (#20). A save is a seed and a command sequence, written after
- * each command and replayed through the engine on open (ADR 0009 decision 11).
+ * Save and resume (#20, #53). A save is a seed, a command sequence and the
+ * identity of the content set it was played on, written after each command and
+ * replayed through the engine on open (ADR 0009 decision 11).
  * A reload is a render of the page after the last one is gone, with the same
  * `localStorage` underneath it.
  */
 import { readFileSync } from 'node:fs';
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { identify, loadContent } from '../src/engine';
 import { App } from '../src/page/App';
 
 /** Where the page keeps its save. Stated here, not imported: it is the save's address. */
 const KEY = 'we-can-get-it/campaign';
 
 const walkingSkeleton = readFileSync('content/walking-skeleton.json', 'utf8');
+
+/** The identity a save played on the walking skeleton records. */
+const loaded = loadContent(JSON.parse(walkingSkeleton));
+if (!loaded.ok) throw new Error('the walking skeleton did not load');
+const content = identify(loaded.content);
 
 beforeEach(() => {
   localStorage.clear();
@@ -60,6 +67,7 @@ describe('saving and resuming a campaign', () => {
 
   it('says plainly when the engine refuses a stored command, and keeps the save', async () => {
     const stored = JSON.stringify({
+      content,
       seed: 20261022,
       commands: [{ kind: 'wait' }, { kind: 'depart', toId: 'nowhere-at-all' }],
     });
@@ -84,6 +92,55 @@ describe('saving and resuming a campaign', () => {
     expect(localStorage.getItem(KEY)).toBe('{"seed": 4, "comm');
   });
 
+  it('refuses a save played on a different content set, says so, and keeps the save', async () => {
+    const page = await open();
+    await click('End the day');
+    await click(/^Depart for /);
+    const stored = localStorage.getItem(KEY);
+    page.unmount();
+
+    // One value changed, prose only: every stored command is still accepted.
+    const edited = JSON.parse(walkingSkeleton) as { locations: { prose: string }[] };
+    const [first] = edited.locations;
+    if (first === undefined) throw new Error('the walking skeleton has no locations');
+    first.prose = 'A yard rewritten since the campaign was saved.';
+    vi.stubGlobal('fetch', () => Promise.resolve(new Response(JSON.stringify(edited))));
+    render(<App />);
+
+    expect(
+      await screen.findByText('The saved campaign was played on a different content set.'),
+    ).toBeDefined();
+    expect(screen.getByText(/Restoring the content set it was played on/)).toBeDefined();
+    expect(screen.queryByRole('button', { name: 'End the day' })).toBeNull();
+    expect(localStorage.getItem(KEY)).toBe(stored);
+  });
+
+  it('resumes a save on the same content set written in another order', async () => {
+    const page = await open();
+    await click('End the day');
+    await click(/^Depart for /);
+    const played = page.container.innerHTML;
+    page.unmount();
+
+    const reordered = JSON.parse(walkingSkeleton) as { locations: unknown[]; motifs: unknown[] };
+    reordered.locations.reverse();
+    reordered.motifs.reverse();
+    vi.stubGlobal('fetch', () => Promise.resolve(new Response(JSON.stringify(reordered))));
+    const resumed = await open();
+
+    expect(resumed.container.innerHTML).toBe(played);
+  });
+
+  it('reports a save from before saves named their content set, and keeps it', async () => {
+    const stored = JSON.stringify({ seed: 20261022, commands: [{ kind: 'wait' }] });
+    localStorage.setItem(KEY, stored);
+
+    render(<App />);
+
+    expect(await screen.findByText(/is not a save/)).toBeDefined();
+    expect(localStorage.getItem(KEY)).toBe(stored);
+  });
+
   it('starts a new campaign only when asked twice, and saves over the old one then', async () => {
     const page = await open();
     await click('End the day');
@@ -97,7 +154,11 @@ describe('saving and resuming a campaign', () => {
     await click('Start a new campaign');
     await click('Start it');
     expect(screen.getByText('The day has not ended yet.')).toBeDefined();
-    expect(JSON.parse(localStorage.getItem(KEY) ?? '')).toEqual({ seed: 20261022, commands: [] });
+    expect(JSON.parse(localStorage.getItem(KEY) ?? '')).toEqual({
+      content,
+      seed: 20261022,
+      commands: [],
+    });
   });
 
   it('offers a new campaign beside a save that will not replay, and only when asked', async () => {
@@ -109,11 +170,18 @@ describe('saving and resuming a campaign', () => {
     await click('Start it');
 
     expect(await screen.findByRole('button', { name: 'End the day' })).toBeDefined();
-    expect(JSON.parse(localStorage.getItem(KEY) ?? '')).toEqual({ seed: 20261022, commands: [] });
+    expect(JSON.parse(localStorage.getItem(KEY) ?? '')).toEqual({
+      content,
+      seed: 20261022,
+      commands: [],
+    });
   });
 
   it('resumes the save rather than the seed a URL asks for, and says so', async () => {
-    localStorage.setItem(KEY, JSON.stringify({ seed: 20261022, commands: [{ kind: 'wait' }] }));
+    localStorage.setItem(
+      KEY,
+      JSON.stringify({ content, seed: 20261022, commands: [{ kind: 'wait' }] }),
+    );
     history.replaceState(null, '', '/?seed=7');
     try {
       await open();
