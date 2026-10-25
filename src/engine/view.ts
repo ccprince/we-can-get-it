@@ -56,6 +56,11 @@ export type WantView = {
 export type MatchView = {
   readonly good: string;
   readonly tier: Tier;
+  /**
+   * The tag of the first positive term the good fails; null unless grudging.
+   * The engine says which term, a surface says it in the buyer's words.
+   */
+  readonly failedTerm: string | null;
   /** Credits for one unit; null when refused, which is not paid for. */
   readonly offer: number | null;
   /** The buyer's own words for turning the good down; null unless refused. */
@@ -331,10 +336,11 @@ function wantFor(campaign: Campaign, open: OpenWant): WantView {
     wording: 'goodId' in want ? `wants ${goodNamed(galaxy, want.goodId).name}` : want.plainly,
     matches: campaign.cargo.map(({ goodId, quantity }) => {
       const good = goodNamed(galaxy, goodId);
-      const { tier, offer } = matchOf(want, buyer, good, content.offers);
+      const { tier, failedTerm, offer } = matchOf(want, buyer, good, content.offers);
       return {
         good: good.name,
         tier,
+        failedTerm,
         offer,
         reason: tier === 'refused' ? buyer.refusalLine : null,
         sale: { want: id, good: goodId },
