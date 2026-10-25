@@ -6,6 +6,7 @@ import {
   aContentSet,
   aTradingGalaxy,
   aWant,
+  aWantForGood,
   anOffers,
   loadedContentSet,
   type RawObject,
@@ -119,7 +120,7 @@ describe('the tier a good would earn', () => {
   });
 
   it('matches a want naming one good only that good', () => {
-    const campaign = holdingClothWith(aBuyer({ wants: [{ goodId: 'blanket' }], bonusTags: [] }));
+    const campaign = holdingClothWith(aBuyer({ wants: [aWantForGood('blanket')], bonusTags: [] }));
 
     expect(tiers(campaign)).toEqual({
       'Bolt of silk': 'refused',
@@ -178,7 +179,7 @@ describe('the wants the read model shows', () => {
   it('states each want plainly, or by the good it names', () => {
     const campaign = holdingClothWith(
       aBuyer({
-        wants: [aWant({ plainly: 'wants something warm' }), { goodId: 'silk' }],
+        wants: [aWant({ plainly: 'wants something warm' }), aWantForGood('silk')],
         bonusTags: [],
       }),
     );
@@ -192,7 +193,7 @@ describe('the wants the read model shows', () => {
   });
 
   it('puts a want naming a good first, whatever order the writer wrote them in', () => {
-    const wants = [aWant(), { goodId: 'silk' }, aWant({ predicate: [{ tag: 'cloth' }] })];
+    const wants = [aWant(), aWantForGood('silk'), aWant({ predicate: [{ tag: 'cloth' }] })];
     const campaign = holdingClothWith(aBuyer({ wants, bonusTags: [] }));
     const reversed = holdingClothWith(aBuyer({ wants: [...wants].reverse(), bonusTags: [] }));
 
@@ -239,7 +240,10 @@ describe('what a want cannot be written as', () => {
   });
 
   it('a want that is neither a predicate nor a good, nor both', () => {
-    for (const want of [{}, { predicate: [{ tag: 'cloth' }], plainly: 'x', goodId: 'silk' }]) {
+    for (const want of [
+      {},
+      { predicate: [{ tag: 'cloth' }], plainly: 'x', goodId: 'silk', quantity: 1 },
+    ]) {
       expect(problemsOf({ buyers: [aBuyer({ wants: [want] }), anElsewhereBuyer()] })).not.toEqual(
         [],
       );
@@ -265,6 +269,16 @@ describe('what a want cannot be written as', () => {
     expect(
       problemsOf({ buyers: [aBuyer({ wants }), anElsewhereBuyer()] }).map(({ where }) => where),
     ).toContain('buyers[0].wants[0].predicate');
+  });
+
+  it('a want that takes no units, or a part of one, or does not say', () => {
+    for (const quantity of [0, -1, 1.5, undefined]) {
+      const wants = [aWant({ quantity })];
+
+      expect(
+        problemsOf({ buyers: [aBuyer({ wants }), anElsewhereBuyer()] }).map(({ where }) => where),
+      ).toContain('buyers[0].wants[0].quantity');
+    }
   });
 
   it('two wants asking for the same thing', () => {

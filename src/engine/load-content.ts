@@ -1184,6 +1184,9 @@ function readWant(
     return undefined;
   }
 
+  const quantity = readInteger(raw.quantity, `${where}.quantity`, 1, problems);
+  if (quantity === undefined) return undefined;
+
   const statesPredicate = raw.predicate !== undefined;
   const namesGood = raw.goodId !== undefined;
   if (statesPredicate && namesGood) {
@@ -1204,7 +1207,7 @@ function readWant(
       problems.push(fails(`${where}.goodId`, `names a good that does not exist: ${goodId}`));
       return undefined;
     }
-    return { goodId };
+    return { goodId, quantity };
   }
 
   const predicate = readPredicate(raw.predicate, `${where}.predicate`, tags, problems);
@@ -1214,7 +1217,9 @@ function readWant(
     return undefined;
   }
   const plainly = readText(raw.plainly, `${where}.plainly`, problems);
-  return predicate === undefined || plainly === undefined ? undefined : { predicate, plainly };
+  return predicate === undefined || plainly === undefined
+    ? undefined
+    : { predicate, plainly, quantity };
 }
 
 function readPredicate(

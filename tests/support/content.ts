@@ -360,8 +360,16 @@ export function aWant(overrides: RawObject = {}): RawObject {
   return {
     predicate: [{ tag: 'cloth' }, { tag: 'warm' }],
     plainly: 'wants something warm to sleep under',
+    // One unit, so a fixture about something else sells its want in one go. A
+    // test about quantity states the quantity it means.
+    quantity: 1,
     ...overrides,
   };
+}
+
+/** A want naming one good by identity, rather than stating a predicate. */
+export function aWantForGood(goodId: string, overrides: RawObject = {}): RawObject {
+  return { goodId, quantity: 1, ...overrides };
 }
 
 export function aBuyer(overrides: RawObject = {}): RawObject {

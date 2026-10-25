@@ -13,6 +13,7 @@ import {
   aSlot,
   aTag,
   aWant,
+  aWantForGood,
   loadedContentSet,
   type RawObject,
 } from './support/content';
@@ -155,7 +156,7 @@ describe('a named good, in the drawn galaxy', () => {
   it('re-rolls a draw that hid a good a buyer asks for by name', () => {
     const named = {
       buyers: [
-        aBuyer({ bonusTags: [], wants: [{ goodId: 'silk' }] }),
+        aBuyer({ bonusTags: [], wants: [aWantForGood('silk')] }),
         aBobWhoWants(['cloth', 'warm']),
       ],
       // Every cloth is warm and none is blue, so no other check can miss first.
@@ -196,7 +197,7 @@ describe('a named good, in the drawn galaxy', () => {
       tags: [aTag(), aTag({ id: 'ore', tells: ['ore'] })],
       goods: [aGood(), aGood({ id: 'galena', name: 'Galena', kind: 'ore' })],
       buyers: [
-        aBuyer({ bonusTags: [], wants: [{ goodId: 'galena' }] }),
+        aBuyer({ bonusTags: [], wants: [aWantForGood('galena')] }),
         aBobWhoWants(['cloth', 'ore']),
       ],
     });

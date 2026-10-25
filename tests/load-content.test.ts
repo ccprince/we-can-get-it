@@ -20,6 +20,7 @@ import {
   aTag,
   aTopology,
   aWant,
+  aWantForGood,
 } from './support/content';
 
 describe('loadContent', () => {
@@ -301,7 +302,7 @@ describe('goods', () => {
 describe('wants', () => {
   it('refuses a want naming a good the content set does not hold', () => {
     const result = loadContent(
-      aContentSet(aCatalogue({ buyers: [aBuyer({ wants: [{ goodId: 'brandy' }] })] })),
+      aContentSet(aCatalogue({ buyers: [aBuyer({ wants: [aWantForGood('brandy')] })] })),
     );
 
     expect(result.ok).toBe(false);
@@ -317,7 +318,7 @@ describe('wants', () => {
     const result = loadContent(
       aContentSet(
         aCatalogue({
-          buyers: [aBuyer({ wants: [aWant(), { goodId: 'silk' }] })],
+          buyers: [aBuyer({ wants: [aWant(), aWantForGood('silk')] })],
         }),
       ),
     );
@@ -326,7 +327,9 @@ describe('wants', () => {
   });
 
   it('refuses a want that names neither a predicate nor a good', () => {
-    const result = loadContent(aContentSet(aCatalogue({ buyers: [aBuyer({ wants: [{}] })] })));
+    const result = loadContent(
+      aContentSet(aCatalogue({ buyers: [aBuyer({ wants: [{ quantity: 1 }] })] })),
+    );
 
     expect(result.ok).toBe(false);
     if (result.ok) return;
@@ -339,7 +342,7 @@ describe('wants', () => {
 
   it('refuses a want that names both a predicate and a good', () => {
     const result = loadContent(
-      aContentSet(aCatalogue({ buyers: [aBuyer({ wants: [aWant({ goodId: 'silk' })] })] })),
+      aContentSet(aCatalogue({ buyers: [aBuyer({ wants: [aWant(aWantForGood('silk'))] })] })),
     );
 
     expect(result.ok).toBe(false);

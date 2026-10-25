@@ -293,17 +293,20 @@ describe('the people here', () => {
 
     expect(screen.getByRole('heading', { name: 'Ilse Vantry' })).toBeDefined();
     expect(screen.getByText(/wants something warm to sleep under/)).toBeDefined();
-    expect(screen.getByText('Bolt of silk: grudging, 20 credits')).toBeDefined();
-    expect(screen.getByText('Ship blanket: great, 37 credits')).toBeDefined();
+    expect(screen.getByText('Bolt of silk: grudging, 20 credits each')).toBeDefined();
+    expect(screen.getByText('Ship blanket: great, 37 credits each')).toBeDefined();
   });
 
   it('hands back the sale of the good the player chose', () => {
     const taken: Command[] = [];
     surfaces({ campaign: holding(), onCommand: (command) => taken.push(command) });
 
+    fireEvent.change(screen.getByLabelText('Units of Ship blanket to sell'), {
+      target: { value: '1' },
+    });
     screen.getByRole('button', { name: 'Sell Ship blanket' }).click();
 
-    expect(taken).toEqual([{ kind: 'sell', want: 'ilse#0', good: 'blanket' }]);
+    expect(taken).toEqual([{ kind: 'sell', want: 'ilse#0', good: 'blanket', quantity: 1 }]);
   });
 
   it('has nobody to sell to while underway', () => {
