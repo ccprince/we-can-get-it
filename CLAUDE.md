@@ -81,6 +81,8 @@ don't ask, and don't stop at a local commit. The loop, the 400-insertion budget 
 are in `docs/agents/workflow.md`; sizing a ticket is in `docs/agents/sizing.md`. A decision goes
 straight to `main`.
 
+Read a ticket and its parent with `tools/ticket.sh <n>`.
+
 ### Issue tracker
 
 Issues live as GitHub issues in `ccprince/we-can-get-it`, managed via the `gh` CLI. See `docs/agents/issue-tracker.md`.

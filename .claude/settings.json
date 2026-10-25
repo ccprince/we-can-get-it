@@ -11,6 +11,7 @@
       "Bash(git remote -v)",
       "Bash(gh issue view:*)",
       "Bash(gh issue list:*)",
+      "Bash(tools/ticket.sh:*)",
       "Bash(gh pr view:*)",
       "Bash(gh pr diff:*)",
       "Bash(gh pr list:*)",
