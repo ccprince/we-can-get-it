@@ -1,6 +1,6 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
-import { loadContent, view } from '../src/engine';
+import { drawGalaxy, loadContent, view } from '../src/engine';
 import { started } from './support/campaign';
 
 /**
@@ -25,6 +25,21 @@ describe('the walking skeleton content set', () => {
     if (!result.ok) throw new Error('the content set did not load');
 
     expect(view(started(result.content, 20261022)).here?.name).toBe('Tallow Cross');
+  });
+
+  it('holds every topology check it declares, on every seed tried', () => {
+    // The checks run inside the draw, so a seed that draws is a seed whose map
+    // held them (ADR 0006 decisions 3, 15 and 16). They are declared to bite:
+    // a spur and a chokepoint, a far haul, and a market hub beside a spur.
+    const result = loadContent(raw);
+    if (!result.ok) throw new Error('the content set did not load');
+    const { topology } = result.content;
+    const seeds = Array.from({ length: 200 }, (_, at) => at + 1);
+
+    expect(topology.leastPlaced).toMatchObject({ spur: 1, chokepoint: 1 });
+    expect(topology.farHaul).toBeGreaterThan(0);
+    expect(topology.startHub).toEqual({ archetype: 'market', neighbours: 3, spurs: 1 });
+    expect(seeds.filter((seed) => !drawGalaxy(result.content, seed).ok)).toEqual([]);
   });
 
   it('opens with something on sale, so the page has a shop to buy from', () => {

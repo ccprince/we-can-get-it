@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { view } from '../src/engine';
-import type { ContentSet, LocationView } from '../src/engine';
+import type { ContentSet } from '../src/engine';
 import { laneBetween } from './support/chart';
 import {
   aGalaxy,
@@ -23,9 +23,11 @@ const SEED = 20261022;
 
 /**
  * Kestrel, two places a lane from it and one beyond, so a lane can fail to
- * touch here. The campaign opens at the best-connected place the assembly drew
- * (ADR 0006 decision 16). Kestrel and Bellwether have two lanes each, and
- * Kestrel takes the tie because the fixture lists it first (`aGalaxy`).
+ * touch here. The Shoals have a short way round to the Hollow, so the map is
+ * connected at any range of 9 or more (ADR 0006 decision 15). The campaign
+ * opens at the best-connected place the assembly drew (decision 16). All four
+ * have two lanes each, and Kestrel takes the tie because the fixture lists it
+ * first (`aGalaxy`).
  */
 function aFourPlaceGalaxy(overrides: Record<string, unknown> = {}): ContentSet {
   return loadedContentSet(
@@ -40,6 +42,7 @@ function aFourPlaceGalaxy(overrides: Record<string, unknown> = {}): ContentSet {
         aMotifLane({ ends: ['kestrel', 'bellwether'], distance: 6 }),
         aMotifLane({ ends: ['bellwether', 'hollow'], distance: 16 }),
         aMotifLane({ ends: ['kestrel', 'shoals'], distance: 2 }),
+        aMotifLane({ ends: ['shoals', 'hollow'], distance: 9 }),
       ],
       ...overrides,
     }),
@@ -65,6 +68,7 @@ describe('the chart', () => {
     // system would be a free shopping trip.
     const chart = chartAt(
       aFourPlaceGalaxy({
+        locations: [aLocation(), aLocation({ id: 'bellwether', name: 'Bellwether Yards' })],
         lanes: [aMotifLane({ ends: ['kestrel', 'bellwether'], distance: 1 })],
       }),
     );
@@ -110,7 +114,7 @@ describe('the chart', () => {
     // published facts from day one (ADR 0006 decision 5).
     const chart = chartAt(aFourPlaceGalaxy());
 
-    expect(chart.lanes).toHaveLength(3);
+    expect(chart.lanes).toHaveLength(4);
     expect(laneBetween(chart, 'Bellwether Yards', "Grieve's Hollow").destination).toBeNull();
   });
 
@@ -143,34 +147,4 @@ describe('the chart', () => {
       'Ash Landing',
     ]);
   });
-
-  it('names a location no lane touches, because it is a place that exists', () => {
-    // The chart says which places exist on its own account (ADR 0006
-    // decision 5), not by reading them off the ends of lanes. Caravel is drawn
-    // and joined to nothing, and it is on the chart all the same.
-    const chart = chartAt(
-      loadedContentSet(
-        aGalaxy({
-          locations: [
-            aLocation(),
-            aLocation({ id: 'bellwether', name: 'Bellwether Yards' }),
-            aLocation({ id: 'caravel', name: 'Caravel Station' }),
-          ],
-          lanes: [aMotifLane({ ends: ['kestrel', 'bellwether'], distance: 6 })],
-        }),
-      ),
-    );
-
-    expect(chart.lanes.flatMap((lane) => lane.ends)).not.toContain('Caravel Station');
-    expect(namesOf(chart.locations)).toEqual([
-      'Bellwether Yards',
-      'Caravel Station',
-      'Kestrel Reach',
-    ]);
-  });
 });
-
-/** The names on the chart, sorted, for a test about which places and not their order. */
-function namesOf(locations: readonly LocationView[]): readonly string[] {
-  return locations.map((location) => location.name).sort();
-}

@@ -829,6 +829,51 @@ describe('the motifs the map is assembled from', () => {
     ]);
   });
 
+  it('refuses a start hub of an archetype that does not exist', () => {
+    const result = loadContent(
+      aContentSet({ topology: aTopology({ startHub: { archetype: 'cathedral' } }) }),
+    );
+
+    expect(result.ok ? [] : result.problems).toEqual([
+      {
+        verdict: 'fails',
+        where: 'topology.startHub.archetype',
+        what: 'names an archetype that does not exist: cathedral',
+      },
+    ]);
+  });
+
+  it('refuses a start hub with more spurs among its neighbours than neighbours', () => {
+    const result = loadContent(
+      aContentSet({
+        motifs: [aMotif({ shape: 'spur' })],
+        topology: aTopology({ startHub: { neighbours: 1, spurs: 2 } }),
+      }),
+    );
+
+    expect(result.ok ? [] : result.problems).toEqual([
+      {
+        verdict: 'fails',
+        where: 'topology.startHub.spurs',
+        what: 'asks for 2 of 1 neighbours to be in a spur',
+      },
+    ]);
+  });
+
+  it('refuses a start hub beside a spur when no motif is a spur', () => {
+    const result = loadContent(
+      aContentSet({ topology: aTopology({ startHub: { neighbours: 1, spurs: 1 } }) }),
+    );
+
+    expect(result.ok ? [] : result.problems).toEqual([
+      {
+        verdict: 'fails',
+        where: 'topology.startHub.spurs',
+        what: 'asks for 1, and no motif is a spur',
+      },
+    ]);
+  });
+
   it('refuses a motif lane naming a slot that motif does not hold', () => {
     // Motifs join by inter-motif lanes the assembly adds, never by naming each
     // other's slots (ADR 0008 decision 6).

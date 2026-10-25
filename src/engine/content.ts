@@ -309,8 +309,8 @@ export type DrawParameters = {
    * A declared parameter and **not a second dial**: there is one dial and it is
    * the motif count (decision 5). This says how long a lane the assembly lays
    * between two motifs, which it has to know and cannot invent. The far-cluster
-   * invariant's own threshold is #12's, and must not become a second number for
-   * the same thing.
+   * invariant's own threshold is `topology.farHaul`, a different number: how
+   * long one of these lanes must be, not how long any may be.
    */
   readonly interMotifDistance: Range;
   /**
@@ -369,6 +369,20 @@ export type Topology = {
    * long a lane between motifs may be; this says how long one of them must be.
    */
   readonly farHaul: number;
+  /** Where a campaign may open (ADR 0006 decision 16). */
+  readonly startHub: StartHub;
+};
+
+/**
+ * The **start-node guarantee**, in the numbers and the name a content set
+ * declares for it: the archetype the start must be, how many neighbours inside
+ * baseline range it must have, and how many of those a **spur** placed.
+ */
+export type StartHub = {
+  /** An archetype id, or null for a start of any archetype. */
+  readonly archetype: string | null;
+  readonly neighbours: number;
+  readonly spurs: number;
 };
 
 /**

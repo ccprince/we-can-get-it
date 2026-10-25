@@ -1,5 +1,7 @@
 import { shapes, within, type ContentSet, type Shape } from './content';
 import type { DrawnGalaxy } from './galaxy';
+import { reachableFrom } from './map';
+import { asAStart, mayOpen } from './start-hub';
 import type { Rng } from './rng';
 
 /**
@@ -91,6 +93,41 @@ export const drawChecks: readonly DrawCheck[] = [
         ? null
         : `its longest lane between motifs was ${longest}, and the content set declared at ` +
             `least ${farHaul}`;
+    },
+  },
+  {
+    // Checked at campaign start only. Whether a later lane closure may cut a
+    // place off is an open question ADR 0006 records, and not this check.
+    stage: 'motif selection',
+    invariant: 'connectivity at baseline range',
+    where: 'start.ship.range',
+    miss: (galaxy, content) => {
+      const { range } = content.start.ship;
+      const reached = reachableFrom(galaxy, galaxy.startId, range);
+      const cutOff = galaxy.locations.filter((location) => !reached.has(location.id));
+      return cutOff.length === 0
+        ? null
+        : `it left ${cutOff.map((location) => location.id).join(', ')} unreachable from ` +
+            `${galaxy.startId} on lanes within the range of ${range}`;
+    },
+  },
+  {
+    // The assembly picks a start that holds this when one exists, so a miss is
+    // a map with no such place on it at all (ADR 0006 decision 16).
+    stage: 'motif selection',
+    invariant: 'the start-node guarantee',
+    where: 'topology.startHub',
+    miss: (galaxy, content) => {
+      const { range } = content.start.ship;
+      const { startHub } = content.topology;
+      const opened = asAStart(galaxy, galaxy.startId, range);
+      return mayOpen(opened, startHub)
+        ? null
+        : `it opened at ${galaxy.startId}, a ${opened.archetype} with ${opened.neighbours} ` +
+            `neighbour${opened.neighbours === 1 ? '' : 's'} within the range of ${range}, ` +
+            `${opened.spurs} of them in a spur, and the content set declared ` +
+            `${startHub.archetype === null ? 'a start' : `a ${startHub.archetype}`} with at ` +
+            `least ${startHub.neighbours}, ${startHub.spurs} of them in a spur`;
     },
   },
 ];
