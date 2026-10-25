@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import {
+  identify,
   isRejected,
   startCampaign,
   takeCommand,
@@ -31,6 +32,7 @@ type CampaignState =
   | {
       readonly state: 'unresumable';
       readonly content: ContentSet;
+      readonly title: string;
       readonly why: string;
       readonly stored: string;
     }
@@ -97,7 +99,7 @@ export function App() {
       const { content } = campaignState;
       return (
         <Frame>
-          <Failure title="The saved campaign will not replay." lines={[campaignState.why]} />
+          <Failure title={campaignState.title} lines={[campaignState.why]} />
           <p className="mt-6 text-sm text-stone-400">The save is kept as it was:</p>
           <pre className="mt-2 font-mono text-xs whitespace-pre-wrap text-stone-400">
             {campaignState.stored}
@@ -119,6 +121,7 @@ export function App() {
         // Written after each command, so a reload mid-campaign loses nothing.
         setCampaignState(
           saving(content, result.campaign, {
+            content: save.content,
             seed: save.seed,
             commands: [...save.commands, command],
           }),
@@ -148,6 +151,8 @@ export function App() {
   }
 }
 
+const WILL_NOT_REPLAY = 'The saved campaign will not replay.';
+
 /**
  * The campaign the page opens on: the save it found, replayed, or a new one when
  * there was nothing to find. Opening never starts a new campaign over a save.
@@ -161,16 +166,29 @@ function opening(content: ContentSet, found: Found): CampaignState {
       return {
         state: 'unresumable',
         content,
+        title: WILL_NOT_REPLAY,
         why: 'What is stored where the page keeps its save is not a save.',
         stored: found.stored,
       };
 
     case 'save': {
       const resumed = resume(content, found.save);
+      if ('otherContent' in resumed) {
+        return {
+          state: 'unresumable',
+          content,
+          title: 'The saved campaign was played on a different content set.',
+          why:
+            'The content set has changed since this campaign was saved.' +
+            ' Restoring the content set it was played on will resume it.',
+          stored: found.stored,
+        };
+      }
       if ('rejected' in resumed) {
         return {
           state: 'unresumable',
           content,
+          title: WILL_NOT_REPLAY,
           why:
             `The engine refused command ${resumed.at} of ${resumed.of}:` +
             ` ${resumed.rejected.message}`,
@@ -196,7 +214,11 @@ function opening(content: ContentSet, found: Found): CampaignState {
 /** A new campaign, saved at once so that what is stored is what is in play. */
 function newCampaign(content: ContentSet): CampaignState {
   const seed = seedFromUrl(location.search);
-  return saving(content, startCampaign(content, seed), { seed, commands: [] });
+  return saving(content, startCampaign(content, seed), {
+    content: identify(content),
+    seed,
+    commands: [],
+  });
 }
 
 /**
