@@ -2,10 +2,14 @@ import { readFileSync } from 'node:fs';
 
 /**
  * Reading a JSON file off disk, named the way a content mistake is named. The
- * config and every setting's content set both arrive this way, so a mistyped
- * path reads alike wherever it is — and **unreadable** and **unparseable** are
- * two different things to tell someone, neither of them a validator problem:
- * the loader never sees the file.
+ * seed-finder's content set, the harness's config and every setting's content
+ * set all arrive this way, so a mistyped path reads alike wherever it is — and
+ * **unreadable** and **unparseable** are two different things to tell someone,
+ * neither of them a validator problem: the loader never sees the file.
+ *
+ * It lives here rather than beside the harness because the harness is a
+ * **throw-away instrument** and this is not: the lasting tool holds the shared
+ * reader, so `harness/` can be discarded whole without taking it along.
  *
  * `soThat` finishes the sentence — what cannot be done because this file could
  * not be read.

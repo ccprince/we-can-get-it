@@ -3,7 +3,7 @@ import { dirname } from 'node:path';
 import { isRejected, loadContent, startCampaign, takeCommand, view } from '../src/engine';
 import type { ContentSet } from '../src/engine';
 import { readConfig, seedsOf, type HarnessConfig, type Setting } from './config';
-import { readJson } from './files';
+import { readJson } from '../tools/files';
 import { rowFor, toCsv, type Row } from './csv';
 import { touristTaking, type Policy } from './policy';
 
