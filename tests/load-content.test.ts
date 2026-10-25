@@ -673,11 +673,8 @@ describe('the motifs the map is assembled from', () => {
   });
 
   it('refuses a slot no location in the reserve could fill, before any draw', () => {
-    // A slot types against an **archetype**, and the reserve has to hold
-    // something of it — otherwise every draw that places the motif fails, and
-    // the failure would surface as a re-roll that never passes rather than as
-    // the mistake it is (ADR 0006 decision 4, ADR 0007 decision 17).
-    // `processor` is enumerated and no location is one.
+    // `processor` is enumerated and no location is one, so the slot typed by it
+    // could never be filled by any draw (ADR 0006 decision 4).
     const result = loadContent(
       aContentSet({
         motifs: [aMotif({ slots: [aSlot(), aSlot({ id: 'works', archetype: 'processor' })] })],
@@ -698,8 +695,9 @@ describe('the motifs the map is assembled from', () => {
   });
 
   it('names the slot where the writer put it, whatever order it loads in', () => {
-    // The problem names the position as written; id order is what the engine
-    // reads, and never what a writer is pointed at (ADR 0009 decision 3).
+    // The loader sorts motifs by id (ADR 0009 decision 3); the problem still
+    // points the writer at the position they wrote, which a check run after the
+    // sort would get wrong.
     const result = loadContent(
       aContentSet({
         motifs: [
