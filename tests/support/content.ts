@@ -380,6 +380,26 @@ export function aBuyer(overrides: RawObject = {}): RawObject {
 }
 
 /**
+ * Osk, at Bellwether, who wants a great deal and so keeps every tag in use: the
+ * rest of a fixture's cast can then be the one buyer at Kestrel a test is about.
+ */
+export function anElsewhereBuyer(overrides: RawObject = {}): RawObject {
+  return aBuyer({
+    id: 'osk',
+    name: 'Osk',
+    locationId: 'bellwether',
+    wants: [
+      aWant({
+        predicate: [{ tag: 'tools' }, { tag: 'cloth' }, { tag: 'warm' }],
+        plainly: 'wants a great deal',
+      }),
+    ],
+    bonusTags: [],
+    ...overrides,
+  });
+}
+
+/**
  * A catalogue small enough to read and large enough to satisfy the bounds
  * `aBounds` declares: `warm` sits on two goods, so it is a learnable pattern
  * as a role tag, and `cloth` carries three, so it is above the usability

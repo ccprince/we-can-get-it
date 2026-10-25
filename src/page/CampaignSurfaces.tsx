@@ -1,6 +1,6 @@
 import type { Command, LaneView, View } from '../engine';
 import { buttonChrome } from './chrome';
-import { Hold, Shop } from './Trade';
+import { Hold, People, Shop } from './Trade';
 
 /**
  * The campaign's reading surfaces. Everything shown here comes out of one
@@ -45,6 +45,7 @@ export function CampaignSurfaces({
       )}
 
       {view.here !== null && <Shop lots={view.here.lots} onCommand={onCommand} />}
+      {view.here !== null && <People people={view.here.people} onCommand={onCommand} />}
       <Hold hold={view.hold} />
 
       <section className="mt-8">
@@ -183,5 +184,9 @@ function wordCommand(command: Command): string {
     // carries one, since trade is not an action (ADR 0005 decision 6).
     case 'buy':
       return 'Buy';
+
+    // A sale is worded under the want it answers, beside the tier and the offer.
+    case 'sell':
+      return 'Sell';
   }
 }

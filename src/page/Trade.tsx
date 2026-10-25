@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import type { Command, HoldView, LotView } from '../engine';
+import type { Command, HoldView, LotView, MatchView, PersonView } from '../engine';
 import { buttonChrome } from './chrome';
 
 /**
@@ -86,6 +86,75 @@ function LotRow({
         </div>
       </td>
     </tr>
+  );
+}
+
+/**
+ * Who is here and what each is after, said plainly. Under each want sits every
+ * good in the hold with the **tier** it would earn and what it would be paid,
+ * before the player commits; a refused good shows the buyer's own words.
+ */
+export function People({
+  people,
+  onCommand,
+}: {
+  readonly people: readonly PersonView[];
+  readonly onCommand: (command: Command) => void;
+}) {
+  return (
+    <section className="mt-8">
+      <h2 className="text-xs tracking-widest text-stone-500 uppercase">People here</h2>
+      {people.length === 0 ? (
+        <p className="mt-2 text-stone-500">Nobody is here.</p>
+      ) : (
+        people.map((person) => (
+          <div key={person.name} className="mt-3">
+            <h3 className="text-stone-200">{person.name}</h3>
+            {person.wants.length === 0 && (
+              <p className="text-sm text-stone-500">Is after nothing more.</p>
+            )}
+            <ul className="space-y-2">
+              {person.wants.map((want) => (
+                <li key={want.want} className="text-sm text-stone-300">
+                  {want.wording}
+                  <ul className="mt-1 ml-4 space-y-1">
+                    {want.matches.map((match) => (
+                      <Match key={match.good} match={match} onCommand={onCommand} />
+                    ))}
+                  </ul>
+                </li>
+              ))}
+            </ul>
+          </div>
+        ))
+      )}
+    </section>
+  );
+}
+
+function Match({
+  match,
+  onCommand,
+}: {
+  readonly match: MatchView;
+  readonly onCommand: (command: Command) => void;
+}) {
+  return (
+    <li className="flex items-center gap-2 text-stone-400">
+      <span>
+        {match.good}: {match.tier}
+        {match.offer !== null && `, ${match.offer} credits`}
+        {match.reason !== null && ` — “${match.reason}”`}
+      </span>
+      <button
+        type="button"
+        aria-label={`Sell ${match.good}`}
+        onClick={() => onCommand(match.sell)}
+        className={`${buttonChrome} px-2 py-0.5 text-xs`}
+      >
+        Sell
+      </button>
+    </li>
   );
 }
 
