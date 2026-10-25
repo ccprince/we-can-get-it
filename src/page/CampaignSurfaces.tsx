@@ -1,4 +1,5 @@
 import type { Command, LaneView, View } from '../engine';
+import { Hold, Shop } from './Trade';
 
 // The chrome both buttons wear; only their padding differs.
 const buttonChrome =
@@ -11,8 +12,8 @@ const buttonChrome =
  *
  * Layout and keyboard map are deliberately unspecified in the canon: they are
  * settled by playing (CLAUDE.md), so this is the plainest arrangement that
- * shows where the player is, the day, their credits, the digest and what they
- * can do.
+ * shows where the player is, the day, their credits, what is on sale, the
+ * hold, the digest and what they can do.
  */
 export function CampaignSurfaces({
   view,
@@ -45,6 +46,9 @@ export function CampaignSurfaces({
           {view.transit.destination} with {days(view.transit.daysToRun, 'a day')} to run.
         </p>
       )}
+
+      {view.here !== null && <Shop lots={view.here.lots} onCommand={onCommand} />}
+      <Hold hold={view.hold} />
 
       <section className="mt-8">
         <h2 className="text-xs tracking-widest text-stone-500 uppercase">The chart</h2>
