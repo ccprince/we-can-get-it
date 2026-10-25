@@ -345,13 +345,14 @@ export type ShopParameters = {
   readonly lotQuantity: Range;
   /**
    * What a shop charges above worth, in whole percent, drawn per location: the
-   * part of a price that is where it is sold.
+   * part of a price that is where it is sold. Never below worth, and either end
+   * may pass 100.
    */
   readonly markupPercent: Range;
   /**
    * The most a lot adds, in whole percent, for being small: a lot opening at
    * `lotQuantity.most` adds nothing, and one opening smaller adds its shortfall's
-   * share of this. The part of a price that is stock.
+   * share of this. The part of a price that is stock, and it may pass 100.
    */
   readonly scarcityPercent: number;
 };

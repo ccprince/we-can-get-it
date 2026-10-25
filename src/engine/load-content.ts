@@ -244,14 +244,15 @@ function readBounds(raw: unknown, problems: Problem[]): Bounds | undefined {
   return { tagsPerGood, goodsPerRoleTag, usabilityFloor, quirkRation };
 }
 
-function readRange(raw: unknown, where: string, problems: Problem[]): Range | undefined {
+/** A range of whole numbers, neither end below `floor`. */
+function readRange(raw: unknown, where: string, problems: Problem[], floor = 0): Range | undefined {
   if (!isObject(raw)) {
     problems.push(fails(where, 'is missing'));
     return undefined;
   }
 
-  const least = readInteger(raw.least, `${where}.least`, 0, problems);
-  const most = readInteger(raw.most, `${where}.most`, 0, problems);
+  const least = readInteger(raw.least, `${where}.least`, floor, problems);
+  const most = readInteger(raw.most, `${where}.most`, floor, problems);
   if (least === undefined || most === undefined) return undefined;
 
   if (least > most) {
@@ -453,7 +454,8 @@ function readShopParameters(raw: unknown, problems: Problem[]): ShopParameters |
   }
 
   const lotsPerShop = readRange(raw.lotsPerShop, 'shops.lotsPerShop', problems);
-  const lotQuantity = readRange(raw.lotQuantity, 'shops.lotQuantity', problems);
+  // A lot is finite and depletable, so one that opens empty is already gone.
+  const lotQuantity = readRange(raw.lotQuantity, 'shops.lotQuantity', problems, 1);
   const markupPercent = readRange(raw.markupPercent, 'shops.markupPercent', problems);
   const scarcityPercent = readInteger(raw.scarcityPercent, 'shops.scarcityPercent', 0, problems);
   if (
@@ -462,14 +464,6 @@ function readShopParameters(raw: unknown, problems: Problem[]): ShopParameters |
     markupPercent === undefined ||
     scarcityPercent === undefined
   ) {
-    return undefined;
-  }
-
-  // A lot is finite and depletable, so one that opens empty is already gone.
-  if (lotQuantity.least < 1) {
-    problems.push(
-      fails('shops.lotQuantity.least', `is ${lotQuantity.least}, which is less than 1`),
-    );
     return undefined;
   }
   return { lotsPerShop, lotQuantity, markupPercent, scarcityPercent };
