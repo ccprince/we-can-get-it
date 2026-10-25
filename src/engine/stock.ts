@@ -1,6 +1,6 @@
-import type { ContentSet, Good, Range } from './content';
+import type { Archetype, ContentSet, Good, Location, ShopParameters } from './content';
 import type { DrawnGalaxy } from './galaxy';
-import { drawFrom, drawInt, type Rng } from './rng';
+import { drawFrom, drawWithin, type Rng } from './rng';
 
 /**
  * A **lot**: a quantity of a good on sale at a shop, finite and depletable
@@ -42,12 +42,12 @@ export function stockShops(
   let next = rng;
 
   for (const location of galaxy.locations) {
-    const supplies = content.archetypes.find(({ id }) => id === location.archetype)?.supplies;
-    const offered = galaxy.goods.filter((good) => supplies?.includes(good.kind));
+    const { supplies } = archetypeOf(location, content);
+    const supplied = galaxy.goods.filter((good) => supplies.includes(good.kind));
 
     const [markup, afterMarkup] = drawWithin(shops.markupPercent, next);
     const [count, afterCount] = drawWithin(shops.lotsPerShop, afterMarkup);
-    const [stocked, afterStocked] = drawSome(offered, count, afterCount);
+    const [stocked, afterStocked] = drawSome(supplied, count, afterCount);
     next = afterStocked;
 
     for (const good of stocked) {
@@ -58,7 +58,7 @@ export function stockShops(
         locationId: location.id,
         goodId: good.id,
         quantity: opening,
-        price: priceOf(good, markup, opening, content),
+        price: priceOf(good, markup, opening, shops),
       });
     }
   }
@@ -75,18 +75,24 @@ export function stockShops(
  * price is an integer by a stated rule and never drifts (ADR 0009 decision 3).
  * Rounding up, because a shop does not sell below the price it means.
  */
-function priceOf(good: Good, markup: number, opening: number, content: ContentSet): number {
-  const { lotQuantity, scarcityPercent } = content.shops;
-  const most = lotQuantity.most;
-  const percentTimesMost = (100 + markup) * most + scarcityPercent * (most - opening);
+function priceOf(good: Good, markup: number, opening: number, shops: ShopParameters): number {
+  const { most } = shops.lotQuantity;
+  // The whole percentage, multiplied through by `most` so scarcity stays whole.
+  const numerator = good.worth * ((100 + markup) * most + shops.scarcityPercent * (most - opening));
   const denominator = 100 * most;
-  return Math.floor((good.worth * percentTimesMost + denominator - 1) / denominator);
+  return Math.floor((numerator + denominator - 1) / denominator);
 }
 
-/** A whole number in a declared range, both ends included. */
-function drawWithin(range: Range, rng: Rng): readonly [number, Rng] {
-  const [offset, next] = drawInt(rng, range.most - range.least + 1);
-  return [range.least + offset, next];
+/**
+ * The archetype a location is. The loader refuses a location naming one the
+ * content set does not enumerate, so this is total for any loaded content set.
+ */
+function archetypeOf(location: Location, content: ContentSet): Archetype {
+  const archetype = content.archetypes.find(({ id }) => id === location.archetype);
+  if (archetype === undefined) {
+    throw new Error(`${location.archetype} is not an archetype the content set enumerates`);
+  }
+  return archetype;
 }
 
 /**

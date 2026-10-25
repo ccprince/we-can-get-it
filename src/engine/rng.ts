@@ -1,3 +1,5 @@
+import type { Range } from './content';
+
 /**
  * The seeded generator. Randomness comes from a generator created in
  * `startCampaign` from the seed and threaded explicitly — never a module-level
@@ -34,6 +36,12 @@ export function drawInt(rng: Rng, bound: number): readonly [number, Rng] {
   mixed ^= mixed + Math.imul(mixed ^ (mixed >>> 7), mixed | 61);
   const drawn = (mixed ^ (mixed >>> 14)) >>> 0;
   return [drawn % bound, { state }];
+}
+
+/** A whole number inside a declared range, both ends included. */
+export function drawWithin(range: Range, rng: Rng): readonly [number, Rng] {
+  const [offset, next] = drawInt(rng, range.most - range.least + 1);
+  return [range.least + offset, next];
 }
 
 /** One of a list, drawn from the generator. The list is never empty. */

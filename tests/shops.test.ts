@@ -85,7 +85,7 @@ describe('the shop where the player is', () => {
     expect(view(started(content, SEED)).here?.lots).toHaveLength(2);
   });
 
-  it('stocks as many lots as the shop draws, out of what it could offer', () => {
+  it('stocks as many lots as the shop draws, out of the goods it supplies', () => {
     const content = loadedContentSet(
       aTradingGalaxy({ shops: aShopParameters({ lotsPerShop: { least: 1, most: 1 } }) }),
     );
@@ -112,8 +112,8 @@ describe('what a lot costs', () => {
   });
 
   it('adds a share of the scarcity for every unit a lot opens short of full', () => {
-    // Lots open between 1 and 10 units, and one opening at 10 adds nothing —
-    // the lots of five above, at a full five, sell at worth. At this seed the
+    // Lots open between 1 and 10 units, and one opening at 10 adds nothing
+    // (shown below, where every lot opens full). At this seed the
     // blanket's lot opens 6 short, so 6/10 of 50% is 30% and 25 becomes 32.5;
     // the quilt's 8 short, 40% on 30 is 42; the silk's 9 short, 45% on 40 is 58.
     const content = loadedContentSet(
@@ -127,6 +127,48 @@ describe('what a lot costs', () => {
       ['Ship blanket', 4, 33],
       ['Quilted roll', 2, 42],
       ['Bolt of silk', 1, 58],
+    ]);
+  });
+});
+
+describe('what a lot costs, all of it together', () => {
+  it('draws one markup for the whole shop, and a full lot adds no scarcity', () => {
+    // The markup may land anywhere from 10% to 40%. Of those, only 25% prices
+    // all three at 32, 38 and 50 (31.25, 37.5 and 50): one draw, for the shop.
+    // Every lot opens full at five, so a scarcity of 50% adds nothing.
+    const content = loadedContentSet(
+      aTradingGalaxy({
+        shops: aShopParameters({ markupPercent: { least: 10, most: 40 }, scarcityPercent: 50 }),
+      }),
+    );
+
+    const prices = view(started(content, SEED)).here?.lots.map(({ good, price }) => [good, price]);
+    expect(prices).toEqual([
+      ['Ship blanket', 32],
+      ['Quilted roll', 38],
+      ['Bolt of silk', 50],
+    ]);
+  });
+
+  it('adds the markup and the scarcity together before rounding, once', () => {
+    // The scarcity test's lots, at a 25% markup: 55% on 25 is 38.75, 65% on 30
+    // is 49.5 and 70% on 40 is 68. Rounding the markup up first would make the
+    // blanket 32, and 30% of its worth on top of that 39.5, so 40.
+    const content = loadedContentSet(
+      aTradingGalaxy({
+        shops: aShopParameters({
+          markupPercent: { least: 25, most: 25 },
+          lotQuantity: { least: 1, most: 10 },
+          scarcityPercent: 50,
+        }),
+      }),
+    );
+
+    const prices = view(started(content, SEED)).here?.lots.map(({ good, price }) => [good, price]);
+    expect(prices).toEqual([
+      ['Ship blanket', 39],
+      ['Quilted roll', 50],
+      ['Bolt of silk', 68],
     ]);
   });
 });

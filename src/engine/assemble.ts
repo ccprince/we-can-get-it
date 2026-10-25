@@ -1,6 +1,6 @@
 import type { ContentSet, Lane, Location, Motif, Range, Slot } from './content';
 import type { Attempt } from './draw-checks';
-import { drawFrom, drawInt, type Rng } from './rng';
+import { drawFrom, drawWithin, type Rng } from './rng';
 
 /**
  * The first two stages of the cascade: the **motifs** are drawn, and then the
@@ -232,10 +232,4 @@ function hubOf(locations: readonly Location[], lanes: readonly Lane[]): string {
 
 function neighbours(lanes: readonly Lane[], locationId: string): number {
   return lanes.filter((lane) => lane.ends.includes(locationId)).length;
-}
-
-/** A whole number inside a declared range, both ends included. */
-function drawWithin(range: Range, rng: Rng): readonly [number, Rng] {
-  const [offset, next] = drawInt(rng, range.most - range.least + 1);
-  return [range.least + offset, next];
 }
