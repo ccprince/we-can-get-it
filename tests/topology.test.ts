@@ -331,6 +331,8 @@ describe('the start-node guarantee', () => {
     // neighbours and one of them in the spur, but none of them a dead end: the
     // only market beside a spur's dead end is the junction, and only when the
     // joining lane gives it a third neighbour.
+    // Two motifs are drawn, so the reserve holds as many of each archetype as
+    // both could demand (ADR 0008 decision 9): four extractors and two processors.
     const reserve = {
       locations: [
         aLocation(),
