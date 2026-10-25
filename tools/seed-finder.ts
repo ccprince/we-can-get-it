@@ -19,6 +19,12 @@ import { readJson } from '../harness/files';
  *   npm run seeds -- content/walking-skeleton.json start-is tallow
  *   npm run seeds -- content/walking-skeleton.json kind-goods ore 3 --bound 2000
  *
+ * **Every satisfying seed is reported, and the search starts at seed 1.** Both
+ * are so that a recorded command is a question with one answer: a report that
+ * showed the first few of them, or that began wherever a flag said, would
+ * re-find a different seed than the one written down. The bound is the only
+ * knob, because it is the only one #13 asks for.
+ *
  * It draws through the draw's **reporting mode** and never starts a campaign:
  * the galaxy a seed gives is the whole of what a predicate reads, and a report
  * that went through `startCampaign` could disagree with one that did not
@@ -29,9 +35,13 @@ import { readJson } from '../harness/files';
  * public module (ADR 0003 decision 5, ADR 0009 decision 5).
  */
 
-const DEFAULT_FROM = 1;
+/** Where every search starts, so a recorded command has one answer. */
+const FIRST_SEED = 1;
+
 const DEFAULT_BOUND = 1000;
-const DEFAULT_MOST = 5;
+
+/** Seeds per line of the report, so a few hundred of them stay readable. */
+const PER_LINE = 12;
 
 /**
  * One kind of predicate the finder knows, with the arity its arguments give it.
@@ -62,7 +72,7 @@ const predicateKinds: readonly PredicateKind[] = [
     takes: ['<location id>'],
     what: 'the campaign opens at that location',
     make: (args, content) => {
-      const id = locationId(args[0], content);
+      const id = oneOf(args[0], 'location id', idsOf(content.locations));
       return (galaxy) => galaxy.startId === id;
     },
   },
@@ -71,7 +81,7 @@ const predicateKinds: readonly PredicateKind[] = [
     takes: ['<archetype id>'],
     what: 'at least one location of that archetype was drawn',
     make: (args, content) => {
-      const archetype = archetypeId(args[0], content);
+      const archetype = oneOf(args[0], 'archetype id', idsOf(content.archetypes));
       return (galaxy) => galaxy.locations.some((location) => location.archetype === archetype);
     },
   },
@@ -80,62 +90,55 @@ const predicateKinds: readonly PredicateKind[] = [
     takes: ['<kind id>', '<least>'],
     what: 'that kind came out of the draw with at least that many goods',
     make: (args, content) => {
-      const kind = kindId(args[0], content);
+      const kinds = content.tags.filter((tag) => tag.class === 'kind');
+      const kind = oneOf(args[0], 'kind', idsOf(kinds));
       const least = whole(args[1], 'least', 1);
       return (galaxy) => galaxy.goods.filter((good) => good.kind === kind).length >= least;
     },
   },
   {
+    /**
+     * Note that the walking skeleton declares `startHub.spurs`, so every seed
+     * it draws satisfies this and the search is a formality there. It
+     * discriminates on a content set that asks for no spur off the start.
+     */
     name: 'spur-off-start',
     takes: [],
     what: 'a lane runs from the start to a location that no other lane touches',
     make: () => (galaxy) => {
-      const lanes = lanesPerLocation(galaxy);
-      return neighboursOf(galaxy, galaxy.startId).some((neighbour) => lanes.get(neighbour) === 1);
+      const neighbours = neighboursOf(galaxy);
+      return (neighbours.get(galaxy.startId) ?? []).some(
+        (neighbour) => (neighbours.get(neighbour) ?? []).length === 1,
+      );
     },
   },
 ];
 
-/** How many lanes touch each location the draw placed, by location id. */
-function lanesPerLocation(galaxy: DrawnGalaxy): Map<string, number> {
-  const counted = new Map<string, number>();
-  for (const location of galaxy.locations) counted.set(location.id, 0);
+function idsOf(named: readonly { readonly id: string }[]): readonly string[] {
+  return named.map((one) => one.id);
+}
+
+/**
+ * The locations one lane away from each location the draw placed, by location
+ * id, in the order the draw laid the lanes — derived order (ADR 0009
+ * decision 3). **Distinct**, so a second lane between the same two places
+ * cannot make a leaf look like a junction.
+ */
+function neighboursOf(galaxy: DrawnGalaxy): Map<string, readonly string[]> {
+  const joined = new Map<string, string[]>();
+  for (const location of galaxy.locations) joined.set(location.id, []);
   for (const lane of galaxy.lanes) {
-    for (const end of lane.ends) counted.set(end, (counted.get(end) ?? 0) + 1);
+    const [one, other] = lane.ends;
+    join(joined, one, other);
+    join(joined, other, one);
   }
-  return counted;
+  return joined;
 }
 
-/** The locations one lane away, in the order the draw laid the lanes. */
-function neighboursOf(galaxy: DrawnGalaxy, locationId: string): readonly string[] {
-  return galaxy.lanes
-    .filter((lane) => lane.ends.includes(locationId))
-    .map((lane) => (lane.ends[0] === locationId ? lane.ends[1] : lane.ends[0]));
-}
-
-function locationId(asked: string | undefined, content: ContentSet): string {
-  return oneOf(
-    asked,
-    'location id',
-    content.locations.map((location) => location.id),
-  );
-}
-
-function archetypeId(asked: string | undefined, content: ContentSet): string {
-  return oneOf(
-    asked,
-    'archetype id',
-    content.archetypes.map((archetype) => archetype.id),
-  );
-}
-
-function kindId(asked: string | undefined, content: ContentSet): string {
-  const kinds = content.tags.filter((tag) => tag.class === 'kind');
-  return oneOf(
-    asked,
-    'kind',
-    kinds.map((tag) => tag.id),
-  );
+function join(joined: Map<string, string[]>, at: string, neighbour: string): void {
+  const known = joined.get(at) ?? [];
+  if (!known.includes(neighbour)) known.push(neighbour);
+  joined.set(at, known);
 }
 
 /**
@@ -164,23 +167,22 @@ type Asked = {
   readonly predicate: string;
   /** The predicate asked for, already built against the content set. */
   readonly holds: (galaxy: DrawnGalaxy) => boolean;
-  readonly from: number;
   readonly bound: number;
-  readonly most: number;
 };
 
 /**
- * The command line split once: the flags with their values, and the positional
- * words in the order they were typed. Split before the content set is read,
- * because the path is positional and the predicate cannot be parsed until the
- * reserve it names things from has loaded.
+ * The command line, decoded in **one place**: the flags with their values, the
+ * content set to search, and the predicate asked for by name with the arguments
+ * given to it. Nothing downstream reads a positional word by its index.
  */
 type Words = {
   readonly flags: ReadonlyMap<string, string>;
-  readonly rest: readonly string[];
+  readonly contentPath: string;
+  readonly name: string;
+  readonly args: readonly string[];
 };
 
-const FLAGS = ['--from', '--bound', '--most'];
+const FLAGS = ['--bound'];
 
 function split(argv: readonly string[]): Words {
   const flags = new Map<string, string>();
@@ -199,14 +201,10 @@ function split(argv: readonly string[]): Words {
     flags.set(arg, value);
     at += 1;
   }
-  return { flags, rest };
-}
 
-/** The content path, which is the first positional word. */
-function pathIn(words: Words): string {
-  const path = words.rest[0];
-  if (path === undefined) throw new Error(usage());
-  return path;
+  const [contentPath, name, ...args] = rest;
+  if (contentPath === undefined || name === undefined) throw new Error(usage());
+  return { flags, contentPath, name, args };
 }
 
 /**
@@ -214,45 +212,31 @@ function pathIn(words: Words): string {
  * takes. Read before the content set, so a misspelt predicate is answered with
  * the usage rather than with a content set's load notes.
  */
-function kindIn(words: Words): PredicateKind {
-  const [, name, ...args] = words.rest;
-  if (name === undefined) throw new Error(usage());
-  const kind = predicateKinds.find((candidate) => candidate.name === name);
-  if (kind === undefined) throw new Error(`there is no predicate ${name}.\n\n${usage()}`);
-  if (args.length !== kind.takes.length) {
+function predicateNamed(words: Words): PredicateKind {
+  const named = predicateKinds.find((candidate) => candidate.name === words.name);
+  if (named === undefined) {
+    throw new Error(`there is no predicate ${words.name}.\n\n${usage()}`);
+  }
+  if (words.args.length !== named.takes.length) {
     throw new Error(
-      `${kind.name} takes ${kind.takes.length} argument(s), and was given ${args.length}.` +
-        `\n\n${usage()}`,
+      `${named.name} takes ${named.takes.length} argument(s), and was given ` +
+        `${words.args.length}.\n\n${usage()}`,
     );
   }
-  return kind;
+  return named;
 }
 
 /**
  * The rest of what was asked for, read once the content set is in hand: the
  * predicate built against the reserve, and the bound to search within.
  */
-function asking(words: Words, kind: PredicateKind, content: ContentSet): Asked {
-  const { flags } = words;
-  const args = words.rest.slice(2);
-
+function asking(words: Words, named: PredicateKind, content: ContentSet): Asked {
+  const bound = words.flags.get('--bound');
   return {
-    predicate: [kind.name, ...args].join(' '),
-    holds: kind.make(args, content),
-    from: flagged(flags, '--from', DEFAULT_FROM, 0),
-    bound: flagged(flags, '--bound', DEFAULT_BOUND, 1),
-    most: flagged(flags, '--most', DEFAULT_MOST, 1),
+    predicate: [named.name, ...words.args].join(' '),
+    holds: named.make(words.args, content),
+    bound: bound === undefined ? DEFAULT_BOUND : whole(bound, '--bound', 1),
   };
-}
-
-function flagged(
-  flags: ReadonlyMap<string, string>,
-  flag: string,
-  fallback: number,
-  least: number,
-): number {
-  const given = flags.get(flag);
-  return given === undefined ? fallback : whole(given, flag, least);
 }
 
 function usage(): string {
@@ -260,8 +244,9 @@ function usage(): string {
     (kind) => `  ${[kind.name, ...kind.takes].join(' ')}\n      ${kind.what}`,
   );
   return [
-    'Usage: npm run seeds -- <content path> <predicate> [argument …]' +
-      ' [--from <seed>] [--bound <seeds>] [--most <reported>]',
+    'Usage: npm run seeds -- <content path> <predicate> [argument …] [--bound <seeds>]',
+    '',
+    `The search runs from seed ${FIRST_SEED} and reports every seed that satisfies the predicate.`,
     '',
     'Predicates:',
     ...lines,
@@ -298,21 +283,16 @@ type Found = {
   readonly undrawable: number;
 };
 
-function search(
-  content: ContentSet,
-  holds: (galaxy: DrawnGalaxy) => boolean,
-  from: number,
-  bound: number,
-): Found {
+function search(content: ContentSet, asked: Asked): Found {
   const satisfying: number[] = [];
   let undrawable = 0;
-  for (let seed = from; seed < from + bound; seed += 1) {
+  for (let seed = FIRST_SEED; seed < FIRST_SEED + asked.bound; seed += 1) {
     const drawn = drawGalaxy(content, seed);
     if (!drawn.ok) {
       undrawable += 1;
       continue;
     }
-    if (holds(drawn.galaxy)) satisfying.push(seed);
+    if (asked.holds(drawn.galaxy)) satisfying.push(seed);
   }
   return { satisfying, undrawable };
 }
@@ -325,7 +305,7 @@ function search(
  */
 function report(contentPath: string, asked: Asked, found: Found): readonly string[] {
   const { satisfying, undrawable } = found;
-  const last = asked.from + asked.bound - 1;
+  const last = FIRST_SEED + asked.bound - 1;
   const drew = asked.bound - undrawable;
   const missed =
     undrawable === 0 ? '' : ` ${undrawable} of them would not draw at all, so ${drew} were judged.`;
@@ -339,36 +319,37 @@ function report(contentPath: string, asked: Asked, found: Found): readonly strin
           'the content set is what to look at.'
         : 'Widen the search with --bound, or ask for less.';
     return [
-      `no seed from ${asked.from} to ${last} satisfies \`${asked.predicate}\`.${missed}`,
+      `no seed from ${FIRST_SEED} to ${last} satisfies \`${asked.predicate}\`.${missed}`,
       next,
     ];
   }
 
-  const shown = satisfying.slice(0, asked.most);
-  const more =
-    satisfying.length > shown.length
-      ? ` (the first ${shown.length} of ${satisfying.length}; --most reports more)`
-      : '';
   return [
-    `seeds satisfying \`${asked.predicate}\` over ${contentPath}${more}:`,
-    `  ${shown.join('  ')}`,
-    `${satisfying.length} of the ${asked.bound} seeds from ${asked.from} satisfy it.${missed}`,
+    `seeds satisfying \`${asked.predicate}\` over ${contentPath}, first of them ${satisfying[0]}:`,
+    ...inLines(satisfying),
+    `${satisfying.length} of the ${asked.bound} seeds from ${FIRST_SEED} satisfy it.${missed}`,
   ];
+}
+
+function inLines(seeds: readonly number[]): readonly string[] {
+  const lines: string[] = [];
+  for (let at = 0; at < seeds.length; at += PER_LINE) {
+    lines.push(`  ${seeds.slice(at, at + PER_LINE).join('  ')}`);
+  }
+  return lines;
 }
 
 function main(): void {
   const words = split(process.argv.slice(2));
-  const contentPath = pathIn(words);
-  const kind = kindIn(words);
+  const named = predicateNamed(words);
 
   // The predicate's arguments are checked against the reserve, so the content
   // set is loaded between naming the predicate and building it: `start-is
   // tallow` can only be judged a sound question once there is a reserve.
-  const content = contentAt(contentPath);
-  const asked = asking(words, kind, content);
-  const found = search(content, asked.holds, asked.from, asked.bound);
+  const content = contentAt(words.contentPath);
+  const asked = asking(words, named, content);
 
-  console.log(report(contentPath, asked, found).join('\n'));
+  console.log(report(words.contentPath, asked, search(content, asked)).join('\n'));
 }
 
 try {
