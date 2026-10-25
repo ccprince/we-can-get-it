@@ -69,8 +69,7 @@
     "leastPlaced": {
       "spur": 1,
       "chokepoint": 1,
-      "ring": 0,
-      "cluster": 0
+      "ring": 0
     },
     "farHaul": 16
   },

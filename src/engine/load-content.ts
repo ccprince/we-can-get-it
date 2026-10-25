@@ -116,6 +116,9 @@ export function loadContent(raw: unknown): LoadResult {
   if (motifs !== undefined && locations !== undefined) {
     problems.push(...unfillableSlots(motifs, locations));
   }
+  if (topology !== undefined && drawParameters !== undefined && motifs !== undefined) {
+    problems.push(...unmeetableTopology(topology, drawParameters, motifs));
+  }
   if (archetypes !== undefined && tags !== undefined) {
     problems.push(...unknownKinds(archetypes, tags));
   }
@@ -478,24 +481,62 @@ function readLeastPlaced(raw: unknown, problems: Problem[]): Topology['leastPlac
     return undefined;
   }
 
-  const unknown = Object.keys(raw).filter((key) => !shapes.some((shape) => shape === key));
-  for (const key of unknown) {
+  const unknownShapes = Object.keys(raw).filter((key) => !shapes.some((shape) => shape === key));
+  for (const key of unknownShapes) {
     problems.push(fails(`${where}.${key}`, 'names a shape that does not exist'));
   }
-  const spur = readInteger(raw.spur, `${where}.spur`, 0, problems);
-  const chokepoint = readInteger(raw.chokepoint, `${where}.chokepoint`, 0, problems);
-  const ring = readInteger(raw.ring, `${where}.ring`, 0, problems);
-  const cluster = readInteger(raw.cluster, `${where}.cluster`, 0, problems);
-  if (
-    unknown.length > 0 ||
-    spur === undefined ||
-    chokepoint === undefined ||
-    ring === undefined ||
-    cluster === undefined
-  ) {
-    return undefined;
+  const least = shapes.map((shape) => readInteger(raw[shape], `${where}.${shape}`, 0, problems));
+  if (unknownShapes.length > 0 || least.some((count) => count === undefined)) return undefined;
+  return Object.fromEntries(
+    shapes.map((shape, at) => [shape, least[at] ?? 0]),
+  ) as Topology['leastPlaced'];
+}
+
+/**
+ * Motif invariants no draw could ever meet, refused at load as the content
+ * mistakes they are rather than left to exhaust the re-rolls and look like bad
+ * luck (ADR 0006 decision 3: the invariants are checked at load). Whether a
+ * meetable one is met is the draw-time pass's.
+ */
+function unmeetableTopology(
+  topology: Topology,
+  draw: DrawParameters,
+  motifs: readonly Motif[],
+): readonly Problem[] {
+  const problems: Problem[] = [];
+  for (const shape of shapes) {
+    const least = topology.leastPlaced[shape];
+    if (least > 0 && !motifs.some((motif) => motif.shape === shape)) {
+      problems.push(
+        fails(`topology.leastPlaced.${shape}`, `asks for ${least}, and no motif is a ${shape}`),
+      );
+    }
   }
-  return { spur, chokepoint, ring, cluster };
+
+  const asked = shapes.reduce((sum, shape) => sum + topology.leastPlaced[shape], 0);
+  if (asked > draw.motifsPerCampaign) {
+    problems.push(
+      fails(
+        'topology.leastPlaced',
+        `asks for ${asked} motifs, and a campaign places ${draw.motifsPerCampaign}`,
+      ),
+    );
+  }
+
+  if (topology.farHaul > 0 && draw.motifsPerCampaign === 1) {
+    problems.push(
+      fails('topology.farHaul', 'asks for a lane between motifs, and a campaign places one motif'),
+    );
+  } else if (topology.farHaul > draw.interMotifDistance.most) {
+    problems.push(
+      fails(
+        'topology.farHaul',
+        `is ${topology.farHaul}, and no lane between motifs is longer than ` +
+          `${draw.interMotifDistance.most}`,
+      ),
+    );
+  }
+  return problems;
 }
 
 function readShopParameters(raw: unknown, problems: Problem[]): ShopParameters | undefined {
@@ -687,9 +728,7 @@ function unfillableSlots(
 function readShape(value: unknown, where: string, problems: Problem[]): Shape | undefined {
   const named = shapes.find((shape) => shape === value);
   if (named === undefined) {
-    problems.push(
-      fails(where, `is ${String(value)}, which is not spur, chokepoint, ring or cluster`),
-    );
+    problems.push(fails(where, `is ${String(value)}, which is not one of ${shapes.join(', ')}`));
     return undefined;
   }
   return named;

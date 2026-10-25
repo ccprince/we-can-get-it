@@ -84,20 +84,21 @@ export type MotifLane = {
 };
 
 /**
- * The named shape a **motif** is authored to have, from the short list ADR 0006
+ * The named shape a **motif** is authored to have, from the list ADR 0006
  * decision 3 gives: a **spur** that must be flown out and back, a
- * **chokepoint** every route through a region passes, a **ring** that offers a
- * long way round, and a **cluster** of worlds close to one another. Two
- * clusters a long haul apart is not a shape of its own but a property of the
- * **inter-motif lanes** between them (ADR 0008 decision 6), which is the
- * far-cluster invariant's.
+ * **chokepoint** every route through a region passes, and a ring that offers a
+ * long way round. Two clusters a long haul apart is not a shape of one motif
+ * but a property of the inter-motif lanes between two of them (ADR 0008
+ * decision 6), which is the far-haul invariant's.
  *
  * The motif invariants count placed motifs by this, because a shape is a
- * property of the assembly and cannot be read off a list of lanes.
+ * property of the assembly and cannot be read off a list of lanes. The label is
+ * declared and not checked against the motif's lanes: nothing yet says a spur's
+ * lanes must make a dead end.
  */
-export type Shape = 'spur' | 'chokepoint' | 'ring' | 'cluster';
+export type Shape = 'spur' | 'chokepoint' | 'ring';
 
-export const shapes: readonly Shape[] = ['spur', 'chokepoint', 'ring', 'cluster'];
+export const shapes: readonly Shape[] = ['spur', 'chokepoint', 'ring'];
 
 /**
  * An authored fragment of topology with typed **slots** (ADR 0006 decision 3).
@@ -360,8 +361,8 @@ export type Topology = {
    */
   readonly leastPlaced: Readonly<Record<Shape, number>>;
   /**
-   * The far cluster no nearer than this: the longest **inter-motif lane** must
-   * be at least this long, since the far-cluster invariant is a statement about
+   * The far cluster no nearer than this: the longest inter-motif lane must be
+   * at least this long, since the far-cluster invariant is a statement about
    * those lanes (ADR 0008 decision 6). Nought asks for no far cluster at all.
    *
    * Not a second number for `drawParameters.interMotifDistance`, which says how
