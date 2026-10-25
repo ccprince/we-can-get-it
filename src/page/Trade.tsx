@@ -1,9 +1,6 @@
 import { useState } from 'react';
 import type { Command, HoldView, LotView } from '../engine';
-
-const buttonChrome =
-  'rounded border border-stone-600 px-2 py-1 text-stone-200 ' +
-  'hover:border-stone-400 hover:bg-stone-800';
+import { buttonChrome } from './chrome';
 
 /**
  * What is on sale where the player is. The lots, their prices and the most the
@@ -81,7 +78,7 @@ function LotRow({
             type="button"
             aria-label={`Buy ${lot.good}`}
             onClick={() => onCommand({ kind: 'buy', lot: lot.lot, quantity: Number(units) })}
-            className={buttonChrome}
+            className={`${buttonChrome} px-2 py-1`}
           >
             Buy
           </button>
