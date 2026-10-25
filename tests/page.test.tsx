@@ -293,7 +293,11 @@ describe('the people here', () => {
 
     expect(screen.getByRole('heading', { name: 'Ilse Vantry' })).toBeDefined();
     expect(screen.getByText(/wants something warm to sleep under/)).toBeDefined();
-    expect(screen.getByText('Bolt of silk: grudging, 20 credits each')).toBeDefined();
+    expect(
+      screen.getByText(
+        'Bolt of silk: grudging, 20 credits each — close, but not quite what they asked for',
+      ),
+    ).toBeDefined();
     expect(screen.getByText('Ship blanket: great, 37 credits each')).toBeDefined();
   });
 

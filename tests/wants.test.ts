@@ -130,6 +130,60 @@ describe('the tier a good would earn', () => {
   });
 });
 
+describe('the term a grudging match failed', () => {
+  function failedTerms(campaign: Campaign): Record<string, string | null> {
+    return Object.fromEntries(
+      matchesFor(campaign).map(({ good, failedTerm }) => [good, failedTerm]),
+    );
+  }
+
+  it('is the one positive term a two-term want is missing', () => {
+    // The silk is cloth and is not warm; the other two are met in full.
+    expect(failedTerms(holdingClothWith(aBuyer()))).toEqual({
+      'Bolt of silk': 'warm',
+      'Ship blanket': null,
+      'Quilted roll': null,
+    });
+  });
+
+  it('is the first unmet term in term order when a three-term want misses two', () => {
+    // The silk meets `cloth` and misses `tools` and `warm`; `tools` sorts first,
+    // however the writer ordered them.
+    const written = (predicate: readonly string[]) =>
+      holdingClothWith(
+        aBuyer({ wants: [aWant({ predicate: predicate.map((tag) => ({ tag })) })], bonusTags: [] }),
+      );
+
+    expect(failedTerms(written(['warm', 'tools', 'cloth']))).toMatchObject({
+      'Bolt of silk': 'tools',
+    });
+    expect(failedTerms(written(['cloth', 'tools', 'warm']))).toMatchObject({
+      'Bolt of silk': 'tools',
+    });
+  });
+
+  it('is the one unmet term of a three-term want that misses only one', () => {
+    const campaign = holdingClothWith(
+      aBuyer({
+        wants: [aWant({ predicate: [{ tag: 'cloth' }, { tag: 'warm' }, { tag: 'tools' }] })],
+        bonusTags: [],
+      }),
+    );
+
+    expect(failedTerms(campaign)['Ship blanket']).toBe('tools');
+  });
+
+  it('is none at any other tier', () => {
+    const refused = holdingClothWith(
+      aBuyer({ wants: [aWant({ predicate: [{ tag: 'warm' }] })], bonusTags: [] }),
+    );
+    const named = holdingClothWith(aBuyer({ wants: [aWantForGood('blanket')] }));
+
+    expect(Object.values(failedTerms(refused))).toEqual([null, null, null]);
+    expect(Object.values(failedTerms(named))).toEqual([null, null, null]);
+  });
+});
+
 describe('what a match is offered', () => {
   it('is a whole number of credits, rounded down', () => {
     // The blanket is worth 25: a half of it is 12.5.

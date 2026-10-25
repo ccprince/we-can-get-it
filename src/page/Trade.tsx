@@ -152,6 +152,7 @@ function Match({
         {match.good}: {match.tier}
         {match.offer !== null && `, ${match.offer} credits each`}
         {match.reason !== null && ` — “${match.reason}”`}
+        {match.failedTerm !== null && ' — close, but not quite what they asked for'}
       </span>
       <input
         type="number"

@@ -23,22 +23,34 @@ function carries(good: Good, tag: string): boolean {
  *
  * A want naming one good is that good or nothing: it is `acceptable` for it,
  * `great` with a bonus tag, and `refused` for any other.
+ *
+ * `failedTerm` is the tag of the first positive term the good does not carry,
+ * in term order (the loader sorts a predicate into tag order, so it does not
+ * depend on how the writer wrote it), and only for `grudging`: it is what a
+ * surface needs to say why the buyer is grudging (ADR 0007 decision 10).
  */
-export function tierOf(want: Want, buyer: Buyer, good: Good): Tier {
-  if (buyer.refusalTags.some((tag) => carries(good, tag))) return 'refused';
+export function tierOf(
+  want: Want,
+  buyer: Buyer,
+  good: Good,
+): { readonly tier: Tier; readonly failedTerm: string | null } {
+  const tier = (tier: Tier, failedTerm: string | null = null) => ({ tier, failedTerm });
+  if (buyer.refusalTags.some((tag) => carries(good, tag))) return tier('refused');
   const bonus = buyer.bonusTags.some((tag) => carries(good, tag));
 
   if ('goodId' in want) {
-    if (good.id !== want.goodId) return 'refused';
-    return bonus ? 'great' : 'acceptable';
+    if (good.id !== want.goodId) return tier('refused');
+    return tier(bonus ? 'great' : 'acceptable');
   }
 
-  if (want.predicate.some((term) => term.negated && carries(good, term.tag))) return 'refused';
+  if (want.predicate.some((term) => term.negated && carries(good, term.tag)))
+    return tier('refused');
 
   const positive = want.predicate.filter((term) => !term.negated);
-  const met = positive.filter((term) => carries(good, term.tag)).length;
-  if (met === positive.length) return bonus ? 'great' : 'acceptable';
-  return met === 0 ? 'refused' : 'grudging';
+  const unmet = positive.filter((term) => !carries(good, term.tag));
+  if (unmet.length === 0) return tier(bonus ? 'great' : 'acceptable');
+  if (unmet.length === positive.length) return tier('refused');
+  return tier('grudging', unmet[0]?.tag ?? null);
 }
 
 /**
@@ -58,7 +70,8 @@ export function offerFor(good: Good, tier: Tier, offers: OfferParameters): numbe
 }
 
 /**
- * What a good earns against a want: its tier and what the buyer pays for it.
+ * What a good earns against a want: its tier, the term it failed if grudging,
+ * and what the buyer pays for it.
  * The one reading the read model quotes and a sale is paid by, so what the
  * player is shown before they commit is what they are paid.
  */
@@ -67,7 +80,7 @@ export function matchOf(
   buyer: Buyer,
   good: Good,
   offers: OfferParameters,
-): { readonly tier: Tier; readonly offer: number | null } {
-  const tier = tierOf(want, buyer, good);
-  return { tier, offer: offerFor(good, tier, offers) };
+): { readonly tier: Tier; readonly failedTerm: string | null; readonly offer: number | null } {
+  const { tier, failedTerm } = tierOf(want, buyer, good);
+  return { tier, failedTerm, offer: offerFor(good, tier, offers) };
 }
