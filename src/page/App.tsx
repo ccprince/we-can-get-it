@@ -181,7 +181,7 @@ function opening(content: ContentSet, found: Found): CampaignState {
             ' Restoring the content set it was played on will resume it.',
         );
       }
-      if ('undrawable' in resumed) return { state: 'unloadable', problems: resumed.undrawable };
+      if ('problems' in resumed) return { state: 'unloadable', problems: resumed.problems };
       if ('rejected' in resumed) {
         return unresumable(
           content,

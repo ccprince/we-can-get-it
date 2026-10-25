@@ -1,5 +1,5 @@
 import type { ContentSet, Lane, Location, Motif, Range, Slot } from './content';
-import type { Roll } from './draw';
+import type { Attempt } from './draw-checks';
 import { drawInt, type Rng } from './rng';
 
 /**
@@ -15,7 +15,7 @@ import { drawInt, type Rng } from './rng';
  * selection is the narrowest stage there is, and the locations are conditioned
  * on it (ADR 0008 decision 17).
  */
-export function assembleMap(content: ContentSet, rng: Rng): Roll {
+export function assembleMap(content: ContentSet, rng: Rng): Attempt {
   const [drawn, afterMotifs] = drawMotifs(content, rng);
   const filled = fillSlots(drawn, content.locations, afterMotifs);
   if (!filled.ok) return filled;
@@ -86,7 +86,7 @@ function fillSlots(
   rng: Rng,
 ):
   | { readonly ok: true; readonly placed: readonly Placement[]; readonly rng: Rng }
-  | Extract<Roll, { ok: false }> {
+  | Extract<Attempt, { ok: false }> {
   const filled = motifs.map(() => new Map<string, string>());
   const taken = new Set<string>();
   let next = rng;
@@ -99,7 +99,7 @@ function fillSlots(
       return {
         ok: false,
         miss: {
-          check: 'slot filling',
+          invariant: 'a location for every slot',
           where: 'locations',
           how:
             `the reserve had no ${slot.archetype ?? 'location'} left for the ${slot.id} slot ` +

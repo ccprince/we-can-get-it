@@ -1,26 +1,50 @@
 import { within, type ContentSet } from './content';
 import type { DrawnGalaxy } from './galaxy';
+import type { Rng } from './rng';
 
 /**
- * A stage of the draw's cascade that a failed check re-rolls (ADR 0008
- * decision 2). Named as the failure report names it. The map is one stage for
- * now; kinds, goods and people are #33's, and each becomes a member here.
+ * A stage of the draw's cascade that a missed invariant re-rolls (ADR 0008
+ * decision 2), named as the failure report names it. The map is the one stage
+ * for now. Kinds, goods and people are #33's, and when the second stage
+ * arrives a check gains the stage its miss re-rolls — the narrowest that could
+ * fix it (decision 17).
  */
 export type Stage = 'motif selection';
 
+/** A galaxy as far as the cascade has built it, and the generator it left behind. */
+export type Drawn = { readonly ok: true; readonly galaxy: DrawnGalaxy; readonly rng: Rng };
+
+/**
+ * Why one attempt at a stage did not stand: an invariant the galaxy missed, or
+ * a stage that could not finish — the reserve running out mid-fill is the
+ * second kind. Both re-roll the same way, and the last one is what a failure
+ * reports.
+ */
+export type Miss = {
+  /** The invariant missed, as the failure report names it. */
+  readonly invariant: string;
+  /** Where in the content set that invariant is declared or answered. */
+  readonly where: string;
+  readonly how: string;
+};
+
+/**
+ * One attempt at a stage: what it built, or why it could not. Either way the
+ * generator moves on, which is what keeps a re-roll inside the deterministic
+ * function of the seed (ADR 0008 decision 17). Not a **draw**, which is the one
+ * roll at campaign start that all the attempts together make.
+ */
+export type Attempt = Drawn | { readonly ok: false; readonly miss: Miss; readonly rng: Rng };
+
 /**
  * One check of the **draw-time pass**, over the galaxy as drawn rather than the
- * content set as written (ADR 0008 decision 16). A check says which stage its
- * failure re-rolls — the narrowest that could fix it (decision 17) — and the
- * pass needs to know nothing else about it.
+ * content set as written (ADR 0008 decision 16). The pass needs to know nothing
+ * about what it checks.
  */
 export type DrawCheck = {
-  readonly stage: Stage;
-  /** What the check is, as the failure report names it. */
-  readonly check: string;
-  /** Where in the content set the invariant it enforces is declared. */
+  readonly invariant: string;
   readonly where: string;
-  /** Null when the galaxy passes; otherwise how it missed. */
+  /** Null when the galaxy holds the invariant; otherwise how it missed. */
   readonly miss: (galaxy: DrawnGalaxy, content: ContentSet) => string | null;
 };
 
@@ -33,16 +57,15 @@ export const drawChecks: readonly DrawCheck[] = [
   {
     // A property of the assembly, and its miss re-rolls the motif selection,
     // since nothing downstream has happened yet (ADR 0008 decision 8).
-    stage: 'motif selection',
-    check: 'the location-count range',
+    invariant: 'the location-count range',
     where: 'drawParameters.locationCount',
     miss: (galaxy, content) => {
       const range = content.drawParameters.locationCount;
       const placed = galaxy.locations.length;
       return within(placed, range)
         ? null
-        : `it placed ${placed} location${placed === 1 ? '' : 's'}, and the content set declared ` +
-            `${range.least} to ${range.most}`;
+        : `it placed ${placed} location${placed === 1 ? '' : 's'}, and the content set ` +
+            `declared ${range.least} to ${range.most}`;
     },
   },
 ];

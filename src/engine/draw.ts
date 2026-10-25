@@ -1,7 +1,6 @@
 import { assembleMap } from './assemble';
 import type { ContentSet } from './content';
-import { drawChecks, type Stage } from './draw-checks';
-import type { DrawnGalaxy } from './galaxy';
+import { drawChecks, type Attempt, type Drawn, type Stage } from './draw-checks';
 import type { Rng } from './rng';
 import { fails, type Problem } from './verdicts';
 
@@ -10,25 +9,7 @@ import { fails, type Problem } from './verdicts';
  * problem that stopped it. A draw never throws; a content set that cannot be
  * drawn is a content defect reported like any other (ADR 0008 decision 17).
  */
-export type DrawResult =
-  | { readonly ok: true; readonly galaxy: DrawnGalaxy; readonly rng: Rng }
-  | { readonly ok: false; readonly problem: Problem };
-
-/**
- * Why one roll of a stage did not stand: a check it failed, or a stage that
- * could not finish — the reserve running out mid-fill is the second kind. Both
- * re-roll the same way, and the last one is what a failure reports.
- */
-export type Miss = {
-  readonly check: string;
-  readonly where: string;
-  readonly how: string;
-};
-
-/** One roll of a stage: what it built, or why it could not. Either way, the generator moves on. */
-export type Roll =
-  | { readonly ok: true; readonly galaxy: DrawnGalaxy; readonly rng: Rng }
-  | { readonly ok: false; readonly miss: Miss; readonly rng: Rng };
+export type DrawResult = Drawn | { readonly ok: false; readonly problem: Problem };
 
 /**
  * The **draw**: the one roll at campaign start that turns the **reserve** into
@@ -62,48 +43,52 @@ export function draw(content: ContentSet, rng: Rng): DrawResult {
 }
 
 /**
- * The **draw-time pass** around one stage: roll it, run the checks registered
- * for it, and roll it again on a miss, up to the bound the content set declares
- * (ADR 0008 decision 17). Exhausting the bound fails loudly with the last miss.
+ * The **draw-time pass** around one stage: attempt it, run the registered
+ * checks, and attempt it again on a miss, up to the bound the content set
+ * declares (ADR 0008 decision 17). Exhausting the bound fails loudly with the last miss.
  * No check is ever weakened to let a draw through.
  */
 function rerolled(
   stage: Stage,
   content: ContentSet,
   rng: Rng,
-  roll: (rng: Rng) => Roll,
+  attempt: (rng: Rng) => Attempt,
 ): DrawResult {
   const { rerolls } = content.drawParameters;
-  let rolled = checked(stage, roll(rng), content);
-  for (let reroll = 1; !rolled.ok && reroll <= rerolls; reroll += 1) {
-    rolled = checked(stage, roll(rolled.rng), content);
+  let made = checked(attempt(rng), content);
+  for (let reroll = 1; !made.ok && reroll <= rerolls; reroll += 1) {
+    made = checked(attempt(made.rng), content);
   }
-  if (rolled.ok) return rolled;
+  if (made.ok) return made;
 
-  const { check, where, how } = rolled.miss;
+  // Only the last miss is named, so the report does not claim that every
+  // attempt missed the same invariant: two of them may not have.
+  const { invariant, where, how } = made.miss;
   return {
     ok: false,
     problem: fails(
       where,
-      `the ${stage} was re-rolled ${rerolls} times and failed ${check} every time; ` +
-        `the last time, ${how}`,
+      `the ${stage} was re-rolled ${rerolls} times and still missed ${invariant}: ${how}`,
     ),
   };
 }
 
 /**
- * A roll with the checks registered for its stage run over it: a roll that
- * built a galaxy missing one of them is a miss like any other. The first check
- * missed is the one reported, in registration order.
+ * An attempt with the registered checks run over it: an attempt that built a
+ * galaxy missing an invariant is a miss like any other. The first check missed
+ * is the one reported, in registration order.
  */
-function checked(stage: Stage, rolled: Roll, content: ContentSet): Roll {
-  if (!rolled.ok) return rolled;
+function checked(made: Attempt, content: ContentSet): Attempt {
+  if (!made.ok) return made;
   for (const check of drawChecks) {
-    if (check.stage !== stage) continue;
-    const how = check.miss(rolled.galaxy, content);
+    const how = check.miss(made.galaxy, content);
     if (how !== null) {
-      return { ok: false, miss: { check: check.check, where: check.where, how }, rng: rolled.rng };
+      return {
+        ok: false,
+        miss: { invariant: check.invariant, where: check.where, how },
+        rng: made.rng,
+      };
     }
   }
-  return rolled;
+  return made;
 }
