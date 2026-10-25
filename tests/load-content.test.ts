@@ -13,6 +13,8 @@ import {
   aMotifLane,
   aLocation,
   aMotif,
+  aShip,
+  aShopParameters,
   aSlot,
   aStart,
   aTag,
@@ -105,6 +107,7 @@ describe('loadContent', () => {
       'fareRate',
       'calendar',
       'drawParameters',
+      'shops',
       'archetypes',
       'tags',
       'start',
@@ -598,13 +601,21 @@ describe('the report', () => {
 describe('the ship and the fare rate', () => {
   it('refuses a ship with no speed to convert a distance into days', () => {
     const result = loadContent(
-      aContentSet(aGalaxy({ start: aStart({ ship: { speed: 0, range: 20 } }) })),
+      aContentSet(aGalaxy({ start: aStart({ ship: aShip({ speed: 0 }) }) })),
     );
 
     expect(result.ok).toBe(false);
     if (result.ok) return;
     expect(result.problems).toEqual([
       { verdict: 'fails', where: 'start.ship.speed', what: 'is 0, which is less than 1' },
+    ]);
+  });
+
+  it('refuses a ship with no hold, since a hold of nothing could carry nothing', () => {
+    const result = loadContent(aContentSet({ start: aStart({ ship: aShip({ hold: 0 }) }) }));
+
+    expect(result.ok ? [] : result.problems).toEqual([
+      { verdict: 'fails', where: 'start.ship.hold', what: 'is 0, which is less than 1' },
     ]);
   });
 
@@ -1067,5 +1078,53 @@ describe('what the draw fills the map with', () => {
       },
     ]);
     expect(ends.ok ? [] : ends.problems).toEqual([]);
+  });
+});
+
+describe('what the shops stock', () => {
+  it('reads the shop parameters a content set declares, since the engine holds none', () => {
+    const result = loadContent(aContentSet({ shops: undefined }));
+
+    expect(result.ok ? [] : result.problems).toEqual([
+      { verdict: 'fails', where: 'shops', what: 'is missing' },
+    ]);
+  });
+
+  it('refuses a lot of nothing, and accepts a shop that stocks no lots at all', () => {
+    // A lot is finite and depletable, so one that opens empty is already gone.
+    // A shop of no lots is a place with nothing worth carrying out, which thin
+    // supply needs to be able to say (findings §2.1).
+    const empty = loadContent(
+      aContentSet({ shops: aShopParameters({ lotQuantity: { least: 0, most: 4 } }) }),
+    );
+    const bare = loadContent(
+      aContentSet({ shops: aShopParameters({ lotsPerShop: { least: 0, most: 0 } }) }),
+    );
+
+    expect(empty.ok ? [] : empty.problems).toEqual([
+      { verdict: 'fails', where: 'shops.lotQuantity.least', what: 'is 0, which is less than 1' },
+    ]);
+    expect(bare.ok ? [] : bare.problems).toEqual([]);
+  });
+
+  it('refuses a markup that is no range and a scarcity that is not a whole number', () => {
+    const result = loadContent(
+      aContentSet({
+        shops: aShopParameters({ markupPercent: { least: 30, most: 10 }, scarcityPercent: 1.5 }),
+      }),
+    );
+
+    expect(result.ok ? [] : result.problems).toEqual([
+      {
+        verdict: 'fails',
+        where: 'shops.markupPercent',
+        what: 'runs from 30 down to 10, which is no range at all',
+      },
+      {
+        verdict: 'fails',
+        where: 'shops.scarcityPercent',
+        what: 'is missing or not a whole number',
+      },
+    ]);
   });
 });

@@ -90,9 +90,9 @@ a particular gate is an **event**, not geography (decision 13).
 
 Where and when a campaign opens, and what the player opens it with: `locationId`, `credits`, the
 `day` the first digest is dated, and the baseline `ship`. A ship declares its `speed` — **distance**
-per day — and its `range`, the largest distance it can fly in one **leg** (ADR 0006 decision 9). The
-**hold** is the third of the three independent purchases and is not here yet (#14); ship upgrades are
-outside this milestone, so the ship a campaign opens with is the ship it has.
+per day — its `range`, the largest distance it can fly in one **leg**, and its `hold`, the units of
+cargo it carries, one to a unit of any good (ADR 0006 decision 9). Ship upgrades are outside this
+milestone, so the ship a campaign opens with is the ship it has.
 
 ### `tags`
 

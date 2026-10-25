@@ -102,6 +102,26 @@ export function aDrawParameters(overrides: RawObject = {}): RawObject {
   };
 }
 
+/**
+ * What the content set declares about its shops: how many **lots** one stocks,
+ * how large a lot opens, and the two percentages a price is computed from on
+ * top of a good's **worth** — the shop's markup, and the most a small lot adds
+ * for being scarce. All placeholders to be measured; the engine holds none.
+ *
+ * Fixed, so a fixture about something else knows what it will find: every
+ * supplied good stocked, in lots of five, at worth. A test about pricing or
+ * stocking states the numbers it means.
+ */
+export function aShopParameters(overrides: RawObject = {}): RawObject {
+  return {
+    lotsPerShop: { least: 99, most: 99 },
+    lotQuantity: { least: 5, most: 5 },
+    markupPercent: { least: 0, most: 0 },
+    scarcityPercent: 0,
+    ...overrides,
+  };
+}
+
 export function aStart(overrides: RawObject = {}): RawObject {
   return {
     // Placeholder, to be measured. No prototype number is a starting point
@@ -123,6 +143,9 @@ export function aShip(overrides: RawObject = {}): RawObject {
   return {
     speed: 4,
     range: 20,
+    // Room enough that a fixture about something else never fills it. A test
+    // about the hold states the hold it means.
+    hold: 100,
     ...overrides,
   };
 }
@@ -155,6 +178,7 @@ export function aContentSet(overrides: RawObject = {}): RawObject {
     archetypes: [anArchetype(), anArchetype({ id: 'extractor' }), anArchetype({ id: 'processor' })],
     motifs: [aMotif()],
     drawParameters: aDrawParameters(),
+    shops: aShopParameters(),
     locations: [aLocation()],
     tags: [],
     goods: [],
