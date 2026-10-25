@@ -33,7 +33,7 @@ describe('the page', () => {
     serve(walkingSkeleton);
     render(<App />);
 
-    expect(await screen.findByRole('heading', { name: 'Bellwether Yards' })).toBeDefined();
+    expect(await screen.findByRole('heading', { name: 'Tallow Cross' })).toBeDefined();
     expect(screen.getByText(/Firstday, 1 Thessaly, year 1/)).toBeDefined();
     expect(screen.getByText(/400 credits/)).toBeDefined();
   });
@@ -93,10 +93,10 @@ describe('the page', () => {
 
   it('says so when the content set loads and will not draw, naming the check', async () => {
     // A draw that exhausts its re-rolls fails the load like any content
-    // mistake (ADR 0008 decision 17). The walking skeleton places four to six
-    // locations, so a range of exactly ten can never be met.
+    // mistake (ADR 0008 decision 17). The walking skeleton places nine to twelve
+    // locations, so a range of exactly twenty can never be met.
     const content = JSON.parse(walkingSkeleton) as { drawParameters: Record<string, unknown> };
-    content.drawParameters.locationCount = { least: 10, most: 10 };
+    content.drawParameters.locationCount = { least: 20, most: 20 };
     serve(JSON.stringify(content));
     render(<App />);
 

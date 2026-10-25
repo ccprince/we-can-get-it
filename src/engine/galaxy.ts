@@ -1,4 +1,4 @@
-import type { Buyer, Good, Lane, Location } from './content';
+import type { Buyer, Good, Lane, Location, Shape } from './content';
 
 /**
  * The **drawn galaxy**: what the **draw** produced, and the whole of the galaxy
@@ -13,6 +13,13 @@ import type { Buyer, Good, Lane, Location } from './content';
 export type DrawnGalaxy = {
   /** The locations placed, in the order the draw placed them. */
   readonly locations: readonly Location[];
+  /**
+   * The motifs the map was assembled from, in placement order, and which
+   * location filled each slot. A motif invariant is read off this rather than
+   * guessed from the lanes, since "at least one chokepoint" is a property of
+   * the assembly and not of the graph (ADR 0006 decision 3).
+   */
+  readonly motifs: readonly PlacedMotif[];
   /** Every lane in the galaxy, whoever laid it down. */
   readonly lanes: readonly Lane[];
   /** Where the campaign opens, which is a location the draw placed. */
@@ -23,6 +30,18 @@ export type DrawnGalaxy = {
   readonly goods: readonly Good[];
   /** The people drawn, in id order, each standing at a drawn location. */
   readonly people: readonly Buyer[];
+};
+
+/**
+ * A motif as placed. One motif may be placed twice, filled by different
+ * locations (ADR 0008 decision 7), so this is an instance and not the motif.
+ */
+export type PlacedMotif = {
+  /** The id of the motif placed. */
+  readonly motif: string;
+  readonly shape: Shape;
+  /** Each slot and the location that filled it, in slot id order. */
+  readonly slots: readonly { readonly slot: string; readonly location: string }[];
 };
 
 /**

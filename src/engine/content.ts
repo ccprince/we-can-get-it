@@ -84,6 +84,22 @@ export type MotifLane = {
 };
 
 /**
+ * The named shape a **motif** is authored to have, from the short list ADR 0006
+ * decision 3 gives: a **spur** that must be flown out and back, a
+ * **chokepoint** every route through a region passes, a **ring** that offers a
+ * long way round, and a **cluster** of worlds close to one another. Two
+ * clusters a long haul apart is not a shape of its own but a property of the
+ * **inter-motif lanes** between them (ADR 0008 decision 6), which is the
+ * far-cluster invariant's.
+ *
+ * The motif invariants count placed motifs by this, because a shape is a
+ * property of the assembly and cannot be read off a list of lanes.
+ */
+export type Shape = 'spur' | 'chokepoint' | 'ring' | 'cluster';
+
+export const shapes: readonly Shape[] = ['spur', 'chokepoint', 'ring', 'cluster'];
+
+/**
  * An authored fragment of topology with typed **slots** (ADR 0006 decision 3).
  * Drawn from a reserve larger than one campaign uses, and a motif **may appear
  * more than once** in one assembly, so what is authored here is a shape and not
@@ -94,6 +110,7 @@ export type MotifLane = {
  */
 export type Motif = {
   readonly id: string;
+  readonly shape: Shape;
   readonly slots: readonly Slot[];
   readonly lanes: readonly MotifLane[];
 };
@@ -330,6 +347,30 @@ export type DrawParameters = {
 };
 
 /**
+ * What a content set declares the **drawn galaxy's** topology must hold, which
+ * the draw-time pass checks after the map is assembled (ADR 0006 decision 3).
+ * The engine hardcodes none of it (ADR 0007 decision 15): every number is a
+ * measurement, and a content set states it.
+ */
+export type Topology = {
+  /**
+   * The **motif invariants**: at least so many placed motifs of each shape —
+   * at least one chokepoint, at least so many spurs. Every shape is declared,
+   * nought for one the map need not hold.
+   */
+  readonly leastPlaced: Readonly<Record<Shape, number>>;
+  /**
+   * The far cluster no nearer than this: the longest **inter-motif lane** must
+   * be at least this long, since the far-cluster invariant is a statement about
+   * those lanes (ADR 0008 decision 6). Nought asks for no far cluster at all.
+   *
+   * Not a second number for `drawParameters.interMotifDistance`, which says how
+   * long a lane between motifs may be; this says how long one of them must be.
+   */
+  readonly farHaul: number;
+};
+
+/**
  * What a content set declares about its shops (ADR 0007 decision 15): how
  * they are stocked at campaign start, and the two percentages a price is
  * computed from. A price is computed from a good's **worth**, the shop's
@@ -374,6 +415,7 @@ export type ShopParameters = {
 export type ContentSet = {
   readonly bounds: Bounds;
   readonly drawParameters: DrawParameters;
+  readonly topology: Topology;
   readonly shops: ShopParameters;
   /**
    * The one galaxy-wide rate a **fare** is the **distance** times (ADR 0006

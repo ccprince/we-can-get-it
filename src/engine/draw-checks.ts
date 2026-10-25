@@ -1,4 +1,4 @@
-import { within, type ContentSet } from './content';
+import { shapes, within, type ContentSet, type Shape } from './content';
 import type { DrawnGalaxy } from './galaxy';
 import type { Rng } from './rng';
 
@@ -76,4 +76,49 @@ export const drawChecks: readonly DrawCheck[] = [
             `declared ${range.least} to ${range.most}`;
     },
   },
+  // One check per shape, so a miss names the number it fell short of. All of
+  // them read the assembly, and re-roll the motif selection (ADR 0006
+  // decision 3).
+  ...shapes.map(leastPlaced),
+  {
+    stage: 'motif selection',
+    invariant: 'the far haul',
+    where: 'topology.farHaul',
+    miss: (galaxy, content) => {
+      const { farHaul } = content.topology;
+      const longest = Math.max(0, ...interMotifLanes(galaxy).map((lane) => lane.distance));
+      return longest >= farHaul
+        ? null
+        : `its longest lane between motifs was ${longest}, and the content set declared at ` +
+            `least ${farHaul}`;
+    },
+  },
 ];
+
+/** The motif invariant for one shape: at least so many of it placed. */
+function leastPlaced(shape: Shape): DrawCheck {
+  return {
+    stage: 'motif selection',
+    invariant: 'the motif invariants',
+    where: `topology.leastPlaced.${shape}`,
+    miss: (galaxy, content) => {
+      const least = content.topology.leastPlaced[shape];
+      const placed = galaxy.motifs.filter((motif) => motif.shape === shape).length;
+      return placed >= least
+        ? null
+        : `it placed ${placed} ${shape}${placed === 1 ? '' : 's'}, and the content set ` +
+            `declared at least ${least}`;
+    },
+  };
+}
+
+/**
+ * The **inter-motif lanes**: those whose two ends were placed by different
+ * motifs, read off the record of the assembly rather than off the lanes.
+ */
+function interMotifLanes(galaxy: DrawnGalaxy): DrawnGalaxy['lanes'] {
+  const placedBy = new Map(
+    galaxy.motifs.flatMap((motif, at) => motif.slots.map(({ location }) => [location, at])),
+  );
+  return galaxy.lanes.filter((lane) => placedBy.get(lane.ends[0]) !== placedBy.get(lane.ends[1]));
+}
