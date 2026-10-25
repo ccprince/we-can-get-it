@@ -23,8 +23,9 @@ describe('the walking skeleton content set', () => {
   /**
    * A seed that opens at Tallow Cross, found by the **seed-finder** rather than
    * by hand (#13). Which place opens a campaign is the draw's answer, so a test
-   * that names one needs a seed that produces it; the predicate is recorded so
-   * the seed can be re-found when the content changes:
+   * that names one needs a seed that produces it, and the command that found it
+   * is recorded so the seed can be re-found when the content changes — it is
+   * **the first seed reported**:
    *
    *   npm run seeds -- content/walking-skeleton.json start-is tallow
    */
@@ -39,7 +40,12 @@ describe('the walking skeleton content set', () => {
     expect(read.here?.name).toBe('Tallow Cross');
     // Lanes to fly, which is the other half of the title: a chart whose lanes
     // all left from somewhere else would strand the hand-play this set is for.
-    expect(read.chart.lanes.filter((lane) => lane.depart !== null)).not.toEqual([]);
+    // This half is not what the seed was found for and holds on every seed —
+    // the content set declares `startHub.neighbours`, and the map is connected
+    // at baseline range — so the recorded command re-finds a seed the whole
+    // test passes on.
+    const departures = read.chart.lanes.filter((lane) => lane.depart !== null);
+    expect(departures.length).toBeGreaterThan(0);
   });
 
   it('holds every topology check it declares, on every seed tried', () => {
