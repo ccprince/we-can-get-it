@@ -116,7 +116,7 @@ export function People({
             <ul className="space-y-2">
               {person.wants.map((want) => (
                 <li key={want.want} className="text-sm text-stone-300">
-                  {want.wording}
+                  {want.wording} ({want.wanted})
                   <ul className="mt-1 ml-4 space-y-1">
                     {want.matches.map((match) => (
                       <Match key={match.good} match={match} onCommand={onCommand} />
@@ -132,6 +132,11 @@ export function People({
   );
 }
 
+/**
+ * One good aboard against a want. The units default to one and are never capped
+ * here, as in the shop: a sale the engine would refuse is still handed to it, so
+ * the player hears the reason.
+ */
 function Match({
   match,
   onCommand,
@@ -139,21 +144,32 @@ function Match({
   readonly match: MatchView;
   readonly onCommand: (command: Command) => void;
 }) {
+  const [units, setUnits] = useState('1');
+
   return (
     <li className="flex items-center gap-2 text-stone-400">
       <span>
         {match.good}: {match.tier}
-        {match.offer !== null && `, ${match.offer} credits`}
+        {match.offer !== null && `, ${match.offer} credits each`}
         {match.reason !== null && ` — “${match.reason}”`}
       </span>
+      <input
+        type="number"
+        min={1}
+        value={units}
+        onChange={(event) => setUnits(event.target.value)}
+        aria-label={`Units of ${match.good} to sell`}
+        className="w-14 rounded border border-stone-700 bg-stone-900 px-1 py-0.5 text-stone-200"
+      />
       <button
         type="button"
         aria-label={`Sell ${match.good}`}
-        onClick={() => onCommand(match.sell)}
+        onClick={() => onCommand({ kind: 'sell', ...match.sale, quantity: Number(units) })}
         className={`${buttonChrome} px-2 py-0.5 text-xs`}
       >
         Sell
       </button>
+      <span className="text-xs text-stone-500">up to {match.mostYouCanSell}</span>
     </li>
   );
 }

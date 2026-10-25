@@ -16,8 +16,13 @@ export type Command =
   | { readonly kind: 'depart'; readonly toId: string }
   /** Buy units of a lot on sale where the player is. Not an action. */
   | { readonly kind: 'buy'; readonly lot: string; readonly quantity: number }
-  /** Sell a unit of a good aboard to someone here, against a want of theirs. Not an action. */
-  | { readonly kind: 'sell'; readonly want: string; readonly good: string };
+  /** Sell units of a good aboard to someone here, against a want of theirs. Not an action. */
+  | {
+      readonly kind: 'sell';
+      readonly want: string;
+      readonly good: string;
+      readonly quantity: number;
+    };
 
 /**
  * Why a command was refused. A rejected command is a read the player gets, not
@@ -37,7 +42,9 @@ export type Reason = {
     | 'cannot-afford-the-lot'
     | 'no-such-want'
     | 'not-in-the-hold'
-    | 'refused-by-the-buyer';
+    | 'refused-by-the-buyer'
+    | 'more-than-the-hold-carries'
+    | 'more-than-the-buyer-takes';
   readonly message: string;
 };
 
@@ -144,7 +151,7 @@ export function takeCommand(campaign: Campaign, command: Command): CommandResult
 
     // Nor is a sale (ADR 0005 d6).
     case 'sell':
-      return sell(campaign, command.want, command.good);
+      return sell(campaign, command.want, command.good, command.quantity);
   }
 }
 
@@ -163,8 +170,13 @@ function isCommand(command: Command): boolean {
   if (kind === 'wait') return true;
   if (kind === 'depart') return typeof (candidate as { toId?: unknown }).toId === 'string';
   if (kind === 'sell') {
-    const { want, good } = candidate as { want?: unknown; good?: unknown };
-    return typeof want === 'string' && typeof good === 'string';
+    const { want, good, quantity } = candidate as Record<string, unknown>;
+    return (
+      typeof want === 'string' &&
+      typeof good === 'string' &&
+      Number.isInteger(quantity) &&
+      (quantity as number) >= 1
+    );
   }
   if (kind !== 'buy') return false;
   // A buy is of a whole number of units, at least one: a quantity of none or

@@ -5,7 +5,7 @@ import type { Lane } from './content';
 import { goodNamed, locationNamed, type DrawnGalaxy } from './galaxy';
 import { daysToFly, fareToFly, otherEnd, withinRange } from './map';
 import { matchOf, type Tier } from './match';
-import { openWants, peopleHere, type OpenWant } from './selling';
+import { mostYouCanSell, openWants, peopleHere, type OpenWant } from './selling';
 import { holdUsed, lotsHere, mostYouCanBuy } from './trade';
 
 /**
@@ -46,6 +46,8 @@ export type PersonView = {
 export type WantView = {
   /** What a sale names the want by. */
   readonly want: string;
+  /** Units the buyer will still take. */
+  readonly wanted: number;
   readonly wording: string;
   /** One line a good aboard, in the order each first came aboard. */
   readonly matches: readonly MatchView[];
@@ -59,11 +61,17 @@ export type MatchView = {
   /** The buyer's own words for turning the good down; null unless refused. */
   readonly reason: string | null;
   /**
-   * The sale of one unit of this good against the want. Handed over even when
-   * refused, so the player hears the buyer's reason from the engine rather than
-   * never being offered the chance (the way a buy the engine would refuse is).
+   * What a sale of this good against the want names: the command is this and
+   * the units the player chooses. Handed over even when refused, so the player
+   * hears the buyer's reason from the engine rather than never being offered
+   * the chance (the way a buy the engine would refuse is).
    */
-  readonly sell: Command;
+  readonly sale: { readonly want: string; readonly good: string };
+  /**
+   * The most units the player could sell now: the fewer of what the hold
+   * carries and what the buyer still takes, and none when refused.
+   */
+  readonly mostYouCanSell: number;
 };
 
 /**
@@ -314,12 +322,14 @@ function peopleAt(campaign: Campaign): readonly PersonView[] {
   }));
 }
 
-function wantFor(campaign: Campaign, { id, buyer, want }: OpenWant): WantView {
+function wantFor(campaign: Campaign, open: OpenWant): WantView {
+  const { id, buyer, want, remaining } = open;
   const { galaxy, content } = campaign;
   return {
     want: id,
+    wanted: remaining,
     wording: 'goodId' in want ? `wants ${goodNamed(galaxy, want.goodId).name}` : want.plainly,
-    matches: campaign.cargo.map(({ goodId }) => {
+    matches: campaign.cargo.map(({ goodId, quantity }) => {
       const good = goodNamed(galaxy, goodId);
       const { tier, offer } = matchOf(want, buyer, good, content.offers);
       return {
@@ -327,7 +337,8 @@ function wantFor(campaign: Campaign, { id, buyer, want }: OpenWant): WantView {
         tier,
         offer,
         reason: tier === 'refused' ? buyer.refusalLine : null,
-        sell: { kind: 'sell', want: id, good: goodId },
+        sale: { want: id, good: goodId },
+        mostYouCanSell: mostYouCanSell(open, quantity, offer),
       };
     }),
   };

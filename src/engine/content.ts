@@ -218,7 +218,14 @@ export type Term = {
  * kind above them, which is what flat kinds with many goods each are for
  * (ADR 0007 decision 6).
  */
-export type Want =
+export type Want = {
+  /**
+   * How many units the buyer will take in all: a sale may be of any number up
+   * to what is still wanted, and the want closes when it has all been sold
+   * (ADR 0007 decision 11).
+   */
+  readonly quantity: number;
+} & (
   | {
       readonly predicate: readonly Term[];
       /**
@@ -230,7 +237,8 @@ export type Want =
        */
       readonly plainly: string;
     }
-  | { readonly goodId: string };
+  | { readonly goodId: string }
+);
 
 /**
  * Someone who wants something. **Bonus** and **refusal** are roles this buyer

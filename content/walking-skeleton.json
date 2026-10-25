@@ -387,7 +387,8 @@
               "tag": "tools"
             }
           ],
-          "plainly": "wants tools"
+          "plainly": "wants tools",
+          "quantity": 3
         }
       ],
       "bonusTags": [],
@@ -405,7 +406,8 @@
               "tag": "ore"
             }
           ],
-          "plainly": "wants ore"
+          "plainly": "wants ore",
+          "quantity": 3
         }
       ],
       "bonusTags": [],
@@ -423,7 +425,8 @@
               "tag": "cloth"
             }
           ],
-          "plainly": "wants cloth"
+          "plainly": "wants cloth",
+          "quantity": 3
         }
       ],
       "bonusTags": [],

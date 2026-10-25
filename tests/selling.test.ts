@@ -30,12 +30,12 @@ function holding(buyer: Record<string, unknown> = aBuyer()): Campaign {
   );
 }
 
-function sellCommand(campaign: Campaign, good: string): Command {
+function sellCommand(campaign: Campaign, good: string, quantity = 1): Command {
   const match = view(campaign).here?.people[0]?.wants[0]?.matches.find(
     (each) => each.good === good,
   );
   if (match === undefined) throw new Error(`${good} is not offered for sale`);
-  return match.sell;
+  return { kind: 'sell', ...match.sale, quantity };
 }
 
 describe('selling against a want', () => {
@@ -86,10 +86,7 @@ describe('selling against a want', () => {
       }),
     );
     const first = view(campaign).here?.people[0]?.wants[0];
-    const command = first?.matches[1]?.sell;
-    if (command === undefined) throw new Error('nothing to sell');
-
-    const sold = after(campaign, command);
+    const sold = after(campaign, sellCommand(campaign, 'Ship blanket'));
 
     expect(view(sold).here?.people[0]?.wants.map(({ want }) => want)).toEqual(
       view(campaign)
@@ -131,7 +128,9 @@ describe('what a sale is refused for', () => {
   it('refuses a good that is not in the hold', () => {
     const campaign = holding();
 
-    expect(takeCommand(campaign, { kind: 'sell', want: 'ilse#0', good: 'quilt' })).toMatchObject({
+    expect(
+      takeCommand(campaign, { kind: 'sell', want: 'ilse#0', good: 'quilt', quantity: 1 }),
+    ).toMatchObject({
       rejected: { code: 'not-in-the-hold' },
     });
   });
@@ -139,7 +138,9 @@ describe('what a sale is refused for', () => {
   it('refuses a want that belongs to somebody standing elsewhere', () => {
     const campaign = holding();
 
-    expect(takeCommand(campaign, { kind: 'sell', want: 'osk#0', good: 'blanket' })).toMatchObject({
+    expect(
+      takeCommand(campaign, { kind: 'sell', want: 'osk#0', good: 'blanket', quantity: 1 }),
+    ).toMatchObject({
       rejected: { code: 'no-such-want' },
     });
   });
@@ -153,7 +154,9 @@ describe('what a sale is refused for', () => {
     );
     const underway = after(rich, { kind: 'depart', toId: 'bellwether' });
 
-    expect(takeCommand(underway, { kind: 'sell', want: 'ilse#0', good: 'blanket' })).toMatchObject({
+    expect(
+      takeCommand(underway, { kind: 'sell', want: 'ilse#0', good: 'blanket', quantity: 1 }),
+    ).toMatchObject({
       rejected: { code: 'already-underway' },
     });
   });
@@ -167,5 +170,88 @@ describe('what a sale is refused for', () => {
         rejected: { code: 'not-a-command' },
       });
     }
+  });
+});
+
+describe('selling more than a unit', () => {
+  /** Ilse takes three units of cloth and warm, and the player holds two blankets. */
+  function wantingThree(): Campaign {
+    return holding(aBuyer({ wants: [aWant({ quantity: 3 })] }));
+  }
+
+  it('pays the offer for every unit and takes every unit out of the hold', () => {
+    const campaign = wantingThree();
+
+    const sold = after(campaign, sellCommand(campaign, 'Ship blanket', 2));
+
+    expect(view(sold).credits.credits).toBe(view(campaign).credits.credits + 2 * 37);
+    expect(view(sold).hold.cargo.map(({ good }) => good)).toEqual(['Bolt of silk']);
+  });
+
+  it('leaves the want open for what the buyer still takes', () => {
+    const campaign = wantingThree();
+
+    const sold = after(campaign, sellCommand(campaign, 'Ship blanket', 2));
+
+    expect(view(sold).here?.people[0]?.wants.map(({ wanted }) => wanted)).toEqual([1]);
+  });
+
+  it('closes the want when the last of it is sold, across more than one sale', () => {
+    const campaign = wantingThree();
+    const once = after(campaign, sellCommand(campaign, 'Ship blanket'));
+
+    const sold = after(once, sellCommand(once, 'Ship blanket'), sellCommand(once, 'Bolt of silk'));
+
+    expect(view(sold).here?.people[0]?.wants).toEqual([]);
+  });
+
+  it('closes the whole want on a grudging sale, whatever was still wanted', () => {
+    const campaign = wantingThree();
+
+    const sold = after(campaign, sellCommand(campaign, 'Bolt of silk'));
+
+    expect(view(sold).credits.credits).toBe(view(campaign).credits.credits + 20);
+    expect(view(sold).here?.people[0]?.wants).toEqual([]);
+  });
+
+  it('refuses more than the hold carries, and says how much it carries', () => {
+    const campaign = wantingThree();
+
+    expect(takeCommand(campaign, sellCommand(campaign, 'Ship blanket', 3))).toEqual({
+      rejected: {
+        code: 'more-than-the-hold-carries',
+        message: 'That is 3 units, and your hold carries 2.',
+      },
+    });
+  });
+
+  it('refuses more than the buyer takes, and says how much they take', () => {
+    const campaign = holding(aBuyer({ wants: [aWant({ quantity: 1 })] }));
+
+    expect(takeCommand(campaign, sellCommand(campaign, 'Ship blanket', 2))).toEqual({
+      rejected: { code: 'more-than-the-buyer-takes', message: 'Ilse Vantry will take 1.' },
+    });
+  });
+
+  it('says how many the player could sell, by the hold and by the buyer', () => {
+    // Two blankets and a silk aboard; the buyer takes three, then one.
+    const three = view(wantingThree()).here?.people[0]?.wants[0];
+    const one = view(holding(aBuyer({ wants: [aWant({ quantity: 1 })] }))).here?.people[0]
+      ?.wants[0];
+
+    expect(three?.matches.map(({ good, mostYouCanSell }) => [good, mostYouCanSell])).toEqual([
+      ['Bolt of silk', 1],
+      ['Ship blanket', 2],
+    ]);
+    expect(one?.matches.map(({ mostYouCanSell }) => mostYouCanSell)).toEqual([1, 1]);
+  });
+
+  it('offers none of a good the buyer refuses', () => {
+    const campaign = holding(aBuyer({ wants: [aWant({ predicate: [{ tag: 'warm' }] })] }));
+
+    expect(view(campaign).here?.people[0]?.wants[0]?.matches[0]).toMatchObject({
+      tier: 'refused',
+      mostYouCanSell: 0,
+    });
   });
 });

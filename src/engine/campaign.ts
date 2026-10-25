@@ -40,6 +40,12 @@ export type Whereabouts =
   | { readonly kind: 'at'; readonly locationId: string }
   | { readonly kind: 'in-transit'; readonly leg: Leg };
 
+/** Units sold against one want. */
+export type Delivery = {
+  readonly want: string;
+  readonly units: number;
+};
+
 /** Units of one good aboard, in the **hold**. */
 export type Cargo = {
   readonly goodId: string;
@@ -81,10 +87,12 @@ export type Campaign = {
   /** What is in the **hold**: one entry a good, in the order each first came aboard. */
   readonly cargo: readonly Cargo[];
   /**
-   * The wants sold to, by the id a sale names them with, in the order they were
-   * closed. A want sold to stays closed for the rest of the campaign.
+   * Units sold against each want sold to, by the id a sale names it with, in the
+   * order each was first sold to. A want whose units reach its quantity is
+   * **closed** for the rest of the campaign, and a grudging sale closes it at
+   * once, so its entry then holds the whole quantity (ADR 0007 decision 11).
    */
-  readonly closedWants: readonly string[];
+  readonly delivered: readonly Delivery[];
   /** The day that has just ended. Null until one has. */
   readonly digest: Digest | null;
 };
@@ -120,7 +128,7 @@ export function startCampaign(content: ContentSet, seed: number): StartResult {
       ship: content.start.ship,
       lots,
       cargo: [],
-      closedWants: [],
+      delivered: [],
       digest: null,
     },
   };

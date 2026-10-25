@@ -184,9 +184,13 @@ that location takes the buyer out with it, and one that does still **hides** the
 A **want** is either a `predicate` or one good by identity, never both and never neither:
 
 ```jsonc
-{ "predicate": [{ "tag": "cloth" }, { "tag": "warm", "negated": true }], "plainly": "wants cloth that stays cool" }
-{ "goodId": "silk" }                                                        // this thing, by name
+{ "predicate": [{ "tag": "cloth" }, { "tag": "warm", "negated": true }], "plainly": "wants cloth that stays cool", "quantity": 3 }
+{ "goodId": "silk", "quantity": 1 }                                          // this thing, by name
 ```
+
+Every want carries a `quantity`, a whole number of units of at least one: how many the buyer will take in
+all. A sale may be of any number up to what is still wanted, and the want closes when all of it is
+sold (ADR 0007 decision 11).
 
 A predicate want carries `plainly`, the want said as the buyer's side of the sentence, because the
 player never sees a quality tag and a plain want has to tell them what would satisfy it. A want
