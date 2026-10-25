@@ -156,6 +156,15 @@ export function aShopParameters(overrides: RawObject = {}): RawObject {
   };
 }
 
+/**
+ * What each tier pays, as a percent of worth. Round numbers on purpose, so a
+ * test can say the offer it expects without working it out; a test about
+ * rounding states the numbers it means.
+ */
+export function anOffers(overrides: RawObject = {}): RawObject {
+  return { grudgingPercent: 50, acceptablePercent: 100, greatPercent: 150, ...overrides };
+}
+
 export function aStart(overrides: RawObject = {}): RawObject {
   return {
     // Placeholder, to be measured. No prototype number is a starting point
@@ -214,6 +223,7 @@ export function aContentSet(overrides: RawObject = {}): RawObject {
     drawParameters: aDrawParameters(),
     topology: aTopology(),
     shops: aShopParameters(),
+    offers: anOffers(),
     locations: [aLocation()],
     tags: [],
     goods: [],
@@ -349,6 +359,7 @@ export function aGood(overrides: RawObject = {}): RawObject {
 export function aWant(overrides: RawObject = {}): RawObject {
   return {
     predicate: [{ tag: 'cloth' }, { tag: 'warm' }],
+    plainly: 'wants something warm to sleep under',
     ...overrides,
   };
 }
@@ -363,6 +374,7 @@ export function aBuyer(overrides: RawObject = {}): RawObject {
     wants: [aWant()],
     bonusTags: ['warm'],
     refusalTags: [],
+    refusalLine: 'That is not what I asked for.',
     ...overrides,
   };
 }

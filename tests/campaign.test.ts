@@ -14,6 +14,7 @@ describe('startCampaign', () => {
       name: 'Kestrel Reach',
       prose: 'A yard town that has outlived three owners and kept all their paperwork.',
       lots: [],
+      people: [],
     });
     expect(today).toEqual({
       day: 1,

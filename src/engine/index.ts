@@ -21,6 +21,7 @@ export type {
   Good,
   Location,
   Month,
+  OfferParameters,
   Range,
   Start,
   Tag,
@@ -52,9 +53,13 @@ export type {
   LaneView,
   LocationView,
   LotView,
+  MatchView,
   MenuView,
+  PersonView,
   TodayView,
   TransitView,
   View,
+  WantView,
 } from './view';
+export type { Tier } from './match';
 export type { CalendarDate } from './calendar';

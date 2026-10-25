@@ -218,7 +218,19 @@ export type Term = {
  * kind above them, which is what flat kinds with many goods each are for
  * (ADR 0007 decision 6).
  */
-export type Want = { readonly predicate: readonly Term[] } | { readonly goodId: string };
+export type Want =
+  | {
+      readonly predicate: readonly Term[];
+      /**
+       * The want said plainly, as the buyer's side of the sentence: "wants
+       * something warm to sleep under". Authored, because the player never sees
+       * a quality tag and a plain want has to tell them what would satisfy it
+       * without naming one (ADR 0007 decision 3). A want naming a good needs
+       * none: the good is its wording.
+       */
+      readonly plainly: string;
+    }
+  | { readonly goodId: string };
 
 /**
  * Someone who wants something. **Bonus** and **refusal** are roles this buyer
@@ -239,6 +251,12 @@ export type Buyer = {
   readonly bonusTags: readonly string[];
   /** Tags that make this buyer say no. */
   readonly refusalTags: readonly string[];
+  /**
+   * What this buyer says when a good is refused: their own words, so a refusal
+   * reads as theirs and not the engine's. One line a buyer, whichever term the
+   * good failed.
+   */
+  readonly refusalLine: string;
 };
 
 /**
@@ -426,6 +444,18 @@ export type ShopParameters = {
 };
 
 /**
+ * What a buyer pays against a want, as a whole percent of the good's **worth**
+ * at each **match tier** that pays at all (ADR 0007 decision 13). A refused
+ * good is not paid for, so it has no entry. The offer is worth and tier and
+ * never a per-want constant, so this is the only place a tier's pay is stated.
+ */
+export type OfferParameters = {
+  readonly grudgingPercent: number;
+  readonly acceptablePercent: number;
+  readonly greatPercent: number;
+};
+
+/**
  * A content set as the loader hands it over, **in id order**: every collection
  * of things with an authored id (archetypes, motifs, locations, tags, goods and
  * buyers, a motif's slots) is sorted by that id, and a motif's lanes by their
@@ -438,12 +468,17 @@ export type ShopParameters = {
  * a buyer's wants and the terms and tags in them — have no id and are kept as
  * written. Today they are read for membership only. The first of them to decide
  * an outcome or reach the player has to get a canonical order here first.
+ *
+ * A buyer's **wants** are the exception, since they reach the player: each
+ * buyer's come in **want order** (by what they ask for, a good before a
+ * conjunction), and a conjunction's terms in tag order.
  */
 export type ContentSet = {
   readonly bounds: Bounds;
   readonly drawParameters: DrawParameters;
   readonly topology: Topology;
   readonly shops: ShopParameters;
+  readonly offers: OfferParameters;
   /**
    * The one galaxy-wide rate a **fare** is the **distance** times (ADR 0006
    * decision 10). Authored per-lane tariffs and regional rates were rejected
