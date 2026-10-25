@@ -6,6 +6,7 @@ import {
   type Campaign,
   type Command,
   type ContentSet,
+  type Problem,
   type Reason,
 } from '../engine';
 
@@ -31,16 +32,21 @@ const KEY = 'we-can-get-it/campaign';
  * different content set. A refusal stops the replay rather than skipping the
  * command, since every command after it was taken against a campaign that had
  * it. A different content set is refused before any replay: the same seed
- * draws a different galaxy on it, and every command may still be accepted.
+ * draws a different galaxy on it, and every command may still be accepted. A
+ * seed whose draw fails is the content set's defect, and comes back as its
+ * problems.
  */
 export type Resumed =
   | { readonly campaign: Campaign }
+  | { readonly undrawable: readonly Problem[] }
   | { readonly rejected: Reason; readonly at: number; readonly of: number }
   | { readonly otherContent: true };
 
 export function resume(content: ContentSet, save: Save): Resumed {
   if (save.content !== identify(content)) return { otherContent: true };
-  let campaign = startCampaign(content, save.seed);
+  const opened = startCampaign(content, save.seed);
+  if (!opened.ok) return { undrawable: opened.problems };
+  let campaign = opened.campaign;
   for (const [index, command] of save.commands.entries()) {
     const result = takeCommand(campaign, command);
     if (isRejected(result)) {

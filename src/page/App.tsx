@@ -181,6 +181,7 @@ function opening(content: ContentSet, found: Found): CampaignState {
             ' Restoring the content set it was played on will resume it.',
         );
       }
+      if ('undrawable' in resumed) return { state: 'unloadable', problems: resumed.undrawable };
       if ('rejected' in resumed) {
         return unresumable(
           content,
@@ -216,10 +217,15 @@ function unresumable(
   return { state: 'unresumable', content, title, why, stored };
 }
 
-/** A new campaign, saved at once so that what is stored is what is in play. */
+/**
+ * A new campaign, saved at once so that what is stored is what is in play. A
+ * draw that fails is a content set that will not load, and is shown as one.
+ */
 function newCampaign(content: ContentSet): CampaignState {
   const seed = seedFromUrl(location.search);
-  return saving(content, startCampaign(content, seed), {
+  const opened = startCampaign(content, seed);
+  if (!opened.ok) return { state: 'unloadable', problems: opened.problems };
+  return saving(content, opened.campaign, {
     content: identify(content),
     seed,
     commands: [],

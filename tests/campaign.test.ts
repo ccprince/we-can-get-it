@@ -1,12 +1,13 @@
 import { describe, expect, it } from 'vitest';
-import { startCampaign, view } from '../src/engine';
+import { view } from '../src/engine';
 import { aGalaxy, aMotifLane, aLocation, aStart, loadedContentSet } from './support/content';
+import { started } from './support/campaign';
 
 const SEED = 20261022;
 
 describe('startCampaign', () => {
   it('opens the campaign where the content set says, on the day it says', () => {
-    const campaign = startCampaign(loadedContentSet(), SEED);
+    const campaign = started(loadedContentSet(), SEED);
 
     const { here, today, credits } = view(campaign);
     expect(here).toEqual({
@@ -29,7 +30,7 @@ describe('startCampaign', () => {
   it('converts a day index the player never sees into a date they do', () => {
     // Day 38 of a 6-day week, 30-day month, 60-day year: the 8th of the second
     // month, and the second day of the week.
-    const campaign = startCampaign(loadedContentSet({ start: aStart({ day: 38 }) }), SEED);
+    const campaign = started(loadedContentSet({ start: aStart({ day: 38 }) }), SEED);
 
     expect(view(campaign).today).toEqual({
       day: 38,
@@ -46,7 +47,7 @@ describe('startCampaign', () => {
   it('rolls the year over when the day index runs past its end', () => {
     // Day 61 is the first day of the second year, and the week runs on through
     // the year boundary: 60 days is ten whole weeks.
-    const campaign = startCampaign(loadedContentSet({ start: aStart({ day: 61 }) }), SEED);
+    const campaign = started(loadedContentSet({ start: aStart({ day: 61 }) }), SEED);
 
     expect(view(campaign).today.date).toEqual({
       label: 'Firstday, 1 Thessaly, year 2',
@@ -58,13 +59,13 @@ describe('startCampaign', () => {
   });
 
   it('offers the player what where they are makes available, and no wording', () => {
-    const campaign = startCampaign(loadedContentSet(), SEED);
+    const campaign = started(loadedContentSet(), SEED);
 
     expect(view(campaign).menu).toEqual({ offered: [{ kind: 'wait' }] });
   });
 
   it('has no digest before a day has ended', () => {
-    const campaign = startCampaign(loadedContentSet(), SEED);
+    const campaign = started(loadedContentSet(), SEED);
 
     expect(view(campaign).digest).toBeNull();
   });
@@ -88,6 +89,6 @@ describe('startCampaign', () => {
       }),
     );
 
-    expect(view(startCampaign(content, SEED)).here?.name).toBe("Jacob's Ladder");
+    expect(view(started(content, SEED)).here?.name).toBe("Jacob's Ladder");
   });
 });

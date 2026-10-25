@@ -10,6 +10,7 @@ import {
   loadedContentSet,
   type RawObject,
 } from './support/content';
+import { started } from './support/campaign';
 
 /**
  * The **draw** at campaign start, and its first two stages: the map assembled
@@ -20,7 +21,7 @@ import {
 const SEED = 20261022;
 
 function chartOf(content: ContentSet, seed = SEED) {
-  return view(startCampaign(content, seed)).chart;
+  return view(started(content, seed)).chart;
 }
 
 /** Two slots, one lane between them, and two locations to fill them with. */
@@ -60,7 +61,7 @@ describe('the map assembled from motifs', () => {
       motifs: [aMotif({ slots: [aSlot({ archetype: 'extractor' })] })],
     });
 
-    const opened = [1, 2, 3, 4, 5].map((seed) => view(startCampaign(content, seed)).here?.name);
+    const opened = [1, 2, 3, 4, 5].map((seed) => view(started(content, seed)).here?.name);
 
     expect(new Set(opened)).toEqual(new Set(["Grieve's Hollow"]));
   });
@@ -76,7 +77,7 @@ describe('the map assembled from motifs', () => {
       motifs: [aMotif({ slots: [aSlot()] })],
     });
 
-    const opened = [1, 2, 3, 4, 5].map((seed) => view(startCampaign(content, seed)).here?.name);
+    const opened = [1, 2, 3, 4, 5].map((seed) => view(started(content, seed)).here?.name);
 
     expect(new Set(opened)).toEqual(new Set(['Kestrel Reach', "Grieve's Hollow"]));
   });
@@ -106,7 +107,7 @@ describe('the map assembled from motifs', () => {
     // The assembled map is a map, not a diagram: the lane the assembly laid is
     // a lane the player can depart along and land at the far end of.
     const content = aPairedGalaxy();
-    const campaign = startCampaign(content, SEED);
+    const campaign = started(content, SEED);
     const setOutFrom = view(campaign).here?.name;
     const lane = view(campaign).chart.lanes[0];
     const departure = lane?.depart;
@@ -212,7 +213,7 @@ describe('what the draw guarantees', () => {
     });
 
     for (const seed of SEEDS) {
-      expect(view(startCampaign(backwards, seed))).toEqual(view(startCampaign(written, seed)));
+      expect(view(started(backwards, seed))).toEqual(view(started(written, seed)));
     }
   });
 
@@ -319,5 +320,123 @@ describe('what the draw guarantees', () => {
     // And a different pair every time: a fixed hidden pair would be the galaxy
     // a returning player learns, which is the failure findings §2.5 names.
     expect(new Set(missed.map((hidden) => hidden.join(' and '))).size).toBe(6);
+  });
+});
+
+/**
+ * The **draw-time pass**: the drawn galaxy is checked as well as the content
+ * set, and a stage that fails a check is re-rolled, narrowest first, up to the
+ * bound the content set declares — then fails loudly (ADR 0008 decisions 8, 16
+ * and 17). All of it is read through `startCampaign`, which is where a draw
+ * either gives a campaign or says why it could not.
+ */
+describe('the draw-time pass', () => {
+  /** A motif of one slot and a motif of three: one draw places 1 or 3. */
+  function aLopsidedReserve(overrides: RawObject = {}): ContentSet {
+    return loadedContentSet({
+      locations: [
+        aLocation(),
+        aLocation({ id: 'bellwether', name: 'Bellwether Yards' }),
+        aLocation({ id: 'shoals', name: 'Thennet Shoals' }),
+      ],
+      motifs: [
+        aMotif({ id: 'lone' }),
+        aMotif({
+          id: 'triple',
+          slots: [aSlot({ id: 'a' }), aSlot({ id: 'b' }), aSlot({ id: 'c' })],
+          lanes: [
+            aMotifLane({ ends: ['a', 'b'], distance: 4 }),
+            aMotifLane({ ends: ['b', 'c'], distance: 4 }),
+          ],
+        }),
+      ],
+      ...overrides,
+    });
+  }
+
+  function failureOf(content: ContentSet, seed = SEED) {
+    const result = startCampaign(content, seed);
+    if (result.ok) throw new Error('the draw was meant to fail and gave a campaign');
+    return result.problems;
+  }
+
+  it('lands the location count inside the range the content set declares', () => {
+    // Left free, a seed may place one location or three. Declared as exactly
+    // three, every seed places three: an assembly outside the range re-rolls
+    // the motif selection rather than opening (ADR 0008 decision 8).
+    const content = aLopsidedReserve({
+      drawParameters: aDrawParameters({ locationCount: { least: 3, most: 3 } }),
+    });
+    const free = aLopsidedReserve({
+      drawParameters: aDrawParameters({ locationCount: { least: 1, most: 3 } }),
+    });
+
+    for (const seed of SEEDS) {
+      expect(chartOf(content, seed).locations).toHaveLength(3);
+    }
+    // And the range is what made the difference: left free, some of the same
+    // seeds open on one location.
+    expect(SEEDS.map((seed) => chartOf(free, seed).locations.length)).toContain(1);
+  });
+
+  it('gives the same galaxy for the same seed, re-rolls and all', () => {
+    // The re-rolls sit inside the deterministic function of the seed
+    // (ADR 0008 decision 17), so a save that is a seed still replays.
+    const content = aLopsidedReserve({
+      drawParameters: aDrawParameters({ locationCount: { least: 3, most: 3 } }),
+    });
+
+    for (const seed of SEEDS) {
+      expect(chartOf(content, seed)).toEqual(chartOf(content, seed));
+    }
+  });
+
+  it('fails loudly when the bound is exhausted, naming the stage and the check', () => {
+    // No assembly of these motifs places two locations, so every re-roll
+    // misses. The draw does not weaken the range to let a galaxy through; it
+    // stops, and says which invariant would not hold.
+    const content = aLopsidedReserve({
+      drawParameters: aDrawParameters({ locationCount: { least: 2, most: 2 }, rerolls: 4 }),
+    });
+
+    expect(failureOf(content)).toEqual([
+      {
+        verdict: 'fails',
+        where: 'drawParameters.locationCount',
+        what:
+          'the motif selection was re-rolled 4 times and failed the location-count range ' +
+          'every time; the last time, it placed 1 location, and the content set ' +
+          'declared 2 to 2',
+      },
+    ]);
+  });
+
+  it('reports a reserve that runs out mid-draw rather than throwing', () => {
+    // Two `processor` slots and one `processor` in the reserve: the load-time
+    // check passes, since one exists, and every draw runs out filling the
+    // second. Whether the reserve holds enough is #27's; what this asks is that
+    // the draw says so and does not throw past `startCampaign`.
+    const content = loadedContentSet({
+      locations: [aLocation({ archetype: 'processor' })],
+      motifs: [
+        aMotif({
+          slots: [
+            aSlot({ archetype: 'processor' }),
+            aSlot({ id: 'works', archetype: 'processor' }),
+          ],
+        }),
+      ],
+      drawParameters: aDrawParameters({ rerolls: 2 }),
+    });
+
+    expect(failureOf(content)).toEqual([
+      {
+        verdict: 'fails',
+        where: 'locations',
+        what:
+          'the motif selection was re-rolled 2 times and failed slot filling every time; ' +
+          'the last time, the reserve had no processor left for the works slot of lone-berth',
+      },
+    ]);
   });
 });

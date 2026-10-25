@@ -1,6 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
-import { loadContent, startCampaign, view } from '../src/engine';
+import { loadContent, view } from '../src/engine';
+import { started } from './support/campaign';
 
 /**
  * The content set the page hand-plays is known to load (ADR 0003 decision 3).
@@ -22,6 +23,6 @@ describe('the walking skeleton content set', () => {
     const result = loadContent(raw);
     if (!result.ok) throw new Error('the content set did not load');
 
-    expect(view(startCampaign(result.content, 20261022)).here?.name).toBe('Bellwether Yards');
+    expect(view(started(result.content, 20261022)).here?.name).toBe('Bellwether Yards');
   });
 });

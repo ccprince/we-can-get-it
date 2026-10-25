@@ -56,7 +56,12 @@
     "interMotifDistance": {
       "least": 12,
       "most": 20
-    }
+    },
+    "locationCount": {
+      "least": 4,
+      "most": 6
+    },
+    "rerolls": 8
   },
   "archetypes": [
     {

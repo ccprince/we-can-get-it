@@ -1,5 +1,5 @@
 import type { ContentSet, Lane, Location, Motif, Range, Slot } from './content';
-import type { DrawnGalaxy } from './galaxy';
+import type { Roll } from './draw';
 import { drawInt, type Rng } from './rng';
 
 /**
@@ -10,12 +10,16 @@ import { drawInt, type Rng } from './rng';
  *
  * The one dial is the **motif count**, and the location count follows from it
  * as the sum of the motifs placed, duplicates included (decisions 5 and 7).
- * Nothing here decides whether the result is a *legal* map: the location-count
- * range, the motif invariants and the bounded re-roll are #12's.
+ * Nothing here decides whether the result is a *legal* map: that is the
+ * draw-time pass's, which re-rolls this whole assembly on a miss — the motif
+ * selection is the narrowest stage there is, and the locations are conditioned
+ * on it (ADR 0008 decision 17).
  */
-export function assembleMap(content: ContentSet, rng: Rng): readonly [DrawnGalaxy, Rng] {
+export function assembleMap(content: ContentSet, rng: Rng): Roll {
   const [drawn, afterMotifs] = drawMotifs(content, rng);
-  const [placed, afterSlots] = fillSlots(drawn, content.locations, afterMotifs);
+  const filled = fillSlots(drawn, content.locations, afterMotifs);
+  if (!filled.ok) return filled;
+  const { placed, rng: afterSlots } = filled;
   const [joining, afterJoining] = joinMotifs(
     placed,
     content.drawParameters.interMotifDistance,
@@ -25,7 +29,11 @@ export function assembleMap(content: ContentSet, rng: Rng): readonly [DrawnGalax
   const locations = placed.flatMap((motif) => placedLocations(motif, content.locations));
   const lanes = [...placed.flatMap(lanesWithin), ...joining];
 
-  return [{ locations, lanes, startId: hubOf(locations, lanes) }, afterJoining];
+  return {
+    ok: true,
+    galaxy: { locations, lanes, startId: hubOf(locations, lanes) },
+    rng: afterJoining,
+  };
 }
 
 /**
@@ -67,12 +75,18 @@ function drawMotifs(content: ContentSet, rng: Rng): readonly [readonly Motif[], 
  * is left and a typed one does not, so filling the fussy slots first is what
  * stops an untyped slot taking the last `market` and starving a slot that
  * needed it.
+ *
+ * A reserve with nothing left for a slot is a **miss**, re-rolled like any
+ * other. That some location of every typed slot's archetype exists is checked at
+ * load; whether there are *enough* of them is the reserve's adequacy, and #27's.
  */
 function fillSlots(
   motifs: readonly Motif[],
   reserve: readonly Location[],
   rng: Rng,
-): readonly [readonly Placement[], Rng] {
+):
+  | { readonly ok: true; readonly placed: readonly Placement[]; readonly rng: Rng }
+  | Extract<Roll, { ok: false }> {
   const filled = motifs.map(() => new Map<string, string>());
   const taken = new Set<string>();
   let next = rng;
@@ -82,15 +96,17 @@ function fillSlots(
       (location) => !taken.has(location.id) && fits(slot, location),
     );
     if (candidates.length === 0) {
-      // The reserve could not satisfy this slot. Whether a content set can
-      // always satisfy its own motifs is checked before any draw, and a draw
-      // that fails anyway is re-rolled within a bound and then fails the load
-      // loudly naming the invariant — both of which are #12 (ADR 0008
-      // decision 17). Until then this is the loud part.
-      throw new Error(
-        `the reserve has no ${slot.archetype ?? 'location'} left for the ${slot.id} slot ` +
-          `of ${motifs[at]?.id ?? 'a motif'}`,
-      );
+      return {
+        ok: false,
+        miss: {
+          check: 'slot filling',
+          where: 'locations',
+          how:
+            `the reserve had no ${slot.archetype ?? 'location'} left for the ${slot.id} slot ` +
+            `of ${motifs[at]?.id ?? 'a motif'}`,
+        },
+        rng: next,
+      };
     }
 
     const [location, after] = drawFrom(candidates, next);
@@ -99,7 +115,11 @@ function fillSlots(
     filled[at]?.set(slot.id, location.id);
   }
 
-  return [motifs.map((motif, at) => ({ motif, filled: filled[at] ?? new Map() })), next];
+  return {
+    ok: true,
+    placed: motifs.map((motif, at) => ({ motif, filled: filled[at] ?? new Map() })),
+    rng: next,
+  };
 }
 
 /** Which slots to fill in which order: the typed ones, then the untyped. */
@@ -127,7 +147,7 @@ function fits(slot: Slot, location: Location): boolean {
  *
  * The distance is drawn from the range the content set declares. These are
  * where the long hauls live; whether the result is *connected at baseline
- * range* is #12's check.
+ * range* is a draw-time check, and #45's.
  */
 function joinMotifs(
   motifs: readonly Placement[],
@@ -192,7 +212,8 @@ function placedLocations(placed: Placement, reserve: readonly Location[]): reado
  * range, because a start on a **spur** makes
  * the first decision "fly out, or fly out" — the best-connected place is the
  * reading of that the assembly can make on its own. The **guarantee**, including
- * that it is a market with a spur among its neighbours, is #12's to check.
+ * that it is a market with a spur among its neighbours, is a draw-time check,
+ * and #45's.
  */
 function hubOf(locations: readonly Location[], lanes: readonly Lane[]): string {
   const busiest = locations.reduce((best, location) =>

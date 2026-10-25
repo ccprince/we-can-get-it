@@ -1,8 +1,9 @@
 import { describe, expect, it } from 'vitest';
-import { isRejected, startCampaign, takeCommand, view } from '../src/engine';
+import { isRejected, takeCommand, view } from '../src/engine';
 import type { Campaign, Command, ContentSet, Reason } from '../src/engine';
 import { laneBetween } from './support/chart';
 import { aGalaxy, aMotifLane, aLocation, aShip, aStart, loadedContentSet } from './support/content';
+import { started } from './support/campaign';
 
 /**
  * Departing along a **lane**: the **fare** is quoted before departure and paid
@@ -57,7 +58,7 @@ function refusalOf(campaign: Campaign, command: Command): Reason {
 
 describe('the chart’s departures', () => {
   it('offers a departure along a lane that leaves from here', () => {
-    const chart = view(startCampaign(aGalaxyOfFour(), SEED)).chart;
+    const chart = view(started(aGalaxyOfFour(), SEED)).chart;
 
     expect(laneBetween(chart, 'Kestrel Reach', 'Bellwether Yards').depart).toEqual({
       kind: 'depart',
@@ -66,7 +67,7 @@ describe('the chart’s departures', () => {
   });
 
   it('offers none along a lane that does not leave from here', () => {
-    const chart = view(startCampaign(aGalaxyOfFour(), SEED)).chart;
+    const chart = view(started(aGalaxyOfFour(), SEED)).chart;
 
     expect(laneBetween(chart, 'Bellwether Yards', "Grieve's Hollow").depart).toBeNull();
   });
@@ -74,7 +75,7 @@ describe('the chart’s departures', () => {
   it('offers none along a lane beyond this ship’s range, at any price', () => {
     const content = aGalaxyOfFour({ start: aStart({ ship: aShip({ range: 10 }) }) });
 
-    const chart = view(startCampaign(content, SEED)).chart;
+    const chart = view(started(content, SEED)).chart;
     const toBellwether = laneBetween(chart, 'Kestrel Reach', 'Bellwether Yards');
     expect(toBellwether.withinRange).toBe(false);
     expect(toBellwether.depart).toBeNull();
@@ -83,7 +84,7 @@ describe('the chart’s departures', () => {
 
 describe('departing', () => {
   it('charges the fare it quoted, at departure', () => {
-    const campaign = startCampaign(aGalaxyOfFour({ start: aStart({ credits: 500 }) }), SEED);
+    const campaign = started(aGalaxyOfFour({ start: aStart({ credits: 500 }) }), SEED);
     const quoted = laneBetween(view(campaign).chart, 'Kestrel Reach', 'Bellwether Yards').fare;
 
     const underway = view(accepted(campaign, TO_BELLWETHER));
@@ -93,7 +94,7 @@ describe('departing', () => {
   });
 
   it('spends the day it departs on, and ends it with a digest', () => {
-    const campaign = startCampaign(aGalaxyOfFour(), SEED);
+    const campaign = started(aGalaxyOfFour(), SEED);
 
     const underway = view(accepted(campaign, TO_BELLWETHER));
 
@@ -102,7 +103,7 @@ describe('departing', () => {
   });
 
   it('puts the player in transit, out of a place and bound for another', () => {
-    const campaign = startCampaign(aGalaxyOfFour(), SEED);
+    const campaign = started(aGalaxyOfFour(), SEED);
 
     const underway = view(accepted(campaign, TO_BELLWETHER));
 
@@ -116,7 +117,7 @@ describe('departing', () => {
   });
 
   it('leaves the campaign it was handed untouched', () => {
-    const campaign = startCampaign(aGalaxyOfFour(), SEED);
+    const campaign = started(aGalaxyOfFour(), SEED);
     const before = view(campaign);
 
     accepted(campaign, TO_BELLWETHER);
@@ -125,7 +126,7 @@ describe('departing', () => {
   });
 
   it('offers no departure at all while underway: the destination is fixed', () => {
-    const underway = accepted(startCampaign(aGalaxyOfFour(), SEED), TO_BELLWETHER);
+    const underway = accepted(started(aGalaxyOfFour(), SEED), TO_BELLWETHER);
 
     const chart = view(underway).chart;
     expect(chart.lanes.map((lane) => lane.depart)).toEqual([null, null, null]);
@@ -137,20 +138,20 @@ describe('a departure the engine refuses', () => {
   it('refuses a lane beyond the ship’s range, and says so', () => {
     const content = aGalaxyOfFour({ start: aStart({ ship: aShip({ range: 10 }) }) });
 
-    const refusal = refusalOf(startCampaign(content, SEED), TO_BELLWETHER);
+    const refusal = refusalOf(started(content, SEED), TO_BELLWETHER);
 
     expect(refusal.code).toBe('beyond-range');
     expect(refusal.message).not.toBe('');
   });
 
   it('refuses a destination no lane from here reaches', () => {
-    const campaign = startCampaign(aGalaxyOfFour(), SEED);
+    const campaign = started(aGalaxyOfFour(), SEED);
 
     expect(refusalOf(campaign, { kind: 'depart', toId: 'hollow' }).code).toBe('no-such-lane');
   });
 
   it('refuses a second departure while underway, destination unchanged', () => {
-    const underway = accepted(startCampaign(aGalaxyOfFour(), SEED), TO_BELLWETHER);
+    const underway = accepted(started(aGalaxyOfFour(), SEED), TO_BELLWETHER);
 
     const refusal = refusalOf(underway, { kind: 'depart', toId: 'kestrel' });
 
@@ -159,7 +160,7 @@ describe('a departure the engine refuses', () => {
   });
 
   it('refuses a fare the player cannot pay, since nothing accrues against them', () => {
-    const campaign = startCampaign(aGalaxyOfFour({ start: aStart({ credits: 119 }) }), SEED);
+    const campaign = started(aGalaxyOfFour({ start: aStart({ credits: 119 }) }), SEED);
 
     const refusal = refusalOf(campaign, TO_BELLWETHER);
 

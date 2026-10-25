@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { startCampaign, view } from '../src/engine';
+import { view } from '../src/engine';
 import type { ContentSet, LocationView } from '../src/engine';
 import { laneBetween } from './support/chart';
 import {
@@ -12,6 +12,7 @@ import {
   aStart,
   loadedContentSet,
 } from './support/content';
+import { started } from './support/campaign';
 
 /**
  * The chart does the arithmetic (ADR 0006 decision 20): it shows the numbers
@@ -46,7 +47,7 @@ function aFourPlaceGalaxy(overrides: Record<string, unknown> = {}): ContentSet {
 }
 
 function chartAt(content: ContentSet) {
-  return view(startCampaign(content, SEED)).chart;
+  return view(started(content, SEED)).chart;
 }
 
 describe('the chart', () => {

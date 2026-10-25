@@ -2,6 +2,7 @@ import type { ContentSet, Ship } from './content';
 import { draw } from './draw';
 import type { DrawnGalaxy } from './galaxy';
 import { rngFromSeed, type Rng } from './rng';
+import type { Problem } from './verdicts';
 
 /** An entry in a day's digest: one piece of change that reached the player. */
 export type DigestEntry = {
@@ -68,21 +69,35 @@ export type Campaign = {
   readonly digest: Digest | null;
 };
 
-export function startCampaign(content: ContentSet, seed: number): Campaign {
+/**
+ * A campaign, or the problems that kept one from starting. The shape of
+ * `LoadResult`, because a draw that exhausts its bounded re-roll is a content
+ * defect like any the loader finds (ADR 0008 decision 17).
+ */
+export type StartResult =
+  | { readonly ok: true; readonly campaign: Campaign }
+  | { readonly ok: false; readonly problems: readonly Problem[] };
+
+export function startCampaign(content: ContentSet, seed: number): StartResult {
   // The seed arrives here and nowhere else, and the draw is the first thing it
   // is spent on: the campaign begins at a location the draw placed, so the
   // generator the campaign carries is the one the draw left behind.
-  const [galaxy, rng] = draw(content, rngFromSeed(seed));
+  const drawn = draw(content, rngFromSeed(seed));
+  if (!drawn.ok) return { ok: false, problems: [drawn.problem] };
+  const { galaxy, rng } = drawn;
 
   return {
-    content,
-    galaxy,
-    seed,
-    rng,
-    day: content.start.day,
-    where: { kind: 'at', locationId: galaxy.startId },
-    credits: content.start.credits,
-    ship: content.start.ship,
-    digest: null,
+    ok: true,
+    campaign: {
+      content,
+      galaxy,
+      seed,
+      rng,
+      day: content.start.day,
+      where: { kind: 'at', locationId: galaxy.startId },
+      credits: content.start.credits,
+      ship: content.start.ship,
+      digest: null,
+    },
   };
 }

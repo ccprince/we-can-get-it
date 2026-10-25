@@ -1,7 +1,8 @@
 import { describe, expect, it } from 'vitest';
-import { isRejected, startCampaign, takeCommand, view } from '../src/engine';
+import { isRejected, takeCommand, view } from '../src/engine';
 import type { Campaign, Command } from '../src/engine';
 import { aStart, loadedContentSet } from './support/content';
+import { started } from './support/campaign';
 
 const SEED = 20261022;
 const WAIT: Command = { kind: 'wait' };
@@ -16,7 +17,7 @@ function accepted(campaign: Campaign, command: Command): Campaign {
 
 describe('wait', () => {
   it('ends the day, advancing it by one', () => {
-    const campaign = startCampaign(loadedContentSet(), SEED);
+    const campaign = started(loadedContentSet(), SEED);
 
     const tomorrow = view(accepted(campaign, WAIT));
     expect(tomorrow.today.day).toBe(2);
@@ -24,19 +25,19 @@ describe('wait', () => {
   });
 
   it('goes nowhere: the player is where they were', () => {
-    const campaign = startCampaign(loadedContentSet(), SEED);
+    const campaign = started(loadedContentSet(), SEED);
 
     expect(view(accepted(campaign, WAIT)).here).toEqual(view(campaign).here);
   });
 
   it('costs nothing: waiting costs only days', () => {
-    const campaign = startCampaign(loadedContentSet({ start: aStart({ credits: 42 }) }), SEED);
+    const campaign = started(loadedContentSet({ start: aStart({ credits: 42 }) }), SEED);
 
     expect(view(accepted(campaign, WAIT)).credits).toEqual({ credits: 42 });
   });
 
   it('produces a digest for the day that ended, which so far says nothing', () => {
-    const campaign = startCampaign(loadedContentSet(), SEED);
+    const campaign = started(loadedContentSet(), SEED);
 
     expect(view(accepted(campaign, WAIT)).digest).toEqual({
       day: 1,
@@ -52,7 +53,7 @@ describe('wait', () => {
   });
 
   it('is chosen one day at a time: two waits are two days, each with its digest', () => {
-    const campaign = startCampaign(loadedContentSet(), SEED);
+    const campaign = started(loadedContentSet(), SEED);
 
     const third = view(accepted(accepted(campaign, WAIT), WAIT));
     expect(third.today.day).toBe(3);
@@ -60,7 +61,7 @@ describe('wait', () => {
   });
 
   it('leaves the campaign it was handed untouched', () => {
-    const campaign = startCampaign(loadedContentSet(), SEED);
+    const campaign = started(loadedContentSet(), SEED);
     const before = view(campaign);
 
     accepted(campaign, WAIT);
@@ -71,7 +72,7 @@ describe('wait', () => {
 
 describe('a rejected command', () => {
   it('returns a reason instead of throwing, and says why', () => {
-    const campaign = startCampaign(loadedContentSet(), SEED);
+    const campaign = started(loadedContentSet(), SEED);
 
     const result = takeCommand(campaign, { kind: 'depart' } as unknown as Command);
 
@@ -82,7 +83,7 @@ describe('a rejected command', () => {
   });
 
   it('leaves the campaign untouched', () => {
-    const campaign = startCampaign(loadedContentSet(), SEED);
+    const campaign = started(loadedContentSet(), SEED);
     const before = view(campaign);
 
     takeCommand(campaign, undefined as unknown as Command);
