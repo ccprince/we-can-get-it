@@ -12,6 +12,7 @@ import type { DrawnGalaxy } from './galaxy';
 import { reachableFrom } from './map';
 import { holdsStartHub, readAsStart } from './start-hub';
 import type { Rng } from './rng';
+import { fails, type Problem } from './verdicts';
 
 /**
  * A stage of the draw's cascade that a missed invariant re-rolls (ADR 0008
@@ -241,7 +242,63 @@ export const drawChecks: readonly DrawCheck[] = [
       return unreached.length === 0 ? null : unreached.join('; ');
     },
   },
+  {
+    // The map passed its own invariants and should not be thrown away over a
+    // bad cast, so a miss re-rolls the people pass alone (ADR 0008 decision 12).
+    stage: 'people pass',
+    invariant: 'the per-location people floor',
+    where: 'drawParameters.peopleFloor',
+    miss: (galaxy, content) => {
+      const { peopleFloor } = content.drawParameters;
+      const bare = galaxy.locations.filter(
+        (location) =>
+          galaxy.people.filter((person) => person.locationId === location.id).length < peopleFloor,
+      );
+      return bare.length === 0
+        ? null
+        : `${bare.map((location) => location.id).join(', ')} carried fewer than ${peopleFloor} ` +
+            `people`;
+    },
+  },
 ];
+
+/**
+ * Whether the **reserve** holds enough of each archetype: at least the most
+ * simultaneous slots of it any legal assembly can demand, plus the declared
+ * surplus, per archetype (ADR 0008 decision 9). Not a stage and not a check of
+ * the drawn galaxy: it reads the reserve, which a re-roll cannot change, so it
+ * runs before the draw and fails loudly naming the archetype, where #12's bound
+ * would otherwise report it as re-rolls exhausted.
+ *
+ * The most an assembly can demand is the motif count of the motif with the most
+ * slots typed to the archetype, since motifs are drawn with replacement
+ * (decision 7). An untyped slot takes any location and demands none in
+ * particular. A location is hidden only by going undrawn, and the reserve is
+ * counted before any is, so nothing is excluded from the count yet.
+ */
+export function reserveShortfall(content: ContentSet): Problem | null {
+  const { motifsPerCampaign, reserveSurplus } = content.drawParameters;
+  for (const archetype of content.archetypes) {
+    const mostInAMotif = Math.max(
+      0,
+      ...content.motifs.map(
+        (motif) => motif.slots.filter((slot) => slot.archetype === archetype.id).length,
+      ),
+    );
+    const demanded = motifsPerCampaign * mostInAMotif;
+    const held = content.locations.filter((location) => location.archetype === archetype.id).length;
+    if (held < demanded + reserveSurplus) {
+      return fails(
+        'drawParameters.reserveSurplus',
+        `the reserve holds ${held} ${archetype.id} location${held === 1 ? '' : 's'}, and an ` +
+          `assembly of ${motifsPerCampaign} motif${motifsPerCampaign === 1 ? '' : 's'} can ` +
+          `demand ${demanded} of them, which with the ` +
+          `surplus of ${reserveSurplus} needs ${demanded + reserveSurplus}`,
+      );
+    }
+  }
+  return null;
+}
 
 /** The buyers who stand at a drawn location, before the people pass hides any. */
 function buyersAtDrawnLocations(galaxy: DrawnGalaxy, content: ContentSet): readonly Buyer[] {

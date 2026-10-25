@@ -338,7 +338,9 @@ describe('the start-node guarantee', () => {
         aLocation({ id: 'shoals', name: 'Thennet Shoals', archetype: 'extractor' }),
         aLocation({ id: 'hollow', name: "Grieve's Hollow", archetype: 'extractor' }),
         aLocation({ id: 'caravel', name: 'Caravel Station', archetype: 'extractor' }),
+        aLocation({ id: 'sedge', name: 'Sedge Landing', archetype: 'extractor' }),
         aLocation({ id: 'lament', name: 'Lamentation', archetype: 'processor' }),
+        aLocation({ id: 'tarn', name: 'Tarn Works', archetype: 'processor' }),
       ],
       motifs: [
         aMotif({

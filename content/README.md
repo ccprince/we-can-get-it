@@ -61,6 +61,14 @@ is what drops a kind: one that no drawn archetype supplies or demands is dropped
 rolled over its goods, would take it below the floor. There is no second rate to declare. Both rates
 are whole percentages, `0` to `100`.
 
+Two more numbers are checked against what was drawn, and neither has a default.
+`drawParameters.peopleFloor` is the fewest people every drawn location carries once the people are
+hidden (ADR 0008 decision 12); a miss re-rolls the people pass. The walking skeleton declares `0`,
+since it has too few people to hold a floor of one. `drawParameters.reserveSurplus` is **one** number
+applied to every archetype: the reserve must hold that many locations of the archetype beyond the
+most simultaneous slots of it any assembly of `motifsPerCampaign` motifs can demand (decision 9).
+A short archetype fails the draw by name, and is not a re-roll.
+
 ### `lanes`
 
 A **lane** is the only way between the two **locations** it joins (ADR 0006 decision 1), and it
@@ -174,7 +182,8 @@ A **want** is either a `predicate` or one good by identity, never both and never
 A predicate is a **conjunction** of terms, each a tag or a negated tag. There is no disjunction: a
 want for "brandy or whisky" is a want for the kind above them, which is what flat kinds with many
 goods each are for (decision 6). A named good must exist; that it can be **reached** in the drawn
-galaxy is the draw-time pass's check (#27).
+galaxy is the draw-time pass's check (#27): the good must be drawn, and a drawn location must
+supply its kind.
 
 ## `walking-skeleton.json`
 

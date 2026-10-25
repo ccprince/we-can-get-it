@@ -106,6 +106,10 @@ export function aDrawParameters(overrides: RawObject = {}): RawObject {
     // catalogue and cast. A test about hiding states the rate it means.
     goodsHiddenPercent: 0,
     peopleHiddenPercent: 0,
+    // No floor and no surplus, so a fixture about something else is never
+    // refused for a cast or a reserve it did not mean to write.
+    peopleFloor: 0,
+    reserveSurplus: 0,
     ...overrides,
   };
 }
