@@ -117,14 +117,12 @@ export function App() {
         }
         setRefusal(null);
         // Written after each command, so a reload mid-campaign loses nothing.
-        const saved = { seed: save.seed, commands: [...save.commands, command] };
-        setCampaignState({
-          state: 'playing',
-          content,
-          campaign: result.campaign,
-          save: saved,
-          notice: writeSave(saved),
-        });
+        setCampaignState(
+          saving(content, result.campaign, {
+            seed: save.seed,
+            commands: [...save.commands, command],
+          }),
+        );
       };
 
       return (
@@ -197,14 +195,16 @@ function opening(content: ContentSet, found: Found): CampaignState {
 
 /** A new campaign, saved at once so that what is stored is what is in play. */
 function newCampaign(content: ContentSet): CampaignState {
-  const save = { seed: seedFromUrl(location.search), commands: [] };
-  return {
-    state: 'playing',
-    content,
-    campaign: startCampaign(content, save.seed),
-    save,
-    notice: writeSave(save),
-  };
+  const seed = seedFromUrl(location.search);
+  return saving(content, startCampaign(content, seed), { seed, commands: [] });
+}
+
+/**
+ * The campaign in play, with its save written: the one place a save is written,
+ * so it is written after every command and whenever a campaign starts.
+ */
+function saving(content: ContentSet, campaign: Campaign, save: Save): CampaignState {
+  return { state: 'playing', content, campaign, save, notice: writeSave(save) };
 }
 
 /**
