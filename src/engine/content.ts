@@ -305,8 +305,13 @@ export type DrawParameters = {
   /**
    * The chance, in whole percent, that the draw hides any one **good**. Flat
    * and galaxy-wide, and bounded by the **usability floor**: a kind is never
-   * hidden below it, and is dropped entire where it may be (ADR 0008
-   * decision 11).
+   * hidden below it (ADR 0008 decision 11).
+   *
+   * It is also what drops a kind entire, so there is no second rate for that.
+   * A kind no drawn archetype supplies or demands is dropped when this rate,
+   * rolled over its goods, would take it below its floor — where the draw
+   * wants more variation than the floor allows. A kind some drawn archetype
+   * supplies or demands is never dropped and keeps its floor instead.
    */
   readonly goodsHiddenPercent: number;
   /**

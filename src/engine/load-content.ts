@@ -114,7 +114,7 @@ export function loadContent(raw: unknown): LoadResult {
     problems.push(...unknownKinds(archetypes, tags));
   }
   if (buyers !== undefined && locations !== undefined) {
-    problems.push(...homelessBuyers(buyers, locations));
+    problems.push(...buyersOutsideReserve(buyers, locations));
   }
 
   // The whole-set checks and the distributions read the vocabulary, the
@@ -482,19 +482,22 @@ function readArchetypes(raw: unknown, problems: Problem[]): readonly Archetype[]
  * leaves the archetypes, and the map that types against them, still checked.
  */
 function unknownKinds(archetypes: readonly Archetype[], tags: readonly Tag[]): readonly Problem[] {
-  return archetypes.flatMap((archetype, at) =>
-    (['supplies', 'demands'] as const).flatMap((side) =>
-      archetype[side].flatMap((named, index) => {
+  const problems: Problem[] = [];
+  archetypes.forEach((archetype, at) => {
+    for (const side of ['supplies', 'demands'] as const) {
+      const named = new Set<string>();
+      archetype[side].forEach((kind, index) => {
         const where = `archetypes[${at}].${side}[${index}]`;
-        const tag = tags.find((candidate) => candidate.id === named);
-        if (tag === undefined) return [fails(where, `names a kind that does not exist: ${named}`)];
-        if (tag.class !== 'kind') {
-          return [fails(where, `names ${named}, which is a ${tag.class} tag and not a kind`)];
+        if (named.has(kind)) {
+          problems.push(fails(where, `repeats a kind already named: ${kind}`));
+          return;
         }
-        return [];
-      }),
-    ),
-  );
+        named.add(kind);
+        readKind(kind, where, tags, problems);
+      });
+    }
+  });
+  return problems;
 }
 
 /**
@@ -502,13 +505,13 @@ function unknownKinds(archetypes: readonly Archetype[], tags: readonly Tag[]): r
  * for the same reason as the kinds above: the cast and the chart are read
  * independently, and a mistake in one leaves the other still checked.
  */
-function homelessBuyers(
+function buyersOutsideReserve(
   buyers: readonly Buyer[],
   locations: readonly Location[],
 ): readonly Problem[] {
-  const held = new Set(locations.map((location) => location.id));
+  const inReserve = new Set(locations.map((location) => location.id));
   return buyers.flatMap((buyer, at) =>
-    held.has(buyer.locationId)
+    inReserve.has(buyer.locationId)
       ? []
       : [
           fails(

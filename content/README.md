@@ -56,7 +56,9 @@ A range is `{ "least": n, "most": n }`, both ends inclusive.
 An **archetype** declares the **kinds** it `supplies` and `demands`, each a tag of class kind. A kind
 that some drawn archetype supplies or demands stays in circulation; one that none does may be dropped
 entire. Within a kind, `drawParameters.goodsHiddenPercent` is the chance any one good is hidden, and
-the draw never takes a kind below the usability floor to do it (ADR 0008 decision 11). Both rates
+the draw never takes a kind below the usability floor to do it (ADR 0008 decision 11). The same rate
+is what drops a kind: one that no drawn archetype supplies or demands is dropped entire when the rate,
+rolled over its goods, would take it below the floor. There is no second rate to declare. Both rates
 are whole percentages, `0` to `100`.
 
 ### `lanes`

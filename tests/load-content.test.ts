@@ -980,7 +980,7 @@ describe('what the draw fills the map with', () => {
       aContentSet({
         ...aCatalogue(),
         archetypes: [
-          anArchetype({ supplies: ['cloth', 'warm'] }),
+          anArchetype({ supplies: ['cloth', 'warm', 'cloth'] }),
           anArchetype({ id: 'extractor', demands: ['ore'] }),
           anArchetype({ id: 'processor' }),
         ],
@@ -995,8 +995,13 @@ describe('what the draw fills the map with', () => {
       },
       {
         verdict: 'fails',
+        where: 'archetypes[0].supplies[2]',
+        what: 'repeats a kind already named: cloth',
+      },
+      {
+        verdict: 'fails',
         where: 'archetypes[1].demands[0]',
-        what: 'names a kind that does not exist: ore',
+        what: 'names a tag that does not exist: ore',
       },
     ]);
   });
