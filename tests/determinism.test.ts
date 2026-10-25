@@ -1,7 +1,14 @@
 import { describe, expect, it } from 'vitest';
 import { isRejected, takeCommand, view } from '../src/engine';
 import type { Command, ContentSet, View } from '../src/engine';
-import { aGalaxy, aMotifLane, aLocation, aStart, loadedContentSet } from './support/content';
+import {
+  aGalaxy,
+  aMotifLane,
+  aLocation,
+  aStart,
+  aTradingGalaxy,
+  loadedContentSet,
+} from './support/content';
 import { started } from './support/campaign';
 
 /**
@@ -68,6 +75,23 @@ describe('determinism', () => {
     const content = aFlyableGalaxy();
 
     expect(play(content, 20261022, A_JOURNEY)).toEqual(play(content, 20261022, A_JOURNEY));
+  });
+
+  it('replays a command sequence that trades, which is also the save', () => {
+    // Buying is a command and not an action (ADR 0005 decision 6), so it is in
+    // the sequence a save carries, and a replay has to deplete the same lots.
+    const content = loadedContentSet(aTradingGalaxy({ start: aStart({ credits: 500 }) }));
+    const trading: readonly Command[] = [
+      { kind: 'buy', lot: 'kestrel/silk', quantity: 2 },
+      { kind: 'buy', lot: 'kestrel/blanket', quantity: 5 },
+      { kind: 'depart', toId: 'bellwether' },
+      { kind: 'wait' },
+      { kind: 'wait' },
+    ];
+
+    const replayed = play(content, 20261022, trading);
+    expect(replayed).toEqual(play(content, 20261022, trading));
+    expect(replayed.hold.used).toBe(7);
   });
 
   it('does not depend on a shared generator: two campaigns in one process agree', () => {

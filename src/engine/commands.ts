@@ -30,7 +30,7 @@ export type Reason = {
     | 'cannot-afford-the-fare'
     | 'no-such-lot'
     | 'more-than-the-lot-holds'
-    | 'hold-is-full'
+    | 'not-enough-room'
     | 'cannot-afford-the-lot';
   readonly message: string;
 };

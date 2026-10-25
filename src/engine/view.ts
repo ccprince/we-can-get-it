@@ -52,7 +52,7 @@ export type LotView = {
 export type HoldView = {
   readonly capacity: number;
   readonly used: number;
-  /** One line a good, in good-id order. */
+  /** One line a good, in the order each first came aboard. */
   readonly cargo: readonly CargoView[];
 };
 
@@ -198,14 +198,7 @@ export function view(campaign: Campaign): View {
     chart: chartFor(campaign),
     today: { day: campaign.day, date: dateOf(calendar, campaign.day) },
     credits: { credits: campaign.credits },
-    hold: {
-      capacity: campaign.ship.hold,
-      used: holdUsed(campaign.cargo),
-      cargo: campaign.cargo.map(({ goodId, quantity }) => {
-        const good = goodNamed(galaxy, goodId);
-        return { good: good.name, kind: good.kind, quantity };
-      }),
-    },
+    hold: holdFor(campaign),
     digest:
       campaign.digest === null
         ? null
@@ -260,16 +253,31 @@ function nameOf(galaxy: DrawnGalaxy, locationId: string): string {
 
 function hereAt(campaign: Campaign, locationId: string): HereView {
   const { name, prose } = locationNamed(campaign.galaxy, locationId);
-  const lots = lotsHere(campaign).map((lot): LotView => {
-    const good = goodNamed(campaign.galaxy, lot.goodId);
-    return {
+  const lots = lotsHere(campaign).map(
+    (lot): LotView => ({
       lot: lot.id,
-      good: good.name,
-      kind: good.kind,
+      ...goodAndKind(campaign.galaxy, lot.goodId),
       quantity: lot.quantity,
       price: lot.price,
       mostYouCanBuy: mostYouCanBuy(campaign, lot),
-    };
-  });
+    }),
+  );
   return { name, prose, lots };
+}
+
+function holdFor(campaign: Campaign): HoldView {
+  return {
+    capacity: campaign.ship.hold,
+    used: holdUsed(campaign.cargo),
+    cargo: campaign.cargo.map(({ goodId, quantity }) => ({
+      ...goodAndKind(campaign.galaxy, goodId),
+      quantity,
+    })),
+  };
+}
+
+/** A good as a surface names it: its name, and its **kind**, which is public. */
+function goodAndKind(galaxy: DrawnGalaxy, goodId: string): Pick<CargoView, 'good' | 'kind'> {
+  const { name, kind } = goodNamed(galaxy, goodId);
+  return { good: name, kind };
 }
