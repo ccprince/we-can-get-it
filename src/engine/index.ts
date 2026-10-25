@@ -7,6 +7,7 @@
  *                                  | { ok: false, problems, reports }
  *   startCampaign(content, seed) -> { ok: true, campaign } | { ok: false, problems }
  *   takeCommand(campaign, cmd)   -> { campaign } | { rejected: Reason }
+ *   drawGalaxy(content, seed)    -> { ok: true, galaxy } | { ok: false, problems }
  *   view(campaign)               -> View
  *   identify(content)            -> string
  */
@@ -29,6 +30,10 @@ export type {
 } from './content';
 
 export { identify } from './identify';
+
+export { drawGalaxy } from './draw';
+export type { DrawReport } from './draw';
+export type { DrawnGalaxy } from './galaxy';
 
 export { startCampaign } from './campaign';
 export type { Campaign, Digest, DigestEntry, StartResult } from './campaign';

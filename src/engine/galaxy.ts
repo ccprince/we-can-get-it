@@ -1,10 +1,10 @@
-import type { Lane, Location } from './content';
+import type { Buyer, Good, Lane, Location } from './content';
 
 /**
  * The **drawn galaxy**: what the **draw** produced, and the whole of the galaxy
- * as far as the fiction is concerned (ADR 0008 decision 4). A location the
- * **reserve** holds and the draw did not place is **hidden**, and leaves no
- * trace in here at all.
+ * as far as the fiction is concerned (ADR 0008 decision 4). A location, kind,
+ * good or person the **reserve** holds and the draw did not take is
+ * **hidden**, and leaves no trace in here at all.
  *
  * It is campaign state rather than a read of the content set because it is
  * rolled per campaign from the seed: the content set holds the reserve, and
@@ -17,6 +17,12 @@ export type DrawnGalaxy = {
   readonly lanes: readonly Lane[];
   /** Where the campaign opens, which is a location the draw placed. */
   readonly startId: string;
+  /** The **kinds** in circulation, in id order. A kind not among them is hidden. */
+  readonly kinds: readonly string[];
+  /** The **goods** drawn, in id order: none of a kind out of circulation. */
+  readonly goods: readonly Good[];
+  /** The people drawn, in id order, each standing at a drawn location. */
+  readonly people: readonly Buyer[];
 };
 
 /**
