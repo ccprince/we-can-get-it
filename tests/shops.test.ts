@@ -1,69 +1,47 @@
 import { describe, expect, it } from 'vitest';
 import { view } from '../src/engine';
 import {
-  aBuyer,
-  aCatalogue,
   aDrawParameters,
   aGalaxy,
-  aGood,
   aLocation,
   aShopParameters,
-  aTag,
-  aWant,
+  aTradingGalaxy,
   loadedContentSet,
-  type RawObject,
 } from './support/content';
 import { started } from './support/campaign';
 
 const SEED = 20261024;
 
-/**
- * Kestrel supplies cloth and Bellwether supplies tools: two kinds, so that a
- * shop stocking the wrong one has something wrong to stock. `aCatalogue`'s
- * cloth, and two tools a buyer wants so the vocabulary is used.
- */
-function aTradingGalaxy(overrides: RawObject = {}): RawObject {
-  const catalogue = aCatalogue();
-  return {
-    ...catalogue,
-    ...aGalaxy({
-      locations: [
-        aLocation({ supplies: ['cloth'] }),
-        aLocation({
-          id: 'bellwether',
-          name: 'Bellwether Yards',
-          prose: 'A repair yard.',
-          supplies: ['tools'],
-        }),
-      ],
-    }),
-    tags: [...(catalogue.tags as RawObject[]), aTag({ id: 'tools', tells: ['forged'] })],
-    goods: [
-      ...(catalogue.goods as RawObject[]),
-      aGood({ id: 'spanner', name: 'Spanner', prose: 'Forged.', kind: 'tools', worth: 12 }),
-      aGood({ id: 'vice', name: 'Bench vice', prose: 'Forged iron.', kind: 'tools', worth: 60 }),
-    ],
-    buyers: [
-      aBuyer(),
-      aBuyer({
-        id: 'osk',
-        name: 'Osk',
-        wants: [aWant({ predicate: [{ tag: 'tools' }] })],
-        bonusTags: [],
-      }),
-    ],
-    ...overrides,
-  };
-}
-
 describe('the shop where the player is', () => {
   it('stocks lots of the kinds its archetype supplies, and of nothing else', () => {
     const lots = view(started(loadedContentSet(aTradingGalaxy()), SEED)).here?.lots;
 
+    // 180 credits buys every unit of a lot but the silk's, at four.
     expect(lots).toEqual([
-      { lot: 'kestrel/blanket', good: 'Ship blanket', kind: 'cloth', quantity: 5, price: 25 },
-      { lot: 'kestrel/quilt', good: 'Quilted roll', kind: 'cloth', quantity: 5, price: 30 },
-      { lot: 'kestrel/silk', good: 'Bolt of silk', kind: 'cloth', quantity: 5, price: 40 },
+      {
+        lot: 'kestrel/blanket',
+        good: 'Ship blanket',
+        kind: 'cloth',
+        quantity: 5,
+        price: 25,
+        mostYouCanBuy: 5,
+      },
+      {
+        lot: 'kestrel/quilt',
+        good: 'Quilted roll',
+        kind: 'cloth',
+        quantity: 5,
+        price: 30,
+        mostYouCanBuy: 5,
+      },
+      {
+        lot: 'kestrel/silk',
+        good: 'Bolt of silk',
+        kind: 'cloth',
+        quantity: 5,
+        price: 40,
+        mostYouCanBuy: 4,
+      },
     ]);
   });
 

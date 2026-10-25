@@ -40,6 +40,12 @@ export type Whereabouts =
   | { readonly kind: 'at'; readonly locationId: string }
   | { readonly kind: 'in-transit'; readonly leg: Leg };
 
+/** Units of one good aboard, in the **hold**. */
+export type Cargo = {
+  readonly goodId: string;
+  readonly quantity: number;
+};
+
 /**
  * A campaign is an immutable value and the engine's functions are pure
  * (ADR 0003 decision 1): `takeCommand` returns a new campaign, which is what
@@ -72,6 +78,8 @@ export type Campaign = {
    * the rest of the campaign.
    */
   readonly lots: readonly Lot[];
+  /** What is in the **hold**: one entry a good, in good-id order, and none of nothing. */
+  readonly cargo: readonly Cargo[];
   /** The day that has just ended. Null until one has. */
   readonly digest: Digest | null;
 };
@@ -106,6 +114,7 @@ export function startCampaign(content: ContentSet, seed: number): StartResult {
       credits: content.start.credits,
       ship: content.start.ship,
       lots,
+      cargo: [],
       digest: null,
     },
   };

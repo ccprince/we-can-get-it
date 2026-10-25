@@ -367,3 +367,43 @@ export function aCatalogue(overrides: RawObject = {}): RawObject {
     ...overrides,
   };
 }
+
+/**
+ * The smallest galaxy with something to trade, and somewhere to fly it. Kestrel
+ * supplies cloth and Bellwether supplies tools: two kinds, so that a shop
+ * stocking the wrong one has something wrong to stock. `aCatalogue`'s cloth,
+ * and two tools a buyer wants so the vocabulary is used.
+ */
+export function aTradingGalaxy(overrides: RawObject = {}): RawObject {
+  const catalogue = aCatalogue();
+  return {
+    ...catalogue,
+    ...aGalaxy({
+      locations: [
+        aLocation({ supplies: ['cloth'] }),
+        aLocation({
+          id: 'bellwether',
+          name: 'Bellwether Yards',
+          prose: 'A repair yard.',
+          supplies: ['tools'],
+        }),
+      ],
+    }),
+    tags: [...(catalogue.tags as RawObject[]), aTag({ id: 'tools', tells: ['forged'] })],
+    goods: [
+      ...(catalogue.goods as RawObject[]),
+      aGood({ id: 'spanner', name: 'Spanner', prose: 'Forged.', kind: 'tools', worth: 12 }),
+      aGood({ id: 'vice', name: 'Bench vice', prose: 'Forged iron.', kind: 'tools', worth: 60 }),
+    ],
+    buyers: [
+      aBuyer(),
+      aBuyer({
+        id: 'osk',
+        name: 'Osk',
+        wants: [aWant({ predicate: [{ tag: 'tools' }] })],
+        bonusTags: [],
+      }),
+    ],
+    ...overrides,
+  };
+}

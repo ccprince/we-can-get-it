@@ -43,10 +43,12 @@ export type { Command, CommandResult, Reason } from './commands';
 
 export { view } from './view';
 export type {
+  CargoView,
   ChartView,
   CreditsView,
   DigestView,
   HereView,
+  HoldView,
   LaneView,
   LocationView,
   LotView,
