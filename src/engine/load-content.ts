@@ -17,6 +17,7 @@ import {
   type Month,
   type Range,
   type Ship,
+  type ShopParameters,
   type Slot,
   type Start,
   type Tag,
@@ -67,6 +68,7 @@ export function loadContent(raw: unknown): LoadResult {
   const fareRate = readInteger(raw.fareRate, 'fareRate', 1, problems);
   const calendar = readCalendar(raw.calendar, problems, reports);
   const drawParameters = readDrawParameters(raw.drawParameters, problems);
+  const shops = readShopParameters(raw.shops, problems);
   const archetypes = readArchetypes(raw.archetypes, problems);
   // A location is authored with an archetype and a slot types against one, so
   // an enumeration that did not read leaves both unchecked rather than failing
@@ -130,6 +132,7 @@ export function loadContent(raw: unknown): LoadResult {
   if (
     bounds === undefined ||
     drawParameters === undefined ||
+    shops === undefined ||
     fareRate === undefined ||
     calendar === undefined ||
     archetypes === undefined ||
@@ -149,6 +152,7 @@ export function loadContent(raw: unknown): LoadResult {
     content: inIdOrder({
       bounds,
       drawParameters,
+      shops,
       fareRate,
       calendar,
       archetypes,
@@ -440,6 +444,35 @@ function readDrawParameters(raw: unknown, problems: Problem[]): DrawParameters |
     goodsHiddenPercent,
     peopleHiddenPercent,
   };
+}
+
+function readShopParameters(raw: unknown, problems: Problem[]): ShopParameters | undefined {
+  if (!isObject(raw)) {
+    problems.push(fails('shops', 'is missing'));
+    return undefined;
+  }
+
+  const lotsPerShop = readRange(raw.lotsPerShop, 'shops.lotsPerShop', problems);
+  const lotQuantity = readRange(raw.lotQuantity, 'shops.lotQuantity', problems);
+  const markupPercent = readRange(raw.markupPercent, 'shops.markupPercent', problems);
+  const scarcityPercent = readInteger(raw.scarcityPercent, 'shops.scarcityPercent', 0, problems);
+  if (
+    lotsPerShop === undefined ||
+    lotQuantity === undefined ||
+    markupPercent === undefined ||
+    scarcityPercent === undefined
+  ) {
+    return undefined;
+  }
+
+  // A lot is finite and depletable, so one that opens empty is already gone.
+  if (lotQuantity.least < 1) {
+    problems.push(
+      fails('shops.lotQuantity.least', `is ${lotQuantity.least}, which is less than 1`),
+    );
+    return undefined;
+  }
+  return { lotsPerShop, lotQuantity, markupPercent, scarcityPercent };
 }
 
 /** A whole percentage: none, all, or something between. */
@@ -1007,9 +1040,10 @@ function readStart(raw: unknown, problems: Problem[]): Start | undefined {
 }
 
 /**
- * The ship the campaign opens with. Both numbers are the content set's, since
+ * The ship the campaign opens with. Every number is the content set's, since
  * the engine hardcodes none (ADR 0007 decision 15): a ship with no speed could
- * not convert a distance into days, and one with no range could fly nothing.
+ * not convert a distance into days, one with no range could fly nothing, and
+ * one with no hold could carry nothing.
  */
 function readShip(raw: unknown, where: string, problems: Problem[]): Ship | undefined {
   if (!isObject(raw)) {
@@ -1019,6 +1053,7 @@ function readShip(raw: unknown, where: string, problems: Problem[]): Ship | unde
 
   const speed = readInteger(raw.speed, `${where}.speed`, 1, problems);
   const range = readInteger(raw.range, `${where}.range`, 1, problems);
-  if (speed === undefined || range === undefined) return undefined;
-  return { speed, range };
+  const hold = readInteger(raw.hold, `${where}.hold`, 1, problems);
+  if (speed === undefined || range === undefined || hold === undefined) return undefined;
+  return { speed, range, hold };
 }

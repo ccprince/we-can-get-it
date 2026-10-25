@@ -65,6 +65,21 @@
     "goodsHiddenPercent": 33,
     "peopleHiddenPercent": 33
   },
+  "shops": {
+    "lotsPerShop": {
+      "least": 1,
+      "most": 3
+    },
+    "lotQuantity": {
+      "least": 2,
+      "most": 8
+    },
+    "markupPercent": {
+      "least": 0,
+      "most": 40
+    },
+    "scarcityPercent": 30
+  },
   "archetypes": [
     {
       "id": "extractor",
@@ -195,7 +210,8 @@
     "day": 1,
     "ship": {
       "speed": 4,
-      "range": 20
+      "range": 20,
+      "hold": 12
     }
   }
 }

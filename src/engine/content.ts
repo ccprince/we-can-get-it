@@ -99,15 +99,21 @@ export type Motif = {
 };
 
 /**
- * The baseline ship, in the two of its three independent purchases the map
- * feels: **speed** is **distance** per day and **range** the largest distance
- * it can fly in one **leg** (ADR 0006 decision 9). The **hold** is the third,
- * and is #14's. Ship upgrades are outside this milestone, so the ship a
- * campaign opens with is the ship it has.
+ * The baseline ship, in its three independent purchases (ADR 0006 decision
+ * 9): **speed** is **distance** per day, **range** the largest distance it can
+ * fly in one **leg**, and the **hold** how many units of cargo it carries.
+ * Ship upgrades are outside this milestone, so the ship a campaign opens with
+ * is the ship it has.
  */
 export type Ship = {
   readonly speed: number;
   readonly range: number;
+  /**
+   * Units of cargo, one to a unit of any good. No good is too small to take
+   * room: pocket goods that took none made a speculative buy a bet that could
+   * not be lost (findings §2.1).
+   */
+  readonly hold: number;
 };
 
 /**
@@ -324,6 +330,33 @@ export type DrawParameters = {
 };
 
 /**
+ * What a content set declares about its shops (ADR 0007 decision 15): how
+ * they are stocked at campaign start, and the two percentages a price is
+ * computed from. A price is computed from a good's **worth**, the shop's
+ * location and the lot's stock, and is never authored per lot (#14).
+ */
+export type ShopParameters = {
+  /**
+   * How many **lots** a shop stocks, drawn per shop. A shop with fewer goods
+   * to offer than it draws stocks all of them.
+   */
+  readonly lotsPerShop: Range;
+  /** The units a lot opens with, drawn per lot. A lot is finite and depletable. */
+  readonly lotQuantity: Range;
+  /**
+   * What a shop charges above worth, in whole percent, drawn per location: the
+   * part of a price that is where it is sold.
+   */
+  readonly markupPercent: Range;
+  /**
+   * The most a lot adds, in whole percent, for being small: a lot opening at
+   * `lotQuantity.most` adds nothing, and one opening smaller adds its shortfall's
+   * share of this. The part of a price that is stock.
+   */
+  readonly scarcityPercent: number;
+};
+
+/**
  * A content set as the loader hands it over, **in id order**: every collection
  * of things with an authored id (archetypes, motifs, locations, tags, goods and
  * buyers, a motif's slots) is sorted by that id, and a motif's lanes by their
@@ -340,6 +373,7 @@ export type DrawParameters = {
 export type ContentSet = {
   readonly bounds: Bounds;
   readonly drawParameters: DrawParameters;
+  readonly shops: ShopParameters;
   /**
    * The one galaxy-wide rate a **fare** is the **distance** times (ADR 0006
    * decision 10). Authored per-lane tariffs and regional rates were rejected
