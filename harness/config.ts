@@ -1,4 +1,4 @@
-import { readJson } from './files';
+import { readJson } from '../tools/files';
 
 /**
  * The harness's own config, read from its own file (ADR 0009 decision 5). It is

@@ -2,8 +2,9 @@ import { drawGalaxy, loadContent } from '../src/engine';
 import type { ContentSet, DrawnGalaxy } from '../src/engine';
 // A content set read off disk reads the same here as it does for the harness,
 // and an unreadable path should say the same thing to both (#8). One message
-// beats two that drift.
-import { readJson } from '../harness/files';
+// beats two that drift, and it sits on this side of the line because the
+// harness is the throw-away one.
+import { readJson } from './files';
 
 /**
  * The **seed-finder**: given a content set, a predicate over a drawn galaxy and
