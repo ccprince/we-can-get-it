@@ -183,9 +183,9 @@ export const drawChecks: readonly DrawCheck[] = [
     where: 'bounds.goodsPerRoleTag',
     miss: (galaxy, content) => {
       const { least } = content.bounds.goodsPerRoleTag;
-      const thin = [...roleTags({ buyers: buyersAtDrawnLocations(galaxy, content) })]
-        .filter((tag) => goodsCarrying(galaxy, tag) > 0 && goodsCarrying(galaxy, tag) < least)
-        .sort();
+      const thin = [...roleTags({ buyers: buyersAtDrawnLocations(galaxy, content) })].filter(
+        (tag) => goodsCarrying(galaxy, tag) > 0 && goodsCarrying(galaxy, tag) < least,
+      );
       return thin.length === 0
         ? null
         : `${thin.join(', ')} held in a role but sat on fewer than ${least} drawn goods`;

@@ -40,7 +40,12 @@ function galaxyOf(content: ContentSet, seed: number): DrawnGalaxy {
   return result.galaxy;
 }
 
-/** A registered check, by the invariant it names. */
+/**
+ * A registered check, by the invariant it names. Reaches past the seam on
+ * purpose, for the three checks no content set can trip through it: the draw
+ * and the static validator already guarantee them, and these are what catch
+ * either one drifting.
+ */
 function checkNamed(invariant: string) {
   const check = drawChecks.find((registered) => registered.invariant === invariant);
   if (check === undefined) throw new Error(`no check is registered for ${invariant}`);
