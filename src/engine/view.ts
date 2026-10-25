@@ -4,6 +4,7 @@ import { departureTo, offeredCommands, type Command } from './commands';
 import type { Lane } from './content';
 import { goodNamed, locationNamed, type DrawnGalaxy } from './galaxy';
 import { daysToFly, fareToFly, otherEnd, withinRange } from './map';
+import { holdUsed, lotsHere, mostYouCanBuy } from './trade';
 
 /**
  * Every surface renders a read model handed to it by one engine query, and the
@@ -36,6 +37,29 @@ export type LotView = {
   readonly kind: string;
   readonly quantity: number;
   readonly price: number;
+  /**
+   * The most units the player could buy now: the fewest of what the lot holds,
+   * what the **hold** has room for, and what the credits cover. The same
+   * reading a buy is refused by, so the shop never offers what would be refused.
+   */
+  readonly mostYouCanBuy: number;
+};
+
+/**
+ * The **hold**, which is a real constraint and not an advisory number: a buy
+ * the room will not take is refused. One unit of any good is one unit of hold.
+ */
+export type HoldView = {
+  readonly capacity: number;
+  readonly used: number;
+  /** One line a good, in good-id order. */
+  readonly cargo: readonly CargoView[];
+};
+
+export type CargoView = {
+  readonly good: string;
+  readonly kind: string;
+  readonly quantity: number;
 };
 
 /**
@@ -150,6 +174,7 @@ export type View = {
   readonly chart: ChartView;
   readonly today: TodayView;
   readonly credits: CreditsView;
+  readonly hold: HoldView;
   readonly digest: DigestView | null;
   readonly menu: MenuView;
 };
@@ -173,6 +198,14 @@ export function view(campaign: Campaign): View {
     chart: chartFor(campaign),
     today: { day: campaign.day, date: dateOf(calendar, campaign.day) },
     credits: { credits: campaign.credits },
+    hold: {
+      capacity: campaign.ship.hold,
+      used: holdUsed(campaign.cargo),
+      cargo: campaign.cargo.map(({ goodId, quantity }) => {
+        const good = goodNamed(galaxy, goodId);
+        return { good: good.name, kind: good.kind, quantity };
+      }),
+    },
     digest:
       campaign.digest === null
         ? null
@@ -227,11 +260,16 @@ function nameOf(galaxy: DrawnGalaxy, locationId: string): string {
 
 function hereAt(campaign: Campaign, locationId: string): HereView {
   const { name, prose } = locationNamed(campaign.galaxy, locationId);
-  const lots = campaign.lots
-    .filter((lot) => lot.locationId === locationId)
-    .map(({ id, goodId, quantity, price }): LotView => {
-      const good = goodNamed(campaign.galaxy, goodId);
-      return { lot: id, good: good.name, kind: good.kind, quantity, price };
-    });
+  const lots = lotsHere(campaign).map((lot): LotView => {
+    const good = goodNamed(campaign.galaxy, lot.goodId);
+    return {
+      lot: lot.id,
+      good: good.name,
+      kind: good.kind,
+      quantity: lot.quantity,
+      price: lot.price,
+      mostYouCanBuy: mostYouCanBuy(campaign, lot),
+    };
+  });
   return { name, prose, lots };
 }

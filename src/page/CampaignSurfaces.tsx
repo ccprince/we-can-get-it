@@ -177,5 +177,10 @@ function wordCommand(command: Command): string {
     // and fare are read beside it; the menu never carries one (#9).
     case 'depart':
       return 'Depart';
+
+    // A buy is worded in the shop, beside the lot it names; the menu never
+    // carries one, since trade is not an action (ADR 0005 decision 6).
+    case 'buy':
+      return 'Buy';
   }
 }
