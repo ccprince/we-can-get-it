@@ -78,7 +78,18 @@ day, and `distance × fareRate` in credits.
 
 A galaxy with no lanes is legal, because a content set may hold one location and go nowhere. Whether
 a *drawn* map is **connected at baseline range**, has its chokepoints and spurs, and satisfies the
-start-node guarantee are the draw-time pass's checks (#12), not this file's.
+start-node guarantee are the draw-time pass's checks (#45), declared under `topology`.
+
+### `topology`
+
+What the **drawn galaxy's** topology must hold, checked after the map is assembled and re-rolling
+the motif selection on a miss (ADR 0006 decision 3, ADR 0008 decision 17). Every **motif** names its
+`shape` — `spur`, `chokepoint`, `ring` or `cluster` — and a shape outside that list fails the load.
+
+| Field | What it declares |
+| --- | --- |
+| `leastPlaced` | The **motif invariants**: at least so many placed motifs of each shape. Every shape is named, `0` for one the map need not hold. |
+| `farHaul` | The far cluster no nearer than this: the longest lane *between* motifs must be at least this long (ADR 0008 decision 6). `0` asks for none. |
 
 ### `fareRate`
 
@@ -161,11 +172,11 @@ The content set the page hand-plays and the harness measures, grown one ticket a
 writes the one that answers the milestone's question. It began as the trivial content set of #7 — one
 location, no goods — which existed to prove the path through every layer and nothing else.
 
-It now holds **six locations and six lanes**, hand-written rather than assembled from **motifs**,
-which is #11. The shape is deliberate and is there to be read in hand-play: a start with three
-neighbours, a ring through Thennet Shoals and Caravel Station that offers a long way round, a
-**spur** at Grieve's Hollow that must be flown out and back, and one lane out to Lamentation that is
-**beyond baseline range** — the wall with a price on it (ADR 0006 decision 14).
+It now holds **twelve locations and three motifs**, of which a campaign places three, duplicates
+included: a **chokepoint** crossing, a **ring** of three, and a **spur** whose junction is a market
+with three neighbours, one of them the dead end — which is what lets a campaign open where ADR 0006
+decision 16 says it must (#45). Every lane, inside a motif and between them, is within baseline
+range, so the drawn map is connected end to end.
 
 Its catalogue is a **placeholder** so the shops have something to stock (#14): three kinds, one
 supplied by each archetype, three goods each and no other tags, and one buyer wanting each kind only

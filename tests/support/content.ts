@@ -60,11 +60,14 @@ export function aSlot(overrides: RawObject = {}): RawObject {
 
 /**
  * The smallest **motif** there is: one slot and no lanes, which is the fragment
- * the trivial content set of #7 assembles its one-place galaxy from.
+ * the trivial content set of #7 assembles its one-place galaxy from. A
+ * **cluster** by default, since no motif invariant asks for one: a test about
+ * shapes states the shape it means.
  */
 export function aMotif(overrides: RawObject = {}): RawObject {
   return {
     id: 'lone-berth',
+    shape: 'cluster',
     slots: [aSlot()],
     lanes: [],
     ...overrides,
@@ -104,6 +107,27 @@ export function aDrawParameters(overrides: RawObject = {}): RawObject {
     goodsHiddenPercent: 0,
     peopleHiddenPercent: 0,
     ...overrides,
+  };
+}
+
+/**
+ * What the drawn galaxy's topology must hold (ADR 0006 decision 3): nothing,
+ * by default, so a fixture about something else is never re-rolled for a shape
+ * it has no motif of. A test about an invariant states the one it means, and
+ * names only the shapes it asks for.
+ */
+export function aTopology(overrides: RawObject = {}): RawObject {
+  const { leastPlaced, ...rest } = overrides;
+  return {
+    leastPlaced: {
+      spur: 0,
+      chokepoint: 0,
+      ring: 0,
+      cluster: 0,
+      ...(leastPlaced as RawObject | undefined),
+    },
+    farHaul: 0,
+    ...rest,
   };
 }
 
@@ -183,6 +207,7 @@ export function aContentSet(overrides: RawObject = {}): RawObject {
     archetypes: [anArchetype(), anArchetype({ id: 'extractor' }), anArchetype({ id: 'processor' })],
     motifs: [aMotif()],
     drawParameters: aDrawParameters(),
+    topology: aTopology(),
     shops: aShopParameters(),
     locations: [aLocation()],
     tags: [],
@@ -265,6 +290,7 @@ export function aGalaxy(overrides: RawObject = {}): RawObject {
     motifs: [
       {
         id: 'the-whole-map',
+        shape: 'cluster',
         slots: placed.map(({ location }) => ({
           id: slotOf.get(location.id),
           archetype: location.archetype,

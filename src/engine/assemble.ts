@@ -1,5 +1,6 @@
 import type { ContentSet, Lane, Location, Motif, Range, Slot } from './content';
 import type { Attempt } from './draw-checks';
+import type { PlacedMotif } from './galaxy';
 import { drawFrom, drawWithin, type Rng } from './rng';
 
 /**
@@ -34,6 +35,7 @@ export function assembleMap(content: ContentSet, rng: Rng): Attempt {
     // The map is the first stage, so nothing below it is filled yet.
     galaxy: {
       locations,
+      motifs: placed.map(recordOf),
       lanes,
       startId: hubOf(locations, lanes),
       kinds: [],
@@ -178,6 +180,18 @@ function joinMotifs(
   }
 
   return [lanes, next];
+}
+
+/** What the galaxy keeps of a placement, for the invariants to read. */
+function recordOf(placed: Placement): PlacedMotif {
+  return {
+    motif: placed.motif.id,
+    shape: placed.motif.shape,
+    slots: placed.motif.slots.flatMap((slot) => {
+      const location = placed.filled.get(slot.id);
+      return location === undefined ? [] : [{ slot: slot.id, location }];
+    }),
+  };
 }
 
 /** A placed motif's own lanes, with its drawn locations at their ends. */

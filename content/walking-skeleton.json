@@ -52,18 +52,27 @@
     "firstYear": 1
   },
   "drawParameters": {
-    "motifsPerCampaign": 2,
+    "motifsPerCampaign": 3,
     "interMotifDistance": {
       "least": 12,
       "most": 20
     },
     "locationCount": {
-      "least": 4,
-      "most": 6
+      "least": 9,
+      "most": 12
     },
-    "rerolls": 8,
+    "rerolls": 24,
     "goodsHiddenPercent": 33,
     "peopleHiddenPercent": 33
+  },
+  "topology": {
+    "leastPlaced": {
+      "spur": 1,
+      "chokepoint": 1,
+      "ring": 0,
+      "cluster": 0
+    },
+    "farHaul": 16
   },
   "shops": {
     "lotsPerShop": {
@@ -99,67 +108,98 @@
   ],
   "motifs": [
     {
-      "id": "pair",
-      "slots": [
-        {
-          "id": "hub",
-          "archetype": "market"
-        },
-        {
-          "id": "outpost",
-          "archetype": null
-        }
-      ],
-      "lanes": [
-        {
-          "ends": ["hub", "outpost"],
-          "distance": 6
-        }
-      ]
-    },
-    {
-      "id": "spur",
-      "slots": [
-        {
-          "id": "junction",
-          "archetype": "processor"
-        },
-        {
-          "id": "dead-end",
-          "archetype": "extractor"
-        }
-      ],
-      "lanes": [
-        {
-          "ends": ["junction", "dead-end"],
-          "distance": 16
-        }
-      ]
-    },
-    {
-      "id": "chain",
+      "id": "crossing",
+      "shape": "chokepoint",
       "slots": [
         {
           "id": "gate",
           "archetype": "market"
         },
         {
-          "id": "middle",
-          "archetype": null
+          "id": "east",
+          "archetype": "processor"
         },
         {
-          "id": "far",
-          "archetype": "extractor"
+          "id": "west",
+          "archetype": null
         }
       ],
       "lanes": [
         {
-          "ends": ["gate", "middle"],
-          "distance": 3
+          "ends": ["gate", "east"],
+          "distance": 9
         },
         {
-          "ends": ["middle", "far"],
-          "distance": 11
+          "ends": ["gate", "west"],
+          "distance": 4
+        }
+      ]
+    },
+    {
+      "id": "loop",
+      "shape": "ring",
+      "slots": [
+        {
+          "id": "landing",
+          "archetype": "market"
+        },
+        {
+          "id": "pits",
+          "archetype": "extractor"
+        },
+        {
+          "id": "yard",
+          "archetype": null
+        }
+      ],
+      "lanes": [
+        {
+          "ends": ["landing", "pits"],
+          "distance": 10
+        },
+        {
+          "ends": ["landing", "yard"],
+          "distance": 6
+        },
+        {
+          "ends": ["pits", "yard"],
+          "distance": 7
+        }
+      ]
+    },
+    {
+      "id": "spur",
+      "shape": "spur",
+      "slots": [
+        {
+          "id": "junction",
+          "archetype": "market"
+        },
+        {
+          "id": "approach",
+          "archetype": "processor"
+        },
+        {
+          "id": "dead-end",
+          "archetype": "extractor"
+        },
+        {
+          "id": "roads",
+          "archetype": null
+        }
+      ],
+      "lanes": [
+        {
+          "ends": ["junction", "approach"],
+          "distance": 5
+        },
+        {
+          "ends": ["junction", "dead-end"],
+          "distance": 16
+        },
+        {
+          "ends": ["junction", "roads"],
+          "distance": 3
         }
       ]
     }
@@ -199,6 +239,42 @@
       "id": "lament",
       "name": "Lamentation",
       "prose": "Far enough out that the chart draws it apart from everything, and spoken of at Caravel the way people speak of weather in a country they have never visited.",
+      "archetype": "extractor"
+    },
+    {
+      "id": "tallow",
+      "name": "Tallow Cross",
+      "prose": "Four gates and a market square laid across the middle of them, so that nobody passes through without being sold something on the way.",
+      "archetype": "market"
+    },
+    {
+      "id": "quay",
+      "name": "Mercy Quay",
+      "prose": "A long dock of a station where the berths are let by the hour and the hours are argued over.",
+      "archetype": "market"
+    },
+    {
+      "id": "anvil",
+      "name": "Anvil Deep",
+      "prose": "Foundries sunk into an asteroid's core, where the night shift is the only shift and the slag glows for a week.",
+      "archetype": "processor"
+    },
+    {
+      "id": "spindleworks",
+      "name": "The Spindleworks",
+      "prose": "A mill town of turning drums and lint-thick air, which buys raw and sells it back finished at a price it calls fair.",
+      "archetype": "processor"
+    },
+    {
+      "id": "cinder",
+      "name": "Cinder Reach",
+      "prose": "A burnt-out world still worth digging, where the pits run warm and the diggers keep their own reckoning of the days.",
+      "archetype": "extractor"
+    },
+    {
+      "id": "tithe",
+      "name": "Tithe Rock",
+      "prose": "A claim the size of a county, worked by three families who have not agreed about anything in a generation.",
       "archetype": "extractor"
     }
   ],

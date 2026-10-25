@@ -2,6 +2,7 @@ import { daysPerYear } from './calendar';
 import { checkContentSet } from './content-checks';
 import { reportsOn } from './content-reports';
 import {
+  shapes,
   tagClasses,
   within,
   type Bounds,
@@ -16,11 +17,13 @@ import {
   type MotifLane,
   type Month,
   type Range,
+  type Shape,
   type Ship,
   type ShopParameters,
   type Slot,
   type Start,
   type Tag,
+  type Topology,
   type TagClass,
   type Term,
   type Want,
@@ -68,6 +71,7 @@ export function loadContent(raw: unknown): LoadResult {
   const fareRate = readInteger(raw.fareRate, 'fareRate', 1, problems);
   const calendar = readCalendar(raw.calendar, problems, reports);
   const drawParameters = readDrawParameters(raw.drawParameters, problems);
+  const topology = readTopology(raw.topology, problems);
   const shops = readShopParameters(raw.shops, problems);
   const archetypes = readArchetypes(raw.archetypes, problems);
   // A location is authored with an archetype and a slot types against one, so
@@ -132,6 +136,7 @@ export function loadContent(raw: unknown): LoadResult {
   if (
     bounds === undefined ||
     drawParameters === undefined ||
+    topology === undefined ||
     shops === undefined ||
     fareRate === undefined ||
     calendar === undefined ||
@@ -152,6 +157,7 @@ export function loadContent(raw: unknown): LoadResult {
     content: inIdOrder({
       bounds,
       drawParameters,
+      topology,
       shops,
       fareRate,
       calendar,
@@ -447,6 +453,51 @@ function readDrawParameters(raw: unknown, problems: Problem[]): DrawParameters |
   };
 }
 
+/**
+ * What the drawn galaxy's topology must hold. Every shape's minimum is stated,
+ * since the engine holds no number of its own to default one to (ADR 0007
+ * decision 15), and a shape it does not know is a typo the invariants would
+ * never count.
+ */
+function readTopology(raw: unknown, problems: Problem[]): Topology | undefined {
+  if (!isObject(raw)) {
+    problems.push(fails('topology', 'is missing'));
+    return undefined;
+  }
+
+  const leastPlaced = readLeastPlaced(raw.leastPlaced, problems);
+  const farHaul = readInteger(raw.farHaul, 'topology.farHaul', 0, problems);
+  if (leastPlaced === undefined || farHaul === undefined) return undefined;
+  return { leastPlaced, farHaul };
+}
+
+function readLeastPlaced(raw: unknown, problems: Problem[]): Topology['leastPlaced'] | undefined {
+  const where = 'topology.leastPlaced';
+  if (!isObject(raw)) {
+    problems.push(fails(where, 'is missing'));
+    return undefined;
+  }
+
+  const unknown = Object.keys(raw).filter((key) => !shapes.some((shape) => shape === key));
+  for (const key of unknown) {
+    problems.push(fails(`${where}.${key}`, 'names a shape that does not exist'));
+  }
+  const spur = readInteger(raw.spur, `${where}.spur`, 0, problems);
+  const chokepoint = readInteger(raw.chokepoint, `${where}.chokepoint`, 0, problems);
+  const ring = readInteger(raw.ring, `${where}.ring`, 0, problems);
+  const cluster = readInteger(raw.cluster, `${where}.cluster`, 0, problems);
+  if (
+    unknown.length > 0 ||
+    spur === undefined ||
+    chokepoint === undefined ||
+    ring === undefined ||
+    cluster === undefined
+  ) {
+    return undefined;
+  }
+  return { spur, chokepoint, ring, cluster };
+}
+
 function readShopParameters(raw: unknown, problems: Problem[]): ShopParameters | undefined {
   if (!isObject(raw)) {
     problems.push(fails('shops', 'is missing'));
@@ -581,6 +632,7 @@ function readMotifs(
 ): readonly Motif[] | undefined {
   const motifs = readEach(raw, 'motifs', problems, (entry, where) => {
     const id = readText(entry.id, `${where}.id`, problems);
+    const shape = readShape(entry.shape, `${where}.shape`, problems);
     const slots = readSlots(entry.slots, `${where}.slots`, archetypes, problems);
     // A motif's lanes name its own slots, so slots that did not read leave the
     // lanes unread rather than failing every one of them against nothing.
@@ -588,8 +640,10 @@ function readMotifs(
       slots === undefined
         ? undefined
         : readMotifLanes(entry.lanes, `${where}.lanes`, slots, problems);
-    if (id === undefined || slots === undefined || lanes === undefined) return undefined;
-    return { id, slots, lanes };
+    if (id === undefined || shape === undefined || slots === undefined || lanes === undefined) {
+      return undefined;
+    }
+    return { id, shape, slots, lanes };
   });
 
   if (motifs !== undefined && motifs.length === 0) {
@@ -628,6 +682,17 @@ function unfillableSlots(
           ],
     ),
   );
+}
+
+function readShape(value: unknown, where: string, problems: Problem[]): Shape | undefined {
+  const named = shapes.find((shape) => shape === value);
+  if (named === undefined) {
+    problems.push(
+      fails(where, `is ${String(value)}, which is not spur, chokepoint, ring or cluster`),
+    );
+    return undefined;
+  }
+  return named;
 }
 
 /** A motif's slots. A motif with none of them would place no locations. */

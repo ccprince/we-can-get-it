@@ -18,6 +18,7 @@ import {
   aSlot,
   aStart,
   aTag,
+  aTopology,
   aWant,
 } from './support/content';
 
@@ -107,6 +108,7 @@ describe('loadContent', () => {
       'fareRate',
       'calendar',
       'drawParameters',
+      'topology',
       'shops',
       'archetypes',
       'tags',
@@ -733,6 +735,38 @@ describe('the motifs the map is assembled from', () => {
         verdict: 'fails',
         where: 'locations[0].archetype',
         what: 'names an archetype that does not exist: cathedral',
+      },
+    ]);
+  });
+
+  it('refuses a motif shape it does not know, since the invariants count by shape', () => {
+    // A motif names its shape from the short list ADR 0006 decision 3 gives,
+    // and a shape outside it is a typo the invariants would silently not count.
+    const result = loadContent(aContentSet({ motifs: [aMotif({ shape: 'horseshoe' })] }));
+
+    expect(result.ok).toBe(false);
+    if (result.ok) return;
+    expect(result.problems).toEqual([
+      {
+        verdict: 'fails',
+        where: 'motifs[0].shape',
+        what: 'is horseshoe, which is not spur, chokepoint, ring or cluster',
+      },
+    ]);
+  });
+
+  it('refuses a motif invariant for a shape that does not exist', () => {
+    // The invariants count placed motifs by shape, so a minimum for a shape no
+    // motif can have is one the draw could never meet, and a typo besides.
+    const result = loadContent(aContentSet({ topology: aTopology({ leastPlaced: { spurs: 1 } }) }));
+
+    expect(result.ok).toBe(false);
+    if (result.ok) return;
+    expect(result.problems).toEqual([
+      {
+        verdict: 'fails',
+        where: 'topology.leastPlaced.spurs',
+        what: 'names a shape that does not exist',
       },
     ]);
   });
