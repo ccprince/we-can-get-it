@@ -1,6 +1,7 @@
 import type { Campaign, DigestEntry, Leg, Whereabouts } from './campaign';
 import { locationNamed, type DrawnGalaxy } from './galaxy';
 import { daysToFly, fareToFly, laneBetween, withinRange } from './map';
+import { sell } from './selling';
 import { buy } from './trade';
 
 /**
@@ -14,7 +15,9 @@ export type Command =
   /** Fly the lane from where the player is to the location named. */
   | { readonly kind: 'depart'; readonly toId: string }
   /** Buy units of a lot on sale where the player is. Not an action. */
-  | { readonly kind: 'buy'; readonly lot: string; readonly quantity: number };
+  | { readonly kind: 'buy'; readonly lot: string; readonly quantity: number }
+  /** Sell a unit of a good aboard to someone here, against a want of theirs. Not an action. */
+  | { readonly kind: 'sell'; readonly want: string; readonly good: string };
 
 /**
  * Why a command was refused. A rejected command is a read the player gets, not
@@ -31,7 +34,10 @@ export type Reason = {
     | 'no-such-lot'
     | 'more-than-the-lot-holds'
     | 'not-enough-room'
-    | 'cannot-afford-the-lot';
+    | 'cannot-afford-the-lot'
+    | 'no-such-want'
+    | 'not-in-the-hold'
+    | 'refused-by-the-buyer';
   readonly message: string;
 };
 
@@ -135,6 +141,10 @@ export function takeCommand(campaign: Campaign, command: Command): CommandResult
     // Trade is not an action, so a buy leaves the day where it was (ADR 0005 d6).
     case 'buy':
       return buy(campaign, command.lot, command.quantity);
+
+    // Nor is a sale (ADR 0005 d6).
+    case 'sell':
+      return sell(campaign, command.want, command.good);
   }
 }
 
@@ -152,6 +162,10 @@ function isCommand(command: Command): boolean {
   const kind = (candidate as { kind?: unknown }).kind;
   if (kind === 'wait') return true;
   if (kind === 'depart') return typeof (candidate as { toId?: unknown }).toId === 'string';
+  if (kind === 'sell') {
+    const { want, good } = candidate as { want?: unknown; good?: unknown };
+    return typeof want === 'string' && typeof good === 'string';
+  }
   if (kind !== 'buy') return false;
   // A buy is of a whole number of units, at least one: a quantity of none or
   // less is not a smaller buy but no buy at all.

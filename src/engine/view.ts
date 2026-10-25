@@ -1,10 +1,11 @@
 import { dateOf, type CalendarDate } from './calendar';
 import type { Campaign, DigestEntry } from './campaign';
 import { departureTo, offeredCommands, type Command } from './commands';
-import type { Buyer, Lane, Want } from './content';
+import type { Lane } from './content';
 import { goodNamed, locationNamed, type DrawnGalaxy } from './galaxy';
 import { daysToFly, fareToFly, otherEnd, withinRange } from './map';
 import { offerFor, tierOf, type Tier } from './match';
+import { openWants, peopleHere, type OpenWant } from './selling';
 import { holdUsed, lotsHere, mostYouCanBuy } from './trade';
 
 /**
@@ -43,6 +44,8 @@ export type PersonView = {
  * between acceptable and great is something to aim at (#15).
  */
 export type WantView = {
+  /** What a sale names the want by. */
+  readonly want: string;
   readonly wording: string;
   /** One line a good aboard, in the order each first came aboard. */
   readonly matches: readonly MatchView[];
@@ -55,6 +58,12 @@ export type MatchView = {
   readonly offer: number | null;
   /** The buyer's own words for turning the good down; null unless refused. */
   readonly reason: string | null;
+  /**
+   * The sale of one unit of this good against the want. Handed over even when
+   * refused, so the player hears the buyer's reason from the engine rather than
+   * never being offered the chance (the way a buy the engine would refuse is).
+   */
+  readonly sell: Command;
 };
 
 /**
@@ -295,21 +304,20 @@ function hereAt(campaign: Campaign, locationId: string): HereView {
       mostYouCanBuy: mostYouCanBuy(campaign, lot),
     }),
   );
-  return { name, prose, lots, people: peopleAt(campaign, locationId) };
+  return { name, prose, lots, people: peopleAt(campaign) };
 }
 
-function peopleAt(campaign: Campaign, locationId: string): readonly PersonView[] {
-  return campaign.galaxy.people
-    .filter((buyer) => buyer.locationId === locationId)
-    .map((buyer) => ({
-      name: buyer.name,
-      wants: buyer.wants.map((want) => wantFor(campaign, buyer, want)),
-    }));
+function peopleAt(campaign: Campaign): readonly PersonView[] {
+  return peopleHere(campaign).map((buyer) => ({
+    name: buyer.name,
+    wants: openWants(campaign, buyer).map((open) => wantFor(campaign, open)),
+  }));
 }
 
-function wantFor(campaign: Campaign, buyer: Buyer, want: Want): WantView {
+function wantFor(campaign: Campaign, { id, buyer, want }: OpenWant): WantView {
   const { galaxy, content } = campaign;
   return {
+    want: id,
     wording: 'goodId' in want ? `wants ${goodNamed(galaxy, want.goodId).name}` : want.plainly,
     matches: campaign.cargo.map(({ goodId }) => {
       const good = goodNamed(galaxy, goodId);
@@ -319,6 +327,7 @@ function wantFor(campaign: Campaign, buyer: Buyer, want: Want): WantView {
         tier,
         offer: offerFor(good, tier, content.offers),
         reason: tier === 'refused' ? buyer.refusalLine : null,
+        sell: { kind: 'sell', want: id, good: goodId },
       };
     }),
   };

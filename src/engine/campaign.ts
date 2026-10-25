@@ -80,6 +80,11 @@ export type Campaign = {
   readonly lots: readonly Lot[];
   /** What is in the **hold**: one entry a good, in the order each first came aboard. */
   readonly cargo: readonly Cargo[];
+  /**
+   * The wants sold to, by the id a sale names them with, in the order they were
+   * closed. A want sold to stays closed for the rest of the campaign.
+   */
+  readonly closedWants: readonly string[];
   /** The day that has just ended. Null until one has. */
   readonly digest: Digest | null;
 };
@@ -115,6 +120,7 @@ export function startCampaign(content: ContentSet, seed: number): StartResult {
       ship: content.start.ship,
       lots,
       cargo: [],
+      closedWants: [],
       digest: null,
     },
   };

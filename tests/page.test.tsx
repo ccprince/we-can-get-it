@@ -14,6 +14,8 @@ import { isRejected, takeCommand, view } from '../src/engine';
 import type { Campaign, Command, ContentSet } from '../src/engine';
 import { CampaignSurfaces } from '../src/page/CampaignSurfaces';
 import {
+  aBuyer,
+  anElsewhereBuyer,
   aGalaxy,
   aMotifLane,
   aLocation,
@@ -267,5 +269,52 @@ describe('the shop and the hold', () => {
     surfaces({ campaign: after(atKestrel(), { kind: 'depart', toId: 'bellwether' }) });
 
     expect(screen.queryByRole('heading', { name: 'For sale' })).toBeNull();
+  });
+});
+
+describe('the people here', () => {
+  /** Ilse, at Kestrel, wants cloth and warm; the player holds a silk and a blanket. */
+  const holding = () =>
+    after(
+      started(
+        loadedContentSet(
+          aTradingGalaxy({
+            buyers: [aBuyer(), anElsewhereBuyer()],
+          }),
+        ),
+        SEED,
+      ),
+      { kind: 'buy', lot: 'kestrel/silk', quantity: 1 },
+      { kind: 'buy', lot: 'kestrel/blanket', quantity: 1 },
+    );
+
+  it('says who is here, what they want, and the tier and offer of each good aboard', () => {
+    surfaces({ campaign: holding() });
+
+    expect(screen.getByRole('heading', { name: 'Ilse Vantry' })).toBeDefined();
+    expect(screen.getByText(/wants something warm to sleep under/)).toBeDefined();
+    expect(screen.getByText('Bolt of silk: grudging, 20 credits')).toBeDefined();
+    expect(screen.getByText('Ship blanket: great, 37 credits')).toBeDefined();
+  });
+
+  it('hands back the sale of the good the player chose', () => {
+    const taken: Command[] = [];
+    surfaces({ campaign: holding(), onCommand: (command) => taken.push(command) });
+
+    screen.getByRole('button', { name: 'Sell Ship blanket' }).click();
+
+    expect(taken).toEqual([{ kind: 'sell', want: 'ilse#0', good: 'blanket' }]);
+  });
+
+  it('has nobody to sell to while underway', () => {
+    const rich = started(
+      loadedContentSet(
+        aTradingGalaxy({ buyers: [aBuyer(), anElsewhereBuyer()], start: aStart({ credits: 500 }) }),
+      ),
+      SEED,
+    );
+    surfaces({ campaign: after(rich, { kind: 'depart', toId: 'bellwether' }) });
+
+    expect(screen.queryByRole('heading', { name: 'People here' })).toBeNull();
   });
 });

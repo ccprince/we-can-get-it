@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { loadContent, view, type Campaign, type MatchView, type Tier } from '../src/engine';
 import {
   aBuyer,
+  anElsewhereBuyer,
   aContentSet,
   aTradingGalaxy,
   aWant,
@@ -13,20 +14,6 @@ import { after, started } from './support/campaign';
 
 const SEED = 20261024;
 
-/** Osk, at Bellwether, keeps every tag in use, so the subject can be the only one at Kestrel. */
-const osk = aBuyer({
-  id: 'osk',
-  name: 'Osk',
-  locationId: 'bellwether',
-  wants: [
-    aWant({
-      predicate: [{ tag: 'tools' }, { tag: 'cloth' }, { tag: 'warm' }],
-      plainly: 'wants a great deal',
-    }),
-  ],
-  bonusTags: [],
-});
-
 /**
  * Kestrel sells cloth: the silk (worth 40), which is cloth and nothing else,
  * and the blanket (25) and the quilt (30), which are cloth and `warm`. The
@@ -35,7 +22,7 @@ const osk = aBuyer({
  */
 function holdingClothWith(buyer: RawObject, offers: RawObject = anOffers()): Campaign {
   const campaign = started(
-    loadedContentSet(aTradingGalaxy({ buyers: [buyer, osk], offers })),
+    loadedContentSet(aTradingGalaxy({ buyers: [buyer, anElsewhereBuyer()], offers })),
     SEED,
   );
   return after(
@@ -177,7 +164,7 @@ describe('what a match is offered', () => {
     );
 
     const [silk, blanket] = matchesFor(campaign);
-    expect(silk).toEqual({
+    expect(silk).toMatchObject({
       good: 'Bolt of silk',
       tier: 'refused',
       offer: null,
@@ -216,13 +203,19 @@ describe('the wants the read model shows', () => {
   });
 
   it('shows no match for a hold that is empty', () => {
-    const campaign = started(loadedContentSet(aTradingGalaxy({ buyers: [aBuyer(), osk] })), SEED);
+    const campaign = started(
+      loadedContentSet(aTradingGalaxy({ buyers: [aBuyer(), anElsewhereBuyer()] })),
+      SEED,
+    );
 
     expect(view(campaign).here?.people[0]?.wants[0]?.matches).toEqual([]);
   });
 
   it('shows only the people standing where the player is', () => {
-    const campaign = started(loadedContentSet(aTradingGalaxy({ buyers: [aBuyer(), osk] })), SEED);
+    const campaign = started(
+      loadedContentSet(aTradingGalaxy({ buyers: [aBuyer(), anElsewhereBuyer()] })),
+      SEED,
+    );
 
     expect(view(campaign).here?.people.map(({ name }) => name)).toEqual(['Ilse Vantry']);
   });
@@ -236,7 +229,10 @@ describe('what a want cannot be written as', () => {
 
   it('a disjunction: a term names one tag', () => {
     const problems = problemsOf({
-      buyers: [aBuyer({ wants: [aWant({ predicate: [{ anyOf: ['cloth', 'warm'] }] })] }), osk],
+      buyers: [
+        aBuyer({ wants: [aWant({ predicate: [{ anyOf: ['cloth', 'warm'] }] })] }),
+        anElsewhereBuyer(),
+      ],
     });
 
     expect(problems.map(({ where }) => where)).toContain('buyers[0].wants[0].predicate[0].tag');
@@ -244,23 +240,29 @@ describe('what a want cannot be written as', () => {
 
   it('a want that is neither a predicate nor a good, nor both', () => {
     for (const want of [{}, { predicate: [{ tag: 'cloth' }], plainly: 'x', goodId: 'silk' }]) {
-      expect(problemsOf({ buyers: [aBuyer({ wants: [want] }), osk] })).not.toEqual([]);
+      expect(problemsOf({ buyers: [aBuyer({ wants: [want] }), anElsewhereBuyer()] })).not.toEqual(
+        [],
+      );
     }
   });
 
   it('a want with no plain wording, or a buyer with no words of their own', () => {
     const wants = [aWant({ plainly: undefined })];
 
-    expect(problemsOf({ buyers: [aBuyer({ wants }), osk] }).map(({ where }) => where)).toContain(
-      'buyers[0].wants[0].plainly',
-    );
     expect(
-      problemsOf({ buyers: [aBuyer({ refusalLine: undefined }), osk] }).map(({ where }) => where),
+      problemsOf({ buyers: [aBuyer({ wants }), anElsewhereBuyer()] }).map(({ where }) => where),
+    ).toContain('buyers[0].wants[0].plainly');
+    expect(
+      problemsOf({ buyers: [aBuyer({ refusalLine: undefined }), anElsewhereBuyer()] }).map(
+        ({ where }) => where,
+      ),
     ).toContain('buyers[0].refusalLine');
   });
 
   it('two wants asking for the same thing', () => {
-    expect(problemsOf({ buyers: [aBuyer({ wants: [aWant(), aWant()] }), osk] })).not.toEqual([]);
+    expect(
+      problemsOf({ buyers: [aBuyer({ wants: [aWant(), aWant()] }), anElsewhereBuyer()] }),
+    ).not.toEqual([]);
   });
 
   it('offers that do not pay a better tier better', () => {
