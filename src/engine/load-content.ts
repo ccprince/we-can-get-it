@@ -22,6 +22,7 @@ import {
   type ShopParameters,
   type Slot,
   type Start,
+  type StartHub,
   type Tag,
   type Topology,
   type TagClass,
@@ -97,7 +98,7 @@ export function loadContent(raw: unknown): LoadResult {
   // gate on the map (ADR 0006 decision 14), so this is a content mistake rather
   // than a hard campaign — and it is checkable statically, which ADR 0008
   // decision 16 says to do wherever it can be done. Whether a *drawn* galaxy is
-  // connected at baseline range is the draw-time pass's, and is #12's.
+  // connected at baseline range is the draw-time pass's.
   // Only when the draw places more than one motif: with a single motif there is
   // nothing to join and the range is never read.
   if (drawParameters !== undefined && start !== undefined && drawParameters.motifsPerCampaign > 1) {
@@ -116,8 +117,13 @@ export function loadContent(raw: unknown): LoadResult {
   if (motifs !== undefined && locations !== undefined) {
     problems.push(...unfillableSlots(motifs, locations));
   }
-  if (topology !== undefined && drawParameters !== undefined && motifs !== undefined) {
-    problems.push(...unmeetableTopology(topology, drawParameters, motifs));
+  if (
+    topology !== undefined &&
+    drawParameters !== undefined &&
+    motifs !== undefined &&
+    archetypes !== undefined
+  ) {
+    problems.push(...unmeetableTopology(topology, drawParameters, motifs, archetypes));
   }
   if (archetypes !== undefined && tags !== undefined) {
     problems.push(...unknownKinds(archetypes, tags));
@@ -470,8 +476,26 @@ function readTopology(raw: unknown, problems: Problem[]): Topology | undefined {
 
   const leastPlaced = readLeastPlaced(raw.leastPlaced, problems);
   const farHaul = readInteger(raw.farHaul, 'topology.farHaul', 0, problems);
-  if (leastPlaced === undefined || farHaul === undefined) return undefined;
-  return { leastPlaced, farHaul };
+  const startHub = readStartHub(raw.startHub, problems);
+  if (leastPlaced === undefined || farHaul === undefined || startHub === undefined) {
+    return undefined;
+  }
+  return { leastPlaced, farHaul, startHub };
+}
+
+function readStartHub(raw: unknown, problems: Problem[]): StartHub | undefined {
+  const where = 'topology.startHub';
+  if (!isObject(raw)) {
+    problems.push(fails(where, 'is missing'));
+    return undefined;
+  }
+
+  const archetype =
+    raw.archetype === null ? null : readText(raw.archetype, `${where}.archetype`, problems);
+  const neighbours = readInteger(raw.neighbours, `${where}.neighbours`, 0, problems);
+  const spurs = readInteger(raw.spurs, `${where}.spurs`, 0, problems);
+  if (archetype === undefined || neighbours === undefined || spurs === undefined) return undefined;
+  return { archetype, neighbours, spurs };
 }
 
 function readLeastPlaced(raw: unknown, problems: Problem[]): Topology['leastPlaced'] | undefined {
@@ -502,8 +526,31 @@ function unmeetableTopology(
   topology: Topology,
   draw: DrawParameters,
   motifs: readonly Motif[],
+  archetypes: readonly Archetype[],
 ): readonly Problem[] {
   const problems: Problem[] = [];
+  const { startHub } = topology;
+  if (startHub.archetype !== null && !archetypes.some(({ id }) => id === startHub.archetype)) {
+    problems.push(
+      fails(
+        'topology.startHub.archetype',
+        `names an archetype that does not exist: ${startHub.archetype}`,
+      ),
+    );
+  }
+  if (startHub.spurs > startHub.neighbours) {
+    problems.push(
+      fails(
+        'topology.startHub.spurs',
+        `asks for ${startHub.spurs} of ${startHub.neighbours} neighbours to be in a spur`,
+      ),
+    );
+  }
+  if (startHub.spurs > 0 && !motifs.some((motif) => motif.shape === 'spur')) {
+    problems.push(
+      fails('topology.startHub.spurs', `asks for ${startHub.spurs}, and no motif is a spur`),
+    );
+  }
   for (const shape of shapes) {
     const least = topology.leastPlaced[shape];
     if (least > 0 && !motifs.some((motif) => motif.shape === shape)) {

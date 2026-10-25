@@ -34,6 +34,8 @@ function aGalaxyOfFour(overrides: Record<string, unknown> = {}): ContentSet {
         aMotifLane({ ends: ['kestrel', 'bellwether'], distance: 12 }),
         aMotifLane({ ends: ['bellwether', 'hollow'], distance: 8 }),
         aMotifLane({ ends: ['kestrel', 'shoals'], distance: 4 }),
+        // The short way round, so Bellwether is reachable at a range of 10.
+        aMotifLane({ ends: ['shoals', 'hollow'], distance: 9 }),
       ],
       ...overrides,
     }),
@@ -129,8 +131,8 @@ describe('departing', () => {
     const underway = accepted(started(aGalaxyOfFour(), SEED), TO_BELLWETHER);
 
     const chart = view(underway).chart;
-    expect(chart.lanes.map((lane) => lane.depart)).toEqual([null, null, null]);
-    expect(chart.lanes.map((lane) => lane.destination)).toEqual([null, null, null]);
+    expect(chart.lanes.map((lane) => lane.depart)).toEqual([null, null, null, null]);
+    expect(chart.lanes.map((lane) => lane.destination)).toEqual([null, null, null, null]);
   });
 });
 

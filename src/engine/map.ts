@@ -54,3 +54,27 @@ export function laneBetween(
 ): Lane | undefined {
   return galaxy.lanes.find((lane) => otherEnd(lane, locationId) === toId);
 }
+
+/**
+ * The places a ship of this **range** can fly to from one location, by any
+ * number of lanes, the location itself included. A lane beyond range is a wall
+ * and is not walked (ADR 0006 decision 14).
+ */
+export function reachableFrom(
+  galaxy: Pick<DrawnGalaxy, 'lanes'>,
+  locationId: string,
+  range: number,
+): ReadonlySet<string> {
+  const reached = new Set([locationId]);
+  const frontier = [locationId];
+  for (let here = frontier.pop(); here !== undefined; here = frontier.pop()) {
+    for (const lane of galaxy.lanes) {
+      const there = otherEnd(lane, here);
+      if (there !== null && lane.distance <= range && !reached.has(there)) {
+        reached.add(there);
+        frontier.push(there);
+      }
+    }
+  }
+  return reached;
+}

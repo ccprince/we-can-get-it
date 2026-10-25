@@ -77,9 +77,10 @@ load. Days and **fare** are derived, never authored: `ceil(distance / speed)` wi
 day, and `distance × fareRate` in credits.
 
 A galaxy with no lanes is legal, because a content set may hold one location and go nowhere. Whether
-a *drawn* map has its chokepoints and spurs is the draw-time pass's check, declared under
-`topology`; whether it is **connected at baseline range** and satisfies the start-node guarantee are
-#45's checks still to come.
+a *drawn* map is **connected at baseline range** — every drawn place reachable from the start on
+lanes within the baseline ship's `range` — is the draw-time pass's check. A lane beyond range is
+legal so long as the place behind it can be reached some other way. The map's shapes and its start
+are checked there too, declared under `topology`.
 
 ### `topology`
 
@@ -91,11 +92,14 @@ is declared and not yet checked against the motif's lanes.
 | Field | What it declares |
 | --- | --- |
 | `leastPlaced` | The **motif invariants**: at least so many placed motifs of each shape. Every shape is named, `0` for one the map need not hold. |
+| `startHub` | The **start-node guarantee** (ADR 0006 decision 16): the `archetype` the start must be (`null` for any), how many `neighbours` within baseline range it must have, and how many of those `spurs` — placed by a motif whose shape is `spur`. Of the places that hold it, the start is the one the most lanes touch. |
 | `farHaul` | The far cluster no nearer than this: the longest lane *between* motifs must be at least this long (ADR 0008 decision 6). `0` asks for none. |
 
-Both are placeholders, to be measured. An invariant no draw could meet — a minimum for a shape no
-motif has, minimums summing past `drawParameters.motifsPerCampaign`, or a far haul longer than
-`drawParameters.interMotifDistance.most` or asked of a one-motif campaign — fails the load.
+All three are placeholders, to be measured. An invariant no draw could meet — a minimum for a shape no
+motif has, minimums summing past `drawParameters.motifsPerCampaign`, a far haul longer than
+`drawParameters.interMotifDistance.most` or asked of a one-motif campaign, a start hub of an unknown
+archetype, or spurs asked of it with no spur motif or more of them than neighbours — fails the
+load.
 
 ### `fareRate`
 
@@ -180,9 +184,10 @@ location, no goods — which existed to prove the path through every layer and n
 
 It now holds **twelve locations and three motifs**, of which a campaign places three, duplicates
 included: a **chokepoint** crossing, a **ring** of three, and a **spur** whose junction is a market
-with three neighbours, one of them the dead end — the start ADR 0006 decision 16 asks for, which the
-start-node guarantee (#45) is to hold the draw to. Every lane, inside a motif and between them, is within baseline
-range, so the drawn map is connected end to end.
+with three neighbours, one of them the dead end — the start ADR 0006 decision 16 asks for, and one every
+draw holds, since the motif invariants place a spur every time. A crossing gate joined to a spur can
+qualify too. Every lane, inside a motif and between them, is
+within baseline range, so the drawn map is connected end to end.
 
 Its catalogue is a **placeholder** so the shops have something to stock (#14): three kinds, one
 supplied by each archetype, three goods each and no other tags, and one buyer wanting each kind only

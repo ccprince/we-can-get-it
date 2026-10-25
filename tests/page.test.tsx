@@ -111,9 +111,10 @@ function aGalaxyOfTwo(overrides: Record<string, unknown> = {}): ContentSet {
 /**
  * Kestrel, two places a lane from it and one beyond, so a lane can fail to
  * touch here. At range 10 the far lane is out of reach and the near ones are
- * not. The assembly starts the player at the place the most lanes touch
- * (ADR 0006 decision 16); Kestrel and Bellwether have two each, and Kestrel
- * takes the tie because the fixture lists it first (`aGalaxy`).
+ * not, and the Shoals' way round to the Hollow keeps the map connected
+ * (ADR 0006 decision 15). The assembly starts the player at the place the most
+ * lanes touch (decision 16); all four have two each, and Kestrel takes the tie
+ * because the fixture lists it first (`aGalaxy`).
  */
 function aGalaxyOfFour(overrides: Record<string, unknown> = {}): ContentSet {
   return loadedContentSet(
@@ -128,6 +129,7 @@ function aGalaxyOfFour(overrides: Record<string, unknown> = {}): ContentSet {
         aMotifLane({ ends: ['kestrel', 'bellwether'], distance: 6 }),
         aMotifLane({ ends: ['bellwether', 'hollow'], distance: 16 }),
         aMotifLane({ ends: ['kestrel', 'shoals'], distance: 2 }),
+        aMotifLane({ ends: ['shoals', 'hollow'], distance: 9 }),
       ],
       start: aStart({ credits: 500, ship: aShip({ range: 10 }) }),
       ...overrides,
@@ -151,7 +153,21 @@ describe('the chart on the page', () => {
   });
 
   it('shows a lane beyond the ship’s range as unflyable rather than hiding it', () => {
-    const content = aGalaxyOfTwo({ start: aStart({ credits: 500, ship: aShip({ range: 10 }) }) });
+    // Bellwether is twelve away and the range ten, so the Shoals are the way
+    // round that keeps it reachable (ADR 0006 decision 15).
+    const content = aGalaxyOfTwo({
+      locations: [
+        aLocation(),
+        aLocation({ id: 'bellwether', name: 'Bellwether Yards', prose: 'A repair yard.' }),
+        aLocation({ id: 'shoals', name: 'Thennet Shoals', prose: 'Tenders and tank farms.' }),
+      ],
+      lanes: [
+        aMotifLane({ ends: ['kestrel', 'bellwether'], distance: 12 }),
+        aMotifLane({ ends: ['kestrel', 'shoals'], distance: 4 }),
+        aMotifLane({ ends: ['shoals', 'bellwether'], distance: 8 }),
+      ],
+      start: aStart({ credits: 500, ship: aShip({ range: 10 }) }),
+    });
     surfaces({ campaign: started(content, SEED) });
 
     expect(screen.getByText(/beyond your range/i)).toBeDefined();
@@ -175,8 +191,10 @@ describe('the chart on the page', () => {
     // ship cannot reach is readable before the player is standing at its end.
     surfaces({ campaign: started(aGalaxyOfFour(), SEED) });
 
-    const far = screen.getByRole('row', { name: /Grieve's Hollow/ });
-    expect(far.textContent).toContain('Beyond your range');
+    const far = screen
+      .getAllByRole('row', { name: /Grieve's Hollow/ })
+      .find((row) => row.textContent.includes('Bellwether Yards'));
+    expect(far?.textContent).toContain('Beyond your range');
   });
 
   it('keeps the range reading while underway, and takes only the departures away', () => {
@@ -186,16 +204,14 @@ describe('the chart on the page', () => {
     expect(screen.queryByRole('button', { name: /Depart/ })).toBeNull();
   });
 
-  it('lists every place on the chart, including one no lane touches', () => {
-    const content = aGalaxyOfTwo({
-      locations: [aLocation(), aLocation({ id: 'caravel', name: 'Caravel Station' })],
-      lanes: [],
-    });
+  it('lists the places on the chart, and says so when no lane is charted', () => {
+    // A drawn place no lane touches is refused at the draw (ADR 0006
+    // decision 15), so a chart with no lanes is a galaxy of one place.
+    const content = aGalaxyOfTwo({ locations: [aLocation()], lanes: [] });
     surfaces({ campaign: started(content, SEED) });
 
     const places = screen.getByRole('list', { name: 'Locations' });
     expect(places.textContent).toContain('Kestrel Reach');
-    expect(places.textContent).toContain('Caravel Station');
     expect(screen.getByText('No lanes are charted.')).toBeDefined();
   });
 

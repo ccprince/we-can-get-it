@@ -111,13 +111,13 @@ export function aDrawParameters(overrides: RawObject = {}): RawObject {
 }
 
 /**
- * What the drawn galaxy's topology must hold (ADR 0006 decision 3): nothing,
- * by default, so a fixture about something else is never re-rolled for a shape
+ * What the drawn galaxy's topology must hold (ADR 0006 decisions 3 and 16):
+ * nothing, by default, so a fixture about something else is never re-rolled for a shape
  * it has no motif of. A test about an invariant states the one it means, and
  * names only the shapes it asks for.
  */
 export function aTopology(overrides: RawObject = {}): RawObject {
-  const { leastPlaced, ...rest } = overrides;
+  const { leastPlaced, startHub, ...rest } = overrides;
   return {
     leastPlaced: {
       spur: 0,
@@ -126,6 +126,8 @@ export function aTopology(overrides: RawObject = {}): RawObject {
       ...(leastPlaced as RawObject | undefined),
     },
     farHaul: 0,
+    // Any place may open, so a fixture's start is its best-connected place.
+    startHub: { archetype: null, neighbours: 0, spurs: 0, ...(startHub as RawObject | undefined) },
     ...rest,
   };
 }

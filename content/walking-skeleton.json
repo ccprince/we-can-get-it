@@ -71,7 +71,12 @@
       "chokepoint": 1,
       "ring": 0
     },
-    "farHaul": 16
+    "farHaul": 16,
+    "startHub": {
+      "archetype": "market",
+      "neighbours": 3,
+      "spurs": 1
+    }
   },
   "shops": {
     "lotsPerShop": {

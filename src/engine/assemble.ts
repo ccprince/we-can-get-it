@@ -1,6 +1,7 @@
 import type { ContentSet, Lane, Location, Motif, Range, Slot } from './content';
 import type { Attempt } from './draw-checks';
-import type { PlacedMotif } from './galaxy';
+import type { DrawnGalaxy, PlacedMotif } from './galaxy';
+import { asAStart, mayOpen } from './start-hub';
 import { drawFrom, drawWithin, type Rng } from './rng';
 
 /**
@@ -27,17 +28,18 @@ export function assembleMap(content: ContentSet, rng: Rng): Attempt {
     afterSlots,
   );
 
-  const locations = placed.flatMap((motif) => placedLocations(motif, content.locations));
-  const lanes = [...placed.flatMap(lanesWithin), ...joining];
+  const map = {
+    locations: placed.flatMap((motif) => placedLocations(motif, content.locations)),
+    motifs: placed.map(recordOf),
+    lanes: [...placed.flatMap(lanesWithin), ...joining],
+  };
 
   return {
     ok: true,
     // The map is the first stage, so nothing below it is filled yet.
     galaxy: {
-      locations,
-      motifs: placed.map(recordOf),
-      lanes,
-      startId: hubOf(locations, lanes),
+      ...map,
+      startId: hubOf(map, content),
       kinds: [],
       goods: [],
       people: [],
@@ -157,7 +159,9 @@ function fits(slot: Slot, location: Location): boolean {
  *
  * The distance is drawn from the range the content set declares. These are
  * where the long hauls live; whether the result is *connected at baseline
- * range* is a draw-time check, and #45's.
+ * range* is a draw-time check. Joined in a chain, every one of these lanes is
+ * the only way between the motifs it joins, so no ring runs between motifs:
+ * a ring is a motif's own shape.
  */
 function joinMotifs(
   motifs: readonly Placement[],
@@ -226,24 +230,27 @@ function placedLocations(placed: Placement, reserve: readonly Location[]): reado
 }
 
 /**
- * Where the campaign opens: the drawn location the most lanes touch, and the
- * first of them in placement order when several tie — which is **derived
- * order**, from the seed and the content set alone (ADR 0009 decision 3).
+ * Where the campaign opens: of the drawn places that may open it under the
+ * **start-node guarantee** (ADR 0006 decision 16), the one the most lanes
+ * touch, and the first in placement order when several tie — which is
+ * **derived order**, from the seed and the content set alone (ADR 0009
+ * decision 3).
  *
- * ADR 0006 decision 16 wants a start with several neighbours inside baseline
- * range, because a start on a **spur** makes
- * the first decision "fly out, or fly out" — the best-connected place is the
- * reading of that the assembly can make on its own. The **guarantee**, including
- * that it is a market with a spur among its neighbours, is a draw-time check,
- * and #45's.
+ * A map with no such place opens at its best-connected place instead, and the
+ * guarantee's check refuses it: the selection never weakens the guarantee, it
+ * only finds the place that holds it when there is one.
  */
-function hubOf(locations: readonly Location[], lanes: readonly Lane[]): string {
-  const busiest = locations.reduce((best, location) =>
-    neighbours(lanes, location.id) > neighbours(lanes, best.id) ? location : best,
+function hubOf(map: Pick<DrawnGalaxy, 'locations' | 'lanes' | 'motifs'>, content: ContentSet) {
+  const mayOpenIt = map.locations.filter((location) =>
+    mayOpen(asAStart(map, location.id, content.start.ship.range), content.topology.startHub),
+  );
+  const pool = mayOpenIt.length > 0 ? mayOpenIt : map.locations;
+  const busiest = pool.reduce((best, location) =>
+    lanesAt(map.lanes, location.id) > lanesAt(map.lanes, best.id) ? location : best,
   );
   return busiest.id;
 }
 
-function neighbours(lanes: readonly Lane[], locationId: string): number {
+function lanesAt(lanes: readonly Lane[], locationId: string): number {
   return lanes.filter((lane) => lane.ends.includes(locationId)).length;
 }
