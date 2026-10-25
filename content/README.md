@@ -165,8 +165,12 @@ It now holds **six locations and six lanes**, hand-written rather than assembled
 which is #11. The shape is deliberate and is there to be read in hand-play: a start with three
 neighbours, a ring through Thennet Shoals and Caravel Station that offers a long way round, a
 **spur** at Grieve's Hollow that must be flown out and back, and one lane out to Lamentation that is
-**beyond baseline range** — the wall with a price on it (ADR 0006 decision 14). The vocabulary,
-catalogue and cast are still empty.
+**beyond baseline range** — the wall with a price on it (ADR 0006 decision 14).
+
+Its catalogue is a **placeholder** so the shops have something to stock (#14): three kinds, one
+supplied by each archetype, three goods each and no other tags, and one buyer wanting each kind only
+because a tag no want uses fails the load. It is there to make buying playable and is evidence of
+nothing about the catalogue; #22 writes the one that answers the question.
 
 **Every number in here is a placeholder, and evidence of nothing.** The week, month and year
 lengths, the starting credits, the starting day and every declared bound are all measurements this

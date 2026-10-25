@@ -10,12 +10,13 @@ import { started } from './support/campaign';
 describe('the walking skeleton content set', () => {
   const raw: unknown = JSON.parse(readFileSync('content/walking-skeleton.json', 'utf8'));
 
-  it('loads, and reports its calendar for a writer to judge', () => {
+  it('loads, and reports its calendar and its catalogue for a writer to judge', () => {
     const result = loadContent(raw);
 
     expect(result.ok ? [] : result.problems).toEqual([]);
     expect(result.reports).toEqual([
       { verdict: 'judge', where: 'calendar', what: 'a year is 8 months, 48 weeks, 288 days' },
+      { verdict: 'judge', where: 'goods', what: 'goods per kind: 3 goods — cloth, ore, tools' },
     ]);
   });
 
@@ -24,5 +25,12 @@ describe('the walking skeleton content set', () => {
     if (!result.ok) throw new Error('the content set did not load');
 
     expect(view(started(result.content, 20261022)).here?.name).toBe('Bellwether Yards');
+  });
+
+  it('opens with something on sale, so the page has a shop to buy from', () => {
+    const result = loadContent(raw);
+    if (!result.ok) throw new Error('the content set did not load');
+
+    expect(view(started(result.content, 20261022)).here?.lots).not.toEqual([]);
   });
 });

@@ -8,13 +8,21 @@
  * The read model here is built through the seam rather than by hand, so this
  * test cannot drift from what the engine actually returns.
  */
-import { cleanup, render, screen } from '@testing-library/react';
+import { cleanup, fireEvent, render, screen, within } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { isRejected, takeCommand, view } from '../src/engine';
 import type { Campaign, Command, ContentSet } from '../src/engine';
 import { CampaignSurfaces } from '../src/page/CampaignSurfaces';
-import { aGalaxy, aMotifLane, aLocation, aShip, aStart, loadedContentSet } from './support/content';
-import { started } from './support/campaign';
+import {
+  aGalaxy,
+  aMotifLane,
+  aLocation,
+  aShip,
+  aStart,
+  aTradingGalaxy,
+  loadedContentSet,
+} from './support/content';
+import { after, started } from './support/campaign';
 
 afterEach(cleanup);
 
@@ -198,5 +206,50 @@ describe('the chart on the page', () => {
     expect(screen.getByText(/out of Kestrel Reach/)).toBeDefined();
     expect(screen.getByText(/bound for Bellwether Yards/)).toBeDefined();
     expect(screen.queryByRole('button', { name: /Depart/ })).toBeNull();
+  });
+});
+
+describe('the shop and the hold', () => {
+  /** Kestrel's shop: lots of five at worth, and a hold of 100. */
+  const atKestrel = () => started(loadedContentSet(aTradingGalaxy()), SEED);
+
+  it('lists what is on sale here with its kind, how many are left and the price', () => {
+    surfaces({ campaign: atKestrel() });
+
+    const row = screen.getByRole('row', { name: /Bolt of silk/ });
+    expect(within(row).getByText('cloth')).toBeDefined();
+    expect(within(row).getByText('5')).toBeDefined();
+    expect(within(row).getByText('40')).toBeDefined();
+    expect(within(row).getByText('up to 4')).toBeDefined();
+  });
+
+  it('hands back a buy of the units the player asked for', () => {
+    const taken: Command[] = [];
+    surfaces({ campaign: atKestrel(), onCommand: (command) => taken.push(command) });
+
+    fireEvent.change(screen.getByLabelText('Units of Ship blanket'), { target: { value: '3' } });
+    screen.getByRole('button', { name: 'Buy Ship blanket' }).click();
+
+    expect(taken).toEqual([{ kind: 'buy', lot: 'kestrel/blanket', quantity: 3 }]);
+  });
+
+  it('shows the hold, how full it is, and what is in it', () => {
+    surfaces({ campaign: after(atKestrel(), { kind: 'buy', lot: 'kestrel/quilt', quantity: 2 }) });
+
+    expect(screen.getByText('2 of 100 units')).toBeDefined();
+    expect(screen.getByText('2 × Quilted roll (cloth)')).toBeDefined();
+  });
+
+  it('says so when the shop has nothing and the hold is empty', () => {
+    surfaces();
+
+    expect(screen.getByText('Nothing is on sale here.')).toBeDefined();
+    expect(screen.getByText('The hold is empty.')).toBeDefined();
+  });
+
+  it('has no shop while underway', () => {
+    surfaces({ campaign: after(atKestrel(), { kind: 'depart', toId: 'bellwether' }) });
+
+    expect(screen.queryByRole('heading', { name: 'For sale' })).toBeNull();
   });
 });

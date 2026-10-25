@@ -83,17 +83,17 @@
   "archetypes": [
     {
       "id": "extractor",
-      "supplies": [],
+      "supplies": ["ore"],
       "demands": []
     },
     {
       "id": "processor",
-      "supplies": [],
+      "supplies": ["tools"],
       "demands": []
     },
     {
       "id": "market",
-      "supplies": [],
+      "supplies": ["cloth"],
       "demands": []
     }
   ],
@@ -202,9 +202,147 @@
       "archetype": "extractor"
     }
   ],
-  "tags": [],
-  "goods": [],
-  "buyers": [],
+  "tags": [
+    {
+      "id": "cloth",
+      "class": "kind",
+      "tells": ["woven", "bolt", "cloth"]
+    },
+    {
+      "id": "ore",
+      "class": "kind",
+      "tells": ["ore", "seam", "assay"]
+    },
+    {
+      "id": "tools",
+      "class": "kind",
+      "tells": ["forged", "tool", "tempered"]
+    }
+  ],
+  "goods": [
+    {
+      "id": "blanket",
+      "name": "Ship blanket",
+      "prose": "A woven blanket, grey as a bulkhead and twice as warm.",
+      "kind": "cloth",
+      "tags": [],
+      "worth": 25
+    },
+    {
+      "id": "canvas",
+      "name": "Sailcloth",
+      "prose": "A bolt of heavy cloth, cut for awnings on worlds with weather.",
+      "kind": "cloth",
+      "tags": [],
+      "worth": 18
+    },
+    {
+      "id": "silk",
+      "name": "Bolt of silk",
+      "prose": "A bolt of woven silk, cool to the hand and no use at all in a draught.",
+      "kind": "cloth",
+      "tags": [],
+      "worth": 40
+    },
+    {
+      "id": "cinnabar",
+      "name": "Cinnabar ore",
+      "prose": "Red ore in sealed sacks, each with an assay slip tied to the neck.",
+      "kind": "ore",
+      "tags": [],
+      "worth": 30
+    },
+    {
+      "id": "ironstone",
+      "name": "Ironstone",
+      "prose": "Ore from a shallow seam, sold by the crate and heavy for it.",
+      "kind": "ore",
+      "tags": [],
+      "worth": 12
+    },
+    {
+      "id": "tin",
+      "name": "Tin ore",
+      "prose": "Dull ore with a good assay, the kind every yard needs and nobody admires.",
+      "kind": "ore",
+      "tags": [],
+      "worth": 20
+    },
+    {
+      "id": "calipers",
+      "name": "Calipers",
+      "prose": "A tempered pair in a felt case, true to a hair.",
+      "kind": "tools",
+      "tags": [],
+      "worth": 45
+    },
+    {
+      "id": "spanner",
+      "name": "Spanner set",
+      "prose": "Forged spanners in a roll, every size a yard hand reaches for.",
+      "kind": "tools",
+      "tags": [],
+      "worth": 22
+    },
+    {
+      "id": "vice",
+      "name": "Bench vice",
+      "prose": "A forged iron vice, the one tool a workshop is built around.",
+      "kind": "tools",
+      "tags": [],
+      "worth": 60
+    }
+  ],
+  "buyers": [
+    {
+      "id": "ilse",
+      "name": "Ilse Vantry",
+      "locationId": "bellwether",
+      "wants": [
+        {
+          "predicate": [
+            {
+              "tag": "tools"
+            }
+          ]
+        }
+      ],
+      "bonusTags": [],
+      "refusalTags": []
+    },
+    {
+      "id": "marrow",
+      "name": "Dace Marrow",
+      "locationId": "kestrel",
+      "wants": [
+        {
+          "predicate": [
+            {
+              "tag": "ore"
+            }
+          ]
+        }
+      ],
+      "bonusTags": [],
+      "refusalTags": []
+    },
+    {
+      "id": "osk",
+      "name": "Osk Telling",
+      "locationId": "hollow",
+      "wants": [
+        {
+          "predicate": [
+            {
+              "tag": "cloth"
+            }
+          ]
+        }
+      ],
+      "bonusTags": [],
+      "refusalTags": []
+    }
+  ],
   "start": {
     "credits": 400,
     "day": 1,
