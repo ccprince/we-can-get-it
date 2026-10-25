@@ -1,7 +1,7 @@
 import { shapes, within, type ContentSet, type Shape } from './content';
 import type { DrawnGalaxy } from './galaxy';
 import { reachableFrom } from './map';
-import { asAStart, mayOpen } from './start-hub';
+import { holdsStartHub, readAsStart } from './start-hub';
 import type { Rng } from './rng';
 
 /**
@@ -120,8 +120,8 @@ export const drawChecks: readonly DrawCheck[] = [
     miss: (galaxy, content) => {
       const { range } = content.start.ship;
       const { startHub } = content.topology;
-      const opened = asAStart(galaxy, galaxy.startId, range);
-      return mayOpen(opened, startHub)
+      const opened = readAsStart(galaxy, galaxy.startId, range);
+      return holdsStartHub(opened, startHub)
         ? null
         : `it opened at ${galaxy.startId}, a ${opened.archetype} with ${opened.neighbours} ` +
             `neighbour${opened.neighbours === 1 ? '' : 's'} within the range of ${range}, ` +

@@ -529,6 +529,7 @@ function unmeetableTopology(
   archetypes: readonly Archetype[],
 ): readonly Problem[] {
   const problems: Problem[] = [];
+  const noMotifIs = (shape: Shape) => !motifs.some((motif) => motif.shape === shape);
   const { startHub } = topology;
   if (startHub.archetype !== null && !archetypes.some(({ id }) => id === startHub.archetype)) {
     problems.push(
@@ -546,14 +547,14 @@ function unmeetableTopology(
       ),
     );
   }
-  if (startHub.spurs > 0 && !motifs.some((motif) => motif.shape === 'spur')) {
+  if (startHub.spurs > 0 && noMotifIs('spur')) {
     problems.push(
       fails('topology.startHub.spurs', `asks for ${startHub.spurs}, and no motif is a spur`),
     );
   }
   for (const shape of shapes) {
     const least = topology.leastPlaced[shape];
-    if (least > 0 && !motifs.some((motif) => motif.shape === shape)) {
+    if (least > 0 && noMotifIs(shape)) {
       problems.push(
         fails(`topology.leastPlaced.${shape}`, `asks for ${least}, and no motif is a ${shape}`),
       );

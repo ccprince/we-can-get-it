@@ -92,7 +92,7 @@ is declared and not yet checked against the motif's lanes.
 | Field | What it declares |
 | --- | --- |
 | `leastPlaced` | The **motif invariants**: at least so many placed motifs of each shape. Every shape is named, `0` for one the map need not hold. |
-| `startHub` | The **start-node guarantee** (ADR 0006 decision 16): the `archetype` the start must be (`null` for any), how many `neighbours` within baseline range it must have, and how many of those `spurs` — placed by a motif whose shape is `spur`. Of the places that hold it, the start is the one the most lanes touch. |
+| `startHub` | The **start-node guarantee** (ADR 0006 decision 16): the `archetype` the start must be (`null` for any), how many `neighbours` within baseline range it must have, and how many of those `spurs` — a dead end, one lane within range, placed by a motif whose shape is `spur`. Of the places that hold it, the start is the one the most lanes touch. |
 | `farHaul` | The far cluster no nearer than this: the longest lane *between* motifs must be at least this long (ADR 0008 decision 6). `0` asks for none. |
 
 All three are placeholders, to be measured. An invariant no draw could meet — a minimum for a shape no
@@ -184,9 +184,9 @@ location, no goods — which existed to prove the path through every layer and n
 
 It now holds **twelve locations and three motifs**, of which a campaign places three, duplicates
 included: a **chokepoint** crossing, a **ring** of three, and a **spur** whose junction is a market
-with three neighbours, one of them the dead end — the start ADR 0006 decision 16 asks for, and one every
-draw holds, since the motif invariants place a spur every time. A crossing gate joined to a spur can
-qualify too. Every lane, inside a motif and between them, is
+with three neighbours, one of them the dead end — the start ADR 0006 decision 16 asks for. A neighbour
+counts as a spur only when it is a spur's dead end, so the junction is the only location that can
+open a campaign, and the motif invariants place a spur every time. Every lane, inside a motif and between them, is
 within baseline range, so the drawn map is connected end to end.
 
 Its catalogue is a **placeholder** so the shops have something to stock (#14): three kinds, one
