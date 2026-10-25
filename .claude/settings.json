@@ -22,7 +22,25 @@
       "Bash(npm run build:*)",
       "Bash(npx eslint:*)",
       "Bash(npx tsc --noEmit:*)",
-      "Bash(npx vitest run:*)"
+      "Bash(npx vitest run:*)",
+      "Bash(git push -u origin:*)",
+      "Bash(git push origin:*)",
+      "Bash(git config branch.*.prBase:*)",
+      "Bash(gh pr create:*)",
+      "Bash(gh pr edit:*)",
+      "Bash(gh api -X POST repos/ccprince/we-can-get-it/stacks:*)"
+    ]
+  },
+  "hooks": {
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "tools/slice-pushed.sh"
+          }
+        ]
+      }
     ]
   }
 }

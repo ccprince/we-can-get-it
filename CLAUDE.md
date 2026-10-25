@@ -75,10 +75,11 @@ purpose-built content, and new-field defaults in one place.
 
 ### Finishing a ticket
 
-A ticket ends in a **stack of open PRs, one per slice** — the slice is the review unit (ADR 0010),
-reviewed and pushed as its own PR while the session stays whole. A decision goes straight to `main`.
-How to size a ticket, the sequence, the 400-insertion budget and how this repo merges a stack are in
-`docs/agents/workflow.md`.
+Every slice of a ticket is committed, reviewed, pushed and opened as its own PR, stacked on the
+slice before (ADR 0010), before the next slice starts. Running a ticket authorises the push and the PR:
+don't ask, and don't stop at a local commit. The loop, the 400-insertion budget and merging a stack
+are in `docs/agents/workflow.md`; sizing a ticket is in `docs/agents/sizing.md`. A decision goes
+straight to `main`.
 
 ### Issue tracker
 
