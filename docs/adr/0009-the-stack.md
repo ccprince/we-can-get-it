@@ -120,8 +120,14 @@ state.** This is the operative half of ADR 0003 decision 4, stated so it survive
   computed in the page sat outside the test suite until it was moved, and a four-surface UI is where that
   happens again by accident.
 
-**11. A save is a seed and a command sequence, replayed through the engine on load.** Written to
-`localStorage` after each command and replayed on open. Findings §2.5 is blunt about why this is in the first
+**11. A save is a seed, a command sequence and the identity of the content set it was played on,
+replayed through the engine on load.** Written to `localStorage` after each command and replayed on open.
+The identity is the engine's hash of the content set as loaded, so it ignores written order (decision 3)
+and changes with any value, prose included. A save whose content set is not the one loaded is refused and
+kept, as a refused command is: the draw is a pure function of the content set and the seed, so replaying it
+on other content can resume a different campaign with every command accepted. A save still never carries a
+galaxy. *(Amended 2026-10-24, #53. It had read: a save is a seed and a command sequence. That let an edited
+content file turn a stored run into a different campaign without a word.)* Findings §2.5 is blunt about why this is in the first
 milestone rather than after it: the browser's back button *ended two play-test runs outright*, and hand-play
 is where verdicts come from (§5.4), so a run lost to a stray reload is a lost verdict. It is also nearly free,
 because a seed plus a command sequence is already the harness's input shape and already what GLOSSARY's
