@@ -60,14 +60,14 @@ export function aSlot(overrides: RawObject = {}): RawObject {
 
 /**
  * The smallest **motif** there is: one slot and no lanes, which is the fragment
- * the trivial content set of #7 assembles its one-place galaxy from. A
- * **cluster** by default, since no motif invariant asks for one: a test about
+ * the trivial content set of #7 assembles its one-place galaxy from. Labelled a
+ * **chokepoint**, which no default motif invariant asks for: a test about
  * shapes states the shape it means.
  */
 export function aMotif(overrides: RawObject = {}): RawObject {
   return {
     id: 'lone-berth',
-    shape: 'cluster',
+    shape: 'chokepoint',
     slots: [aSlot()],
     lanes: [],
     ...overrides,
@@ -123,7 +123,6 @@ export function aTopology(overrides: RawObject = {}): RawObject {
       spur: 0,
       chokepoint: 0,
       ring: 0,
-      cluster: 0,
       ...(leastPlaced as RawObject | undefined),
     },
     farHaul: 0,
@@ -290,7 +289,7 @@ export function aGalaxy(overrides: RawObject = {}): RawObject {
     motifs: [
       {
         id: 'the-whole-map',
-        shape: 'cluster',
+        shape: 'chokepoint',
         slots: placed.map(({ location }) => ({
           id: slotOf.get(location.id),
           archetype: location.archetype,

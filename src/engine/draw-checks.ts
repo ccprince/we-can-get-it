@@ -79,7 +79,7 @@ export const drawChecks: readonly DrawCheck[] = [
   // One check per shape, so a miss names the number it fell short of. All of
   // them read the assembly, and re-roll the motif selection (ADR 0006
   // decision 3).
-  ...shapes.map(leastPlaced),
+  ...shapes.map(leastPlacedCheck),
   {
     stage: 'motif selection',
     invariant: 'the far haul',
@@ -96,7 +96,7 @@ export const drawChecks: readonly DrawCheck[] = [
 ];
 
 /** The motif invariant for one shape: at least so many of it placed. */
-function leastPlaced(shape: Shape): DrawCheck {
+function leastPlacedCheck(shape: Shape): DrawCheck {
   return {
     stage: 'motif selection',
     invariant: 'the motif invariants',
@@ -113,8 +113,13 @@ function leastPlaced(shape: Shape): DrawCheck {
 }
 
 /**
- * The **inter-motif lanes**: those whose two ends were placed by different
- * motifs, read off the record of the assembly rather than off the lanes.
+ * The inter-motif lanes: those whose two ends were placed by different motifs,
+ * read off the record of the assembly rather than off the lanes.
+ *
+ * The far haul reads one of these as how far apart two motifs are, which holds
+ * because the assembly joins motifs in a chain: every inter-motif lane is the
+ * only way between the motifs it joins, so its length is their distance by any
+ * route. A joining rule with slack between motifs would have to measure routes.
  */
 function interMotifLanes(galaxy: DrawnGalaxy): DrawnGalaxy['lanes'] {
   const placedBy = new Map(

@@ -13,10 +13,9 @@ import {
 } from './support/content';
 
 /**
- * The checks over the **drawn galaxy's topology** (ADR 0006 decisions 3, 15
- * and 16), each registered into the draw-time pass: whether the map holds the
- * shapes the content set declared, whether it is connected at baseline range,
- * and whether it opens where a campaign must open.
+ * The checks over the **drawn galaxy's topology** (ADR 0006 decision 3), each
+ * registered into the draw-time pass: whether the map holds the shapes the
+ * content set declared, and a lane between motifs as long as its far haul.
  */
 const SEEDS = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12];
 
@@ -43,8 +42,8 @@ function aSpur(): RawObject {
   });
 }
 
-/** A spur and a cluster to draw one of, and four places to fill either. */
-function aSpurOrACluster(overrides: RawObject = {}): ContentSet {
+/** A spur and a chokepoint to draw one of, and four places to fill either. */
+function aSpurOrAChokepoint(overrides: RawObject = {}): ContentSet {
   return loadedContentSet({
     locations: [
       aLocation(),
@@ -55,8 +54,8 @@ function aSpurOrACluster(overrides: RawObject = {}): ContentSet {
     motifs: [
       aSpur(),
       aMotif({
-        id: 'trio',
-        shape: 'cluster',
+        id: 'pair',
+        shape: 'chokepoint',
         slots: [aSlot({ id: 'a' }), aSlot({ id: 'b' })],
         lanes: [aMotifLane({ ends: ['a', 'b'], distance: 4 })],
       }),
@@ -100,38 +99,39 @@ describe('the record of what was placed', () => {
 
 describe('the motif invariants', () => {
   it('re-rolls until the map holds as many of a shape as the content set declares', () => {
-    // One motif a campaign, drawn from a spur and a cluster. Left free, some
-    // seeds place the cluster; held to one spur, none does (ADR 0006
+    // One motif a campaign, drawn from a spur and a chokepoint. Left free, some
+    // seeds place the chokepoint; held to one spur, none does (ADR 0006
     // decision 3).
-    const free = aSpurOrACluster();
-    const held = aSpurOrACluster({ topology: aTopology({ leastPlaced: { spur: 1 } }) });
+    const free = aSpurOrAChokepoint();
+    const held = aSpurOrAChokepoint({ topology: aTopology({ leastPlaced: { spur: 1 } }) });
 
     const shapesOf = (content: ContentSet, seed: number) =>
       drawn(content, seed).motifs.map((placed) => placed.shape);
 
-    expect(SEEDS.flatMap((seed) => shapesOf(free, seed))).toContain('cluster');
+    expect(SEEDS.flatMap((seed) => shapesOf(free, seed))).toContain('chokepoint');
     for (const seed of SEEDS) {
       expect(shapesOf(held, seed)).toEqual(['spur']);
     }
   });
 
-  it('fails loudly when no assembly holds the shapes declared', () => {
-    // Two spurs asked of a campaign of one motif can never be met, and the
-    // draw does not weaken the invariant to let a galaxy through. The spur is
-    // the only motif, so every attempt places exactly one.
-    const content = aSpurOrACluster({
-      motifs: [aSpur()],
-      topology: aTopology({ leastPlaced: { spur: 2 } }),
-      drawParameters: aDrawParameters({ rerolls: 3 }),
+  it('fails loudly when the draw runs out of re-rolls short of the shapes declared', () => {
+    // With no re-rolls the first attempt has to pass, and on a seed whose
+    // first motif is the chokepoint it cannot. The draw does not weaken the
+    // invariant to let a galaxy through.
+    const content = aSpurOrAChokepoint({
+      topology: aTopology({ leastPlaced: { spur: 1 } }),
+      drawParameters: aDrawParameters({ rerolls: 0 }),
     });
+    const free = aSpurOrAChokepoint();
+    const missing = SEEDS.find((seed) => drawn(free, seed).motifs[0]?.shape === 'chokepoint');
 
-    expect(failureOf(content)).toEqual([
+    expect(failureOf(content, missing)).toEqual([
       {
         verdict: 'fails',
         where: 'topology.leastPlaced.spur',
         what:
-          'the motif selection was re-rolled 3 times and still missed the motif invariants: ' +
-          'it placed 1 spur, and the content set declared at least 2',
+          'the motif selection was re-rolled 0 times and still missed the motif invariants: ' +
+          'it placed 0 spurs, and the content set declared at least 1',
       },
     ]);
   });
@@ -141,18 +141,20 @@ describe('the motif invariants', () => {
     // decision 6). Two motifs joined by a lane of 10 to 20: held to a far haul
     // of 18, the joining lane is never shorter.
     const twoMotifs = { motifsPerCampaign: 2, interMotifDistance: { least: 10, most: 20 } };
-    const free = aSpurOrACluster({ drawParameters: aDrawParameters(twoMotifs) });
-    const held = aSpurOrACluster({
+    const free = aSpurOrAChokepoint({ drawParameters: aDrawParameters(twoMotifs) });
+    const held = aSpurOrAChokepoint({
       drawParameters: aDrawParameters(twoMotifs),
       topology: aTopology({ farHaul: 18 }),
     });
 
-    const joiningLane = (content: ContentSet, seed: number) =>
+    // The motifs' own lanes are 9 and 4, so the longest lane on the map is
+    // the one joining them.
+    const longestLane = (content: ContentSet, seed: number) =>
       Math.max(...drawn(content, seed).lanes.map((lane) => lane.distance));
 
-    expect(SEEDS.map((seed) => joiningLane(free, seed)).some((spans) => spans < 18)).toBe(true);
+    expect(SEEDS.map((seed) => longestLane(free, seed)).some((spans) => spans < 18)).toBe(true);
     for (const seed of SEEDS) {
-      expect(joiningLane(held, seed)).toBeGreaterThanOrEqual(18);
+      expect(longestLane(held, seed)).toBeGreaterThanOrEqual(18);
     }
   });
 });

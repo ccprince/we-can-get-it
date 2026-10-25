@@ -750,7 +750,7 @@ describe('the motifs the map is assembled from', () => {
       {
         verdict: 'fails',
         where: 'motifs[0].shape',
-        what: 'is horseshoe, which is not spur, chokepoint, ring or cluster',
+        what: 'is horseshoe, which is not one of spur, chokepoint, ring',
       },
     ]);
   });
@@ -767,6 +767,64 @@ describe('the motifs the map is assembled from', () => {
         verdict: 'fails',
         where: 'topology.leastPlaced.spurs',
         what: 'names a shape that does not exist',
+      },
+    ]);
+  });
+
+  it('refuses a motif invariant for a shape no motif in the reserve has', () => {
+    const result = loadContent(aContentSet({ topology: aTopology({ leastPlaced: { ring: 1 } }) }));
+
+    expect(result.ok ? [] : result.problems).toEqual([
+      {
+        verdict: 'fails',
+        where: 'topology.leastPlaced.ring',
+        what: 'asks for 1, and no motif is a ring',
+      },
+    ]);
+  });
+
+  it('refuses motif invariants asking for more motifs than a campaign places', () => {
+    const result = loadContent(
+      aContentSet({
+        motifs: [aMotif({ shape: 'spur' })],
+        topology: aTopology({ leastPlaced: { spur: 2 } }),
+      }),
+    );
+
+    expect(result.ok ? [] : result.problems).toEqual([
+      {
+        verdict: 'fails',
+        where: 'topology.leastPlaced',
+        what: 'asks for 2 motifs, and a campaign places 1',
+      },
+    ]);
+  });
+
+  it('refuses a far haul when a campaign places one motif, and so no lane between motifs', () => {
+    const result = loadContent(aContentSet({ topology: aTopology({ farHaul: 10 }) }));
+
+    expect(result.ok ? [] : result.problems).toEqual([
+      {
+        verdict: 'fails',
+        where: 'topology.farHaul',
+        what: 'asks for a lane between motifs, and a campaign places one motif',
+      },
+    ]);
+  });
+
+  it('refuses a far haul longer than any lane the draw lays between motifs', () => {
+    const result = loadContent(
+      aContentSet({
+        drawParameters: aDrawParameters({ motifsPerCampaign: 2 }),
+        topology: aTopology({ farHaul: 19 }),
+      }),
+    );
+
+    expect(result.ok ? [] : result.problems).toEqual([
+      {
+        verdict: 'fails',
+        where: 'topology.farHaul',
+        what: 'is 19, and no lane between motifs is longer than 18',
       },
     ]);
   });
