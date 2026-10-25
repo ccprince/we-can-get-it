@@ -16,6 +16,9 @@ import { App } from '../src/page/App';
 
 afterEach(() => {
   cleanup();
+  // The page saves after every command (#20), and a save left behind would
+  // resume into the next test.
+  localStorage.clear();
   vi.unstubAllGlobals();
 });
 
