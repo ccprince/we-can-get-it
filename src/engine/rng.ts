@@ -35,3 +35,19 @@ export function drawInt(rng: Rng, bound: number): readonly [number, Rng] {
   const drawn = (mixed ^ (mixed >>> 14)) >>> 0;
   return [drawn % bound, { state }];
 }
+
+/** One of a list, drawn from the generator. The list is never empty. */
+export function drawFrom<T>(items: readonly T[], rng: Rng): readonly [T, Rng] {
+  const [at, next] = drawInt(rng, items.length);
+  const drawn = items[at];
+  if (drawn === undefined) {
+    throw new Error('a draw from an empty list, which the caller is meant to have ruled out');
+  }
+  return [drawn, next];
+}
+
+/** Whether something is hidden at a chance in whole percent, `0` to `100`. */
+export function drawHidden(rng: Rng, percent: number): readonly [boolean, Rng] {
+  const [rolled, next] = drawInt(rng, 100);
+  return [rolled < percent, next];
+}

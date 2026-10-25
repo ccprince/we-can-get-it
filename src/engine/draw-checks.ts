@@ -4,14 +4,15 @@ import type { Rng } from './rng';
 
 /**
  * A stage of the draw's cascade that a missed invariant re-rolls (ADR 0008
- * decision 2), named as the failure report names it. The map is the one stage
- * for now. Kinds, goods and people are #33's, and when the second stage
- * arrives a check gains the stage its miss re-rolls — the narrowest that could
- * fix it (decision 17).
+ * decision 2), named as the failure report names it. A check names the stage
+ * its miss re-rolls — the narrowest that could fix it (decision 17).
  */
-export type Stage = 'motif selection';
+export type Stage = 'motif selection' | 'kinds pass' | 'goods pass' | 'people pass';
 
-/** A galaxy as far as the cascade has built it, and the generator it left behind. */
+/**
+ * A galaxy as far as the cascade has built it, and the generator it left
+ * behind. A stage not yet run has filled nothing, so its part is empty.
+ */
 export type Drawn = { readonly ok: true; readonly galaxy: DrawnGalaxy; readonly rng: Rng };
 
 /**
@@ -42,6 +43,8 @@ export type Attempt = Drawn | { readonly ok: false; readonly miss: Miss; readonl
  * about what it checks.
  */
 export type DrawCheck = {
+  /** The stage this check runs after, and re-rolls on a miss. */
+  readonly stage: Stage;
   readonly invariant: string;
   readonly where: string;
   /** Null when the galaxy holds the invariant; otherwise how it missed. */
@@ -57,6 +60,7 @@ export const drawChecks: readonly DrawCheck[] = [
   {
     // A property of the assembly, and its miss re-rolls the motif selection,
     // since nothing downstream has happened yet (ADR 0008 decision 8).
+    stage: 'motif selection',
     invariant: 'the location-count range',
     where: 'drawParameters.locationCount',
     miss: (galaxy, content) => {

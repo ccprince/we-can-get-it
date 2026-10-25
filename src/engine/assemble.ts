@@ -1,6 +1,6 @@
 import type { ContentSet, Lane, Location, Motif, Range, Slot } from './content';
 import type { Attempt } from './draw-checks';
-import { drawInt, type Rng } from './rng';
+import { drawFrom, drawInt, type Rng } from './rng';
 
 /**
  * The first two stages of the cascade: the **motifs** are drawn, and then the
@@ -31,7 +31,15 @@ export function assembleMap(content: ContentSet, rng: Rng): Attempt {
 
   return {
     ok: true,
-    galaxy: { locations, lanes, startId: hubOf(locations, lanes) },
+    // The map is the first stage, so nothing below it is filled yet.
+    galaxy: {
+      locations,
+      lanes,
+      startId: hubOf(locations, lanes),
+      kinds: [],
+      goods: [],
+      people: [],
+    },
     rng: afterJoining,
   };
 }
@@ -224,16 +232,6 @@ function hubOf(locations: readonly Location[], lanes: readonly Lane[]): string {
 
 function neighbours(lanes: readonly Lane[], locationId: string): number {
   return lanes.filter((lane) => lane.ends.includes(locationId)).length;
-}
-
-/** One of a list, drawn from the generator. The list is never empty. */
-function drawFrom<T>(items: readonly T[], rng: Rng): readonly [T, Rng] {
-  const [at, next] = drawInt(rng, items.length);
-  const drawn = items[at];
-  if (drawn === undefined) {
-    throw new Error('a draw from an empty list, which the caller is meant to have ruled out');
-  }
-  return [drawn, next];
 }
 
 /** A whole number inside a declared range, both ends included. */

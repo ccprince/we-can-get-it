@@ -1,7 +1,9 @@
 import { assembleMap } from './assemble';
+import { drawGoods, drawKinds, drawPeople } from './fill';
 import type { ContentSet } from './content';
 import { drawChecks, type Attempt, type Drawn, type Stage } from './draw-checks';
-import type { Rng } from './rng';
+import type { DrawnGalaxy } from './galaxy';
+import { rngFromSeed, type Rng } from './rng';
 import { fails, type Problem } from './verdicts';
 
 /**
@@ -32,14 +34,52 @@ export type DrawResult = Drawn | { readonly ok: false; readonly problem: Problem
  * modes, which is the part of decision 18 that matters.
  *
  * The map goes first and everything later is conditioned on what it has fixed
- * (decision 2). **Kinds, goods and people** are the stages after it and are
- * #33; **patrons** are the sixth and are chunk 6. Each will be a step added
- * here, rerolled on its own and reading the galaxy the steps above it have
- * built — which is what keeps a downstream failure from discarding anything
- * upstream of it.
+ * (decision 2). **Kinds, goods and people** are the stages after it;
+ * **patrons** are the sixth and are chunk 6. Each is a step in `laterStages`,
+ * rerolled on its own and reading the galaxy the steps above it have built —
+ * which is what keeps a downstream failure from discarding anything upstream
+ * of it.
  */
 export function draw(content: ContentSet, rng: Rng): DrawResult {
-  return rerolled('motif selection', content, rng, (next) => assembleMap(content, next));
+  let made = rerolled('motif selection', content, rng, (next) => assembleMap(content, next));
+  for (const [stage, fill] of laterStages) {
+    if (!made.ok) return made;
+    const { galaxy } = made;
+    made = rerolled(stage, content, made.rng, (next) => fill(galaxy, content, next));
+  }
+  return made;
+}
+
+/**
+ * The stages after the map, in the order the cascade runs them. Each reads the
+ * galaxy the stages above it built and is re-rolled on its own, so a miss in
+ * one never discards the map (ADR 0008 decision 17).
+ */
+const laterStages: readonly (readonly [
+  Stage,
+  (galaxy: DrawnGalaxy, content: ContentSet, rng: Rng) => Attempt,
+])[] = [
+  ['kinds pass', drawKinds],
+  ['goods pass', drawGoods],
+  ['people pass', drawPeople],
+];
+
+/** The draw in reporting mode: the galaxy a seed gives, or why it gives none. */
+export type DrawReport =
+  | { readonly ok: true; readonly galaxy: DrawnGalaxy }
+  | { readonly ok: false; readonly problems: readonly Problem[] };
+
+/**
+ * The draw's **reporting mode**: the galaxy a content set and seed give,
+ * without starting a campaign, for the tools that need drawn galaxies — the
+ * seed-finder, the cross-product report and the harness's draw-shape columns.
+ * It is this same draw, its generator made from the seed exactly as
+ * `startCampaign` makes it, so a report never disagrees with the game (ADR 0008
+ * decision 18).
+ */
+export function drawGalaxy(content: ContentSet, seed: number): DrawReport {
+  const drawn = draw(content, rngFromSeed(seed));
+  return drawn.ok ? { ok: true, galaxy: drawn.galaxy } : { ok: false, problems: [drawn.problem] };
 }
 
 /**
@@ -55,9 +95,9 @@ function rerolled(
   attempt: (rng: Rng) => Attempt,
 ): DrawResult {
   const { rerolls } = content.drawParameters;
-  let made = checked(attempt(rng), content);
+  let made = checked(stage, attempt(rng), content);
   for (let reroll = 1; !made.ok && reroll <= rerolls; reroll += 1) {
-    made = checked(attempt(made.rng), content);
+    made = checked(stage, attempt(made.rng), content);
   }
   if (made.ok) return made;
 
@@ -74,13 +114,13 @@ function rerolled(
 }
 
 /**
- * An attempt with the registered checks run over it: an attempt that built a
- * galaxy missing an invariant is a miss like any other. The first check missed
- * is the one reported, in registration order.
+ * An attempt with the checks its stage re-rolls run over it: an attempt that
+ * built a galaxy missing an invariant is a miss like any other. The first check
+ * missed is the one reported, in registration order.
  */
-function checked(made: Attempt, content: ContentSet): Attempt {
+function checked(stage: Stage, made: Attempt, content: ContentSet): Attempt {
   if (!made.ok) return made;
-  for (const check of drawChecks) {
+  for (const check of drawChecks.filter((registered) => registered.stage === stage)) {
     const how = check.miss(made.galaxy, content);
     if (how !== null) {
       return {
