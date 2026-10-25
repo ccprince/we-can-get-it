@@ -490,14 +490,14 @@ function unfillableSlots(
   motifs: readonly Motif[],
   locations: readonly Location[],
 ): readonly Problem[] {
-  const held = new Set(locations.map((location) => location.archetype));
-  return motifs.flatMap((motif, at) =>
-    motif.slots.flatMap((slot, index) =>
-      slot.archetype === null || held.has(slot.archetype)
+  const inReserve = new Set(locations.map((location) => location.archetype));
+  return motifs.flatMap((motif, motifAt) =>
+    motif.slots.flatMap((slot, slotAt) =>
+      slot.archetype === null || inReserve.has(slot.archetype)
         ? []
         : [
             fails(
-              `motifs[${at}].slots[${index}].archetype`,
+              `motifs[${motifAt}].slots[${slotAt}].archetype`,
               `is ${slot.archetype}, and no location in the reserve is one, so the slot ` +
                 'can never be filled',
             ),
