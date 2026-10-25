@@ -110,6 +110,7 @@ describe('loadContent', () => {
       'drawParameters',
       'topology',
       'shops',
+      'offers',
       'archetypes',
       'tags',
       'start',
@@ -438,8 +439,8 @@ describe('the content set as a whole', () => {
               bonusTags: [],
               wants: [
                 aWant({ predicate: [{ tag: 'cloth' }] }),
-                { predicate: [{ tag: 'blue' }] },
-                { predicate: [{ tag: 'gilt' }] },
+                aWant({ predicate: [{ tag: 'blue' }] }),
+                aWant({ predicate: [{ tag: 'gilt' }] }),
               ],
             }),
           ],
@@ -512,7 +513,7 @@ describe('the report', () => {
               kind: 'ore',
             }),
           ],
-          buyers: [aBuyer({ wants: [aWant(), { predicate: [{ tag: 'ore' }] }] })],
+          buyers: [aBuyer({ wants: [aWant(), aWant({ predicate: [{ tag: 'ore' }] })] })],
         }),
       ),
     );

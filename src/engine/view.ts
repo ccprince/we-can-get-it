@@ -1,9 +1,10 @@
 import { dateOf, type CalendarDate } from './calendar';
 import type { Campaign, DigestEntry } from './campaign';
 import { departureTo, offeredCommands, type Command } from './commands';
-import type { Lane } from './content';
+import type { Buyer, Lane, Want } from './content';
 import { goodNamed, locationNamed, type DrawnGalaxy } from './galaxy';
 import { daysToFly, fareToFly, otherEnd, withinRange } from './map';
+import { offerFor, tierOf, type Tier } from './match';
 import { holdUsed, lotsHere, mostYouCanBuy } from './trade';
 
 /**
@@ -22,6 +23,38 @@ export type HereView = {
   readonly prose: string;
   /** What the shop here has on sale, in good-id order. Empty when it has nothing. */
   readonly lots: readonly LotView[];
+  /**
+   * The people standing here, in id order: derived order, from the draw (ADR
+   * 0009 decision 3). The draw may have hidden any of them.
+   */
+  readonly people: readonly PersonView[];
+};
+
+/** Someone standing here, and what they are after. */
+export type PersonView = {
+  readonly name: string;
+  /** In **want order**: a good before a conjunction, each by what it asks for. */
+  readonly wants: readonly WantView[];
+};
+
+/**
+ * One want, said plainly, and what each good in the hold would earn against it.
+ * The tier is derived and shown **before** the player commits, so the gap
+ * between acceptable and great is something to aim at (#15).
+ */
+export type WantView = {
+  readonly wording: string;
+  /** One line a good aboard, in the order each first came aboard. */
+  readonly matches: readonly MatchView[];
+};
+
+export type MatchView = {
+  readonly good: string;
+  readonly tier: Tier;
+  /** Credits for one unit; null when refused, which is not paid for. */
+  readonly offer: number | null;
+  /** The buyer's own words for turning the good down; null unless refused. */
+  readonly reason: string | null;
 };
 
 /**
@@ -262,7 +295,33 @@ function hereAt(campaign: Campaign, locationId: string): HereView {
       mostYouCanBuy: mostYouCanBuy(campaign, lot),
     }),
   );
-  return { name, prose, lots };
+  return { name, prose, lots, people: peopleAt(campaign, locationId) };
+}
+
+function peopleAt(campaign: Campaign, locationId: string): readonly PersonView[] {
+  return campaign.galaxy.people
+    .filter((buyer) => buyer.locationId === locationId)
+    .map((buyer) => ({
+      name: buyer.name,
+      wants: buyer.wants.map((want) => wantFor(campaign, buyer, want)),
+    }));
+}
+
+function wantFor(campaign: Campaign, buyer: Buyer, want: Want): WantView {
+  const { galaxy, content } = campaign;
+  return {
+    wording: 'goodId' in want ? `wants ${goodNamed(galaxy, want.goodId).name}` : want.plainly,
+    matches: campaign.cargo.map(({ goodId }) => {
+      const good = goodNamed(galaxy, goodId);
+      const tier = tierOf(want, buyer, good);
+      return {
+        good: good.name,
+        tier,
+        offer: offerFor(good, tier, content.offers),
+        reason: tier === 'refused' ? buyer.refusalLine : null,
+      };
+    }),
+  };
 }
 
 function holdFor(campaign: Campaign): HoldView {

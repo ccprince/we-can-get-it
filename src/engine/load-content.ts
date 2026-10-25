@@ -19,6 +19,7 @@ import {
   type Range,
   type Shape,
   type Ship,
+  type OfferParameters,
   type ShopParameters,
   type Slot,
   type Start,
@@ -74,6 +75,7 @@ export function loadContent(raw: unknown): LoadResult {
   const drawParameters = readDrawParameters(raw.drawParameters, problems);
   const topology = readTopology(raw.topology, problems);
   const shops = readShopParameters(raw.shops, problems);
+  const offers = readOfferParameters(raw.offers, problems);
   const archetypes = readArchetypes(raw.archetypes, problems);
   // A location is authored with an archetype and a slot types against one, so
   // an enumeration that did not read leaves both unchecked rather than failing
@@ -147,6 +149,7 @@ export function loadContent(raw: unknown): LoadResult {
     drawParameters === undefined ||
     topology === undefined ||
     shops === undefined ||
+    offers === undefined ||
     fareRate === undefined ||
     calendar === undefined ||
     archetypes === undefined ||
@@ -168,6 +171,7 @@ export function loadContent(raw: unknown): LoadResult {
       drawParameters,
       topology,
       shops,
+      offers,
       fareRate,
       calendar,
       archetypes,
@@ -197,8 +201,35 @@ function inIdOrder(content: ContentSet): ContentSet {
     locations: sortedById(content.locations),
     tags: sortedById(content.tags),
     goods: sortedById(content.goods),
-    buyers: sortedById(content.buyers),
+    buyers: sortedById(content.buyers.map(buyerInWantOrder)),
   };
+}
+
+/**
+ * A buyer's wants in **want order** and each conjunction's terms in tag order.
+ * A want has no id, so what it asks for is its key: one naming a good sorts
+ * before every conjunction, goods by id and conjunctions by their terms. Two
+ * wants asking for the same thing would tie, and the reader refuses that.
+ */
+function buyerInWantOrder(buyer: Buyer): Buyer {
+  const wants = buyer.wants.map((want) =>
+    'predicate' in want ? { ...want, predicate: [...want.predicate].sort(byTerm) } : want,
+  );
+  return { ...buyer, wants: wants.sort((one, other) => byId(wantKey(one), wantKey(other))) };
+}
+
+function byTerm(one: Term, other: Term): number {
+  return byId(termKey(one), termKey(other));
+}
+
+function termKey({ tag, negated }: Term): string {
+  return negated ? `!${tag}` : tag;
+}
+
+/** What a want asks for, as one string: the good by id, or its terms in tag order. */
+function wantKey(want: Want): string {
+  if ('goodId' in want) return `0 ${want.goodId}`;
+  return `1 ${[...want.predicate].sort(byTerm).map(termKey).join(' ')}`;
 }
 
 /**
@@ -619,6 +650,42 @@ function readShopParameters(raw: unknown, problems: Problem[]): ShopParameters |
     return undefined;
   }
   return { lotsPerShop, lotQuantity, markupPercent, scarcityPercent };
+}
+
+/**
+ * What a tier pays, as a percent of worth. A better tier has to pay better, so
+ * the three are strictly rising; a tier worth nothing is `refused`, which has
+ * no entry. Unlike a markup, an offer may pass 100: a great match can pay over
+ * worth.
+ */
+function readOfferParameters(raw: unknown, problems: Problem[]): OfferParameters | undefined {
+  if (!isObject(raw)) {
+    problems.push(fails('offers', 'is missing'));
+    return undefined;
+  }
+
+  const grudgingPercent = readInteger(raw.grudgingPercent, 'offers.grudgingPercent', 1, problems);
+  const acceptablePercent = readInteger(
+    raw.acceptablePercent,
+    'offers.acceptablePercent',
+    1,
+    problems,
+  );
+  const greatPercent = readInteger(raw.greatPercent, 'offers.greatPercent', 1, problems);
+  if (
+    grudgingPercent === undefined ||
+    acceptablePercent === undefined ||
+    greatPercent === undefined
+  ) {
+    return undefined;
+  }
+  if (!(grudgingPercent < acceptablePercent && acceptablePercent < greatPercent)) {
+    problems.push(
+      fails('offers', 'must pay strictly more at each better tier: grudging, acceptable, great'),
+    );
+    return undefined;
+  }
+  return { grudgingPercent, acceptablePercent, greatPercent };
 }
 
 /** A whole percentage: none, all, or something between. */
@@ -1052,17 +1119,19 @@ function readBuyers(
     const wants = readWants(entry.wants, `${where}.wants`, tags, goods, problems);
     const bonusTags = readRoleTags(entry.bonusTags, `${where}.bonusTags`, tags, problems);
     const refusalTags = readRoleTags(entry.refusalTags, `${where}.refusalTags`, tags, problems);
+    const refusalLine = readText(entry.refusalLine, `${where}.refusalLine`, problems);
     if (
       id === undefined ||
       name === undefined ||
       locationId === undefined ||
       wants === undefined ||
       bonusTags === undefined ||
-      refusalTags === undefined
+      refusalTags === undefined ||
+      refusalLine === undefined
     ) {
       return undefined;
     }
-    return { id, name, locationId, wants, bonusTags, refusalTags };
+    return { id, name, locationId, wants, bonusTags, refusalTags, refusalLine };
   });
 }
 
@@ -1085,7 +1154,22 @@ function readWants(
     if (want !== undefined) wants.push(want);
   });
 
-  return wants.length === raw.length ? wants : undefined;
+  if (wants.length !== raw.length) return undefined;
+
+  // Two wants asking for one thing would be one want twice, and the player
+  // could not tell them apart.
+  const keys = new Set<string>();
+  for (const [index, want] of wants.entries()) {
+    const key = wantKey(want);
+    if (keys.has(key)) {
+      problems.push(
+        fails(`${where}[${index}]`, 'asks for what an earlier want of this buyer asks for'),
+      );
+      return undefined;
+    }
+    keys.add(key);
+  }
+  return wants;
 }
 
 function readWant(
@@ -1124,7 +1208,8 @@ function readWant(
   }
 
   const predicate = readPredicate(raw.predicate, `${where}.predicate`, tags, problems);
-  return predicate === undefined ? undefined : { predicate };
+  const plainly = readText(raw.plainly, `${where}.plainly`, problems);
+  return predicate === undefined || plainly === undefined ? undefined : { predicate, plainly };
 }
 
 function readPredicate(

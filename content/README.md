@@ -143,6 +143,13 @@ when the shop is stocked, so buying never moves it: the stock a price reads is t
 opened at, which keeps a purchase of several units at a number the player can reproduce from what
 the shop shows them (ADR 0009 decision 3).
 
+### `offers`
+
+What a buyer pays for a good, as a whole percent of its **worth**, at each **match tier** that pays
+at all: `grudgingPercent`, `acceptablePercent` and `greatPercent`. A refused good is not paid for.
+The three must rise strictly, so a better tier pays better, and an offer may pass 100. The offer is
+`floor(worth × percent / 100)`, and nothing is authored per want (ADR 0007 decision 13).
+
 ### `tags`
 
 Every tag declares its `id`, its `class` — `kind`, `quality`, `origin` or `quirk` (ADR 0007
@@ -162,7 +169,8 @@ computed against, deliberately not a tag and not a price (decision 12).
 
 ### `buyers`
 
-A buyer has an `id`, a `name`, their `wants`, and the tags they hold in a role: `bonusTags` they pay
+A buyer has an `id`, a `name`, their `wants`, a `refusalLine` — what they say when a good is turned
+down, in their own words, whichever term it failed — and the tags they hold in a role: `bonusTags` they pay
 more for and `refusalTags` that make them say no. The role is a property of this buyer's
 relationship to a tag rather than a class of tag (decision 7), so the same tag may be a bonus at one
 buyer and a refusal at another — but not both at one buyer.
@@ -175,9 +183,13 @@ that location takes the buyer out with it, and one that does still **hides** the
 A **want** is either a `predicate` or one good by identity, never both and never neither:
 
 ```jsonc
-{ "predicate": [{ "tag": "cloth" }, { "tag": "warm", "negated": true }] }   // cloth and not warm
+{ "predicate": [{ "tag": "cloth" }, { "tag": "warm", "negated": true }], "plainly": "wants cloth that stays cool" }
 { "goodId": "silk" }                                                        // this thing, by name
 ```
+
+A predicate want carries `plainly`, the want said as the buyer's side of the sentence, because the
+player never sees a quality tag and a plain want has to tell them what would satisfy it. A want
+naming a good needs none. The match tier is derived and never written here (ADR 0007 decision 9).
 
 A predicate is a **conjunction** of terms, each a tag or a negated tag. There is no disjunction: a
 want for "brandy or whisky" is a want for the kind above them, which is what flat kinds with many

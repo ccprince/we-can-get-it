@@ -386,11 +386,13 @@
             {
               "tag": "tools"
             }
-          ]
+          ],
+          "plainly": "wants tools"
         }
       ],
       "bonusTags": [],
-      "refusalTags": []
+      "refusalTags": [],
+      "refusalLine": "That's not what I'm after."
     },
     {
       "id": "marrow",
@@ -402,11 +404,13 @@
             {
               "tag": "ore"
             }
-          ]
+          ],
+          "plainly": "wants ore"
         }
       ],
       "bonusTags": [],
-      "refusalTags": []
+      "refusalTags": [],
+      "refusalLine": "That's not what I'm after."
     },
     {
       "id": "osk",
@@ -418,11 +422,13 @@
             {
               "tag": "cloth"
             }
-          ]
+          ],
+          "plainly": "wants cloth"
         }
       ],
       "bonusTags": [],
-      "refusalTags": []
+      "refusalTags": [],
+      "refusalLine": "That's not what I'm after."
     }
   ],
   "start": {
@@ -433,5 +439,10 @@
       "range": 20,
       "hold": 12
     }
+  },
+  "offers": {
+    "grudgingPercent": 50,
+    "acceptablePercent": 100,
+    "greatPercent": 130
   }
 }
