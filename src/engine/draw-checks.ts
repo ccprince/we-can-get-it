@@ -287,13 +287,14 @@ export function reserveShortfall(content: ContentSet): Problem | null {
     );
     const demanded = motifsPerCampaign * mostInAMotif;
     const held = content.locations.filter((location) => location.archetype === archetype.id).length;
-    if (held < demanded + reserveSurplus) {
+    const needs = demanded + reserveSurplus;
+    if (held < needs) {
       return fails(
         'drawParameters.reserveSurplus',
         `the reserve holds ${held} ${archetype.id} location${held === 1 ? '' : 's'}, and an ` +
           `assembly of ${motifsPerCampaign} motif${motifsPerCampaign === 1 ? '' : 's'} can ` +
           `demand ${demanded} of them, which with the ` +
-          `surplus of ${reserveSurplus} needs ${demanded + reserveSurplus}`,
+          `surplus of ${reserveSurplus} needs ${needs}`,
       );
     }
   }

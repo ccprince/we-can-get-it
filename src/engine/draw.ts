@@ -41,8 +41,8 @@ export type DrawResult = Drawn | { readonly ok: false; readonly problem: Problem
  * of it.
  */
 export function draw(content: ContentSet, rng: Rng): DrawResult {
-  const short = reserveShortfall(content);
-  if (short !== null) return { ok: false, problem: short };
+  const thinReserve = reserveShortfall(content);
+  if (thinReserve !== null) return { ok: false, problem: thinReserve };
   let made = rerolled('motif selection', content, rng, (next) => assembleMap(content, next));
   for (const [stage, fill] of laterStages) {
     if (!made.ok) return made;
