@@ -1,6 +1,5 @@
 import type { Campaign, Cargo } from './campaign';
-import type { Reason } from './commands';
-import { byId } from './load-content';
+import type { CommandResult } from './commands';
 import type { Lot } from './stock';
 
 /**
@@ -8,12 +7,17 @@ import type { Lot } from './stock';
  * command the engine records and replays, and it spends no part of the day.
  *
  * What the shop shows the player as the most they could buy and what a buy is
- * refused for are both read from here, so the two cannot drift apart.
+ * refused for read the same three limits — the lot, the room in the hold and
+ * the credits — from here, so the two cannot drift apart.
  */
 
 /** Units of cargo aboard, against the **hold**. One unit of any good is one unit of hold. */
 export function holdUsed(cargo: readonly Cargo[]): number {
   return cargo.reduce((used, { quantity }) => used + quantity, 0);
+}
+
+function roomInHold(campaign: Campaign): number {
+  return campaign.ship.hold - holdUsed(campaign.cargo);
 }
 
 /** The lots on sale where the player is: none in **transit**, where there is no shop. */
@@ -28,8 +32,7 @@ export function lotsHere(campaign: Campaign): readonly Lot[] {
  * holds, what the hold has room for, and what the credits cover.
  */
 export function mostYouCanBuy(campaign: Campaign, lot: Lot): number {
-  const room = campaign.ship.hold - holdUsed(campaign.cargo);
-  return Math.min(lot.quantity, room, Math.floor(campaign.credits / lot.price));
+  return Math.min(lot.quantity, roomInHold(campaign), Math.floor(campaign.credits / lot.price));
 }
 
 /**
@@ -37,11 +40,16 @@ export function mostYouCanBuy(campaign: Campaign, lot: Lot): number {
  * units go into the hold, and a lot bought out is gone for the rest of the
  * campaign: nothing restocks a shop in this milestone.
  */
-export function buy(
-  campaign: Campaign,
-  lotId: string,
-  quantity: number,
-): { readonly campaign: Campaign } | { readonly rejected: Reason } {
+export function buy(campaign: Campaign, lotId: string, quantity: number): CommandResult {
+  if (campaign.where.kind === 'in-transit') {
+    return {
+      rejected: {
+        code: 'already-underway',
+        message: 'You are underway, and there is no shop in transit.',
+      },
+    };
+  }
+
   const lot = lotsHere(campaign).find(({ id }) => id === lotId);
   if (lot === undefined) {
     return { rejected: { code: 'no-such-lot', message: 'There is no such lot on sale here.' } };
@@ -52,11 +60,11 @@ export function buy(
     };
   }
 
-  const room = campaign.ship.hold - holdUsed(campaign.cargo);
+  const room = roomInHold(campaign);
   if (quantity > room) {
     return {
       rejected: {
-        code: 'hold-is-full',
+        code: 'not-enough-room',
         message: `That is ${units(quantity)}, and your hold has room for ${room}.`,
       },
     };
@@ -86,13 +94,16 @@ export function buy(
   };
 }
 
-/** The cargo with more of a good aboard: one entry a good, in good-id order. */
+/**
+ * The cargo with more of a good aboard: one entry a good, in the order the
+ * goods first came aboard — derived from the command sequence, and never an id
+ * sort the player could not read anyway (ADR 0009 decision 3).
+ */
 function loaded(cargo: readonly Cargo[], goodId: string, quantity: number): readonly Cargo[] {
-  const aboard = cargo.find((each) => each.goodId === goodId)?.quantity ?? 0;
-  return [
-    ...cargo.filter((each) => each.goodId !== goodId),
-    { goodId, quantity: aboard + quantity },
-  ].sort((one, other) => byId(one.goodId, other.goodId));
+  if (!cargo.some((each) => each.goodId === goodId)) return [...cargo, { goodId, quantity }];
+  return cargo.map((each) =>
+    each.goodId === goodId ? { ...each, quantity: each.quantity + quantity } : each,
+  );
 }
 
 function units(quantity: number): string {

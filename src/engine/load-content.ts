@@ -211,7 +211,7 @@ function sortedById<T extends { readonly id: string }>(items: readonly T[]): rea
 }
 
 /** Code-unit order over authored ids, which no locale can change. */
-export function byId(one: string, other: string): number {
+function byId(one: string, other: string): number {
   if (one === other) return 0;
   return one < other ? -1 : 1;
 }

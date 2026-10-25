@@ -78,7 +78,7 @@ export type Campaign = {
    * the rest of the campaign.
    */
   readonly lots: readonly Lot[];
-  /** What is in the **hold**: one entry a good, in good-id order, and none of nothing. */
+  /** What is in the **hold**: one entry a good, in the order each first came aboard. */
   readonly cargo: readonly Cargo[];
   /** The day that has just ended. Null until one has. */
   readonly digest: Digest | null;

@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
-import { isRejected, takeCommand, view, type Campaign, type Command } from '../src/engine';
+import { takeCommand, view, type Campaign, type Command } from '../src/engine';
 import { aShip, aStart, aTradingGalaxy, loadedContentSet, type RawObject } from './support/content';
-import { started } from './support/campaign';
+import { after, started } from './support/campaign';
 
 const SEED = 20261024;
 
@@ -15,15 +15,6 @@ function atKestrel(overrides: RawObject = {}): Campaign {
 
 function buy(lot: string, quantity: number): Command {
   return { kind: 'buy', lot, quantity };
-}
-
-/** The campaign a command leaves, for a command the test expects to be taken. */
-function after(campaign: Campaign, ...commands: readonly Command[]): Campaign {
-  return commands.reduce((current, command) => {
-    const result = takeCommand(current, command);
-    if (isRejected(result)) throw new Error(result.rejected.message);
-    return result.campaign;
-  }, campaign);
 }
 
 describe('buying a lot', () => {
@@ -45,6 +36,15 @@ describe('buying a lot', () => {
 
     expect(view(campaign).today.day).toBe(1);
     expect(view(campaign).digest).toBeNull();
+  });
+
+  it('lists the hold in the order goods came aboard', () => {
+    const campaign = after(atKestrel(), buy('kestrel/silk', 1), buy('kestrel/blanket', 1));
+
+    expect(view(campaign).hold.cargo.map(({ good }) => good)).toEqual([
+      'Bolt of silk',
+      'Ship blanket',
+    ]);
   });
 
   it('carries two buys of one good as one cargo', () => {
@@ -77,7 +77,7 @@ describe('what a buy is refused for', () => {
 
     expect(takeCommand(campaign, buy('kestrel/blanket', 2))).toEqual({
       rejected: {
-        code: 'hold-is-full',
+        code: 'not-enough-room',
         message: 'That is 2 units, and your hold has room for 1.',
       },
     });
@@ -107,6 +107,17 @@ describe('what a buy is refused for', () => {
     // Bellwether's shop stocks tools, and the player is at Kestrel.
     expect(takeCommand(atKestrel(), buy('bellwether/spanner', 1))).toMatchObject({
       rejected: { code: 'no-such-lot' },
+    });
+  });
+
+  it('refuses a buy in transit, where there is no shop', () => {
+    const underway = after(atKestrel(), { kind: 'depart', toId: 'bellwether' });
+
+    expect(takeCommand(underway, buy('kestrel/silk', 1))).toEqual({
+      rejected: {
+        code: 'already-underway',
+        message: 'You are underway, and there is no shop in transit.',
+      },
     });
   });
 
