@@ -34,23 +34,23 @@ export function tierOf(
   buyer: Buyer,
   good: Good,
 ): { readonly tier: Tier; readonly failedTerm: string | null } {
-  const tier = (tier: Tier, failedTerm: string | null = null) => ({ tier, failedTerm });
-  if (buyer.refusalTags.some((tag) => carries(good, tag))) return tier('refused');
+  const earns = (tier: Tier, failedTerm: string | null = null) => ({ tier, failedTerm });
+  if (buyer.refusalTags.some((tag) => carries(good, tag))) return earns('refused');
   const bonus = buyer.bonusTags.some((tag) => carries(good, tag));
 
   if ('goodId' in want) {
-    if (good.id !== want.goodId) return tier('refused');
-    return tier(bonus ? 'great' : 'acceptable');
+    if (good.id !== want.goodId) return earns('refused');
+    return earns(bonus ? 'great' : 'acceptable');
   }
 
   if (want.predicate.some((term) => term.negated && carries(good, term.tag)))
-    return tier('refused');
+    return earns('refused');
 
   const positive = want.predicate.filter((term) => !term.negated);
   const unmet = positive.filter((term) => !carries(good, term.tag));
-  if (unmet.length === 0) return tier(bonus ? 'great' : 'acceptable');
-  if (unmet.length === positive.length) return tier('refused');
-  return tier('grudging', unmet[0]?.tag ?? null);
+  if (unmet.length === 0) return earns(bonus ? 'great' : 'acceptable');
+  if (unmet.length === positive.length) return earns('refused');
+  return earns('grudging', unmet[0]?.tag ?? null);
 }
 
 /**
