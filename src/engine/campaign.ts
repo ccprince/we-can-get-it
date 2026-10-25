@@ -2,6 +2,7 @@ import type { ContentSet, Ship } from './content';
 import { draw } from './draw';
 import type { DrawnGalaxy } from './galaxy';
 import { rngFromSeed, type Rng } from './rng';
+import { stockShops, type Lot } from './stock';
 import type { Problem } from './verdicts';
 
 /** An entry in a day's digest: one piece of change that reached the player. */
@@ -65,6 +66,12 @@ export type Campaign = {
    * ADR 0004 decision 15) — the purchase itself is outside this milestone.
    */
   readonly ship: Ship;
+  /**
+   * Every lot on sale in the galaxy, shop by shop in placement order. Stocked
+   * at the start and depleted by buying; a lot bought out leaves this list for
+   * the rest of the campaign.
+   */
+  readonly lots: readonly Lot[];
   /** The day that has just ended. Null until one has. */
   readonly digest: Digest | null;
 };
@@ -84,7 +91,8 @@ export function startCampaign(content: ContentSet, seed: number): StartResult {
   // generator the campaign carries is the one the draw left behind.
   const drawn = draw(content, rngFromSeed(seed));
   if (!drawn.ok) return { ok: false, problems: [drawn.problem] };
-  const { galaxy, rng } = drawn;
+  const { galaxy } = drawn;
+  const [lots, rng] = stockShops(galaxy, content, drawn.rng);
 
   return {
     ok: true,
@@ -97,6 +105,7 @@ export function startCampaign(content: ContentSet, seed: number): StartResult {
       where: { kind: 'at', locationId: galaxy.startId },
       credits: content.start.credits,
       ship: content.start.ship,
+      lots,
       digest: null,
     },
   };

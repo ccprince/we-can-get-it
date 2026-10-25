@@ -16,6 +16,11 @@ function asObjects(value: unknown): RawObject[] | undefined {
   return Array.isArray(value) ? (value as RawObject[]) : undefined;
 }
 
+/** A list of plain values, or none if it was not given. */
+function asStrings(value: unknown): string[] {
+  return Array.isArray(value) ? (value as string[]) : [];
+}
+
 /** A calendar whose months are a whole number of weeks (ADR 0005 decision 2). */
 export function aCalendar(overrides: RawObject = {}): RawObject {
   return {
@@ -239,23 +244,28 @@ export function aGalaxy(overrides: RawObject = {}): RawObject {
   ];
 
   // One archetype per place, so every slot has exactly one location that fits.
-  const placed = places.map((location) => ({
-    ...location,
-    id: String(location.id),
-    archetype: `only-${String(location.id)}`,
+  // A place may say which kinds it `supplies`, which its archetype declares.
+  const placed = places.map(({ supplies, ...location }) => ({
+    location: { ...location, id: String(location.id), archetype: `only-${String(location.id)}` },
+    supplies: asStrings(supplies),
   }));
 
   const slotOf = new Map(
-    placed.map((location, at) => [location.id, `${String(at).padStart(2, '0')}-${location.id}`]),
+    placed.map(({ location }, at) => [
+      location.id,
+      `${String(at).padStart(2, '0')}-${location.id}`,
+    ]),
   );
 
   return {
-    archetypes: placed.map((location) => anArchetype({ id: location.archetype })),
-    locations: placed,
+    archetypes: placed.map(({ location, supplies }) =>
+      anArchetype({ id: location.archetype, supplies }),
+    ),
+    locations: placed.map(({ location }) => location),
     motifs: [
       {
         id: 'the-whole-map',
-        slots: placed.map((location) => ({
+        slots: placed.map(({ location }) => ({
           id: slotOf.get(location.id),
           archetype: location.archetype,
         })),

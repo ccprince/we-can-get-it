@@ -40,3 +40,14 @@ export function locationNamed(
   }
   return location;
 }
+
+/**
+ * The good an id names. Every good id in a campaign names a good the **draw**
+ * kept — a lot is only ever stocked from those — so this is total for any
+ * galaxy the draw produced.
+ */
+export function goodNamed(galaxy: Pick<DrawnGalaxy, 'goods'>, goodId: string): Good {
+  const good = galaxy.goods.find((candidate) => candidate.id === goodId);
+  if (good === undefined) throw new Error(`${goodId} is not a good the drawn galaxy holds`);
+  return good;
+}
