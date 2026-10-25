@@ -242,3 +242,97 @@ describe('the goods the draw keeps', () => {
     ).toBe('it dropped cloth, which a drawn archetype supplies or demands');
   });
 });
+
+describe('the people floor, in the drawn galaxy', () => {
+  /** Two people at the one place, each hidden half the time and a person apiece wanted. */
+  function aCastAtOnePlace(overrides: RawObject = {}): ContentSet {
+    return aClothReserve({
+      buyers: [
+        aBuyer({ bonusTags: ['warm'] }),
+        aBuyer({
+          id: 'mara',
+          name: 'Mara Quist',
+          wants: [aWant({ predicate: [{ tag: 'blue' }] })],
+        }),
+      ],
+      ...overrides,
+    });
+  }
+
+  it('re-rolls the people pass when a drawn location is left with nobody on it', () => {
+    const bare = failures(
+      aCastAtOnePlace({
+        drawParameters: aDrawParameters({ peopleHiddenPercent: 50, peopleFloor: 1, rerolls: 0 }),
+      }),
+    );
+    const rerolled = aCastAtOnePlace({
+      drawParameters: aDrawParameters({ peopleHiddenPercent: 50, peopleFloor: 1 }),
+    });
+
+    expect(bare.find((what) => what !== null)).toContain(
+      'the per-location people floor: kestrel carried fewer than 1 people',
+    );
+    for (const seed of SEEDS) {
+      expect(galaxyOf(rerolled, seed).people.length).toBeGreaterThanOrEqual(1);
+    }
+  });
+
+  it('is declared, and a floor of nought lets a location stand empty', () => {
+    const content = aCastAtOnePlace({
+      drawParameters: aDrawParameters({ peopleHiddenPercent: 100, peopleFloor: 0 }),
+    });
+
+    expect(galaxyOf(content, 1).people).toEqual([]);
+  });
+});
+
+describe('the reserve surplus, per archetype', () => {
+  /**
+   * Two motifs of one slot, a market and an extractor, and two drawn a campaign:
+   * an assembly can demand two of either. The reserve holds three markets and
+   * two extractors.
+   */
+  function aReserveOfTwoKinds(reserveSurplus: number): ContentSet {
+    const place = (id: string, archetype: string) =>
+      aLocation({ id, name: `The ${id}`, archetype });
+    return loadedContentSet({
+      locations: [
+        place('kestrel', 'market'),
+        place('bellwether', 'market'),
+        place('shoals', 'market'),
+        place('hollow', 'extractor'),
+        place('lament', 'extractor'),
+      ],
+      motifs: [
+        aMotif({ id: 'stall', slots: [aSlot({ archetype: 'market' })] }),
+        aMotif({ id: 'pit', slots: [aSlot({ archetype: 'extractor' })] }),
+      ],
+      drawParameters: aDrawParameters({ motifsPerCampaign: 2, reserveSurplus }),
+    });
+  }
+
+  it('draws when every archetype holds the most an assembly can demand, plus the surplus', () => {
+    for (const seed of SEEDS) {
+      expect(drawGalaxy(aReserveOfTwoKinds(0), seed).ok).toBe(true);
+    }
+  });
+
+  it('fails loudly naming the first archetype that is short, on every seed', () => {
+    // One surplus, applied to each: the markets hold three of the three they
+    // need and the extractors two of the three, so it is the extractors named.
+    for (const seed of SEEDS) {
+      expect(drawGalaxy(aReserveOfTwoKinds(1), seed)).toEqual({
+        ok: false,
+        problems: [
+          {
+            verdict: 'fails',
+            where: 'drawParameters.reserveSurplus',
+            what:
+              'the reserve holds 2 extractor locations, and an assembly of 2 motifs can ' +
+              'demand 2 of them, which with the surplus of 1 needs 3',
+          },
+        ],
+      });
+    }
+  });
+});

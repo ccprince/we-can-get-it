@@ -1218,6 +1218,23 @@ describe('what the draw fills the map with', () => {
   });
 });
 
+describe('the draw parameters the substance checks read', () => {
+  it('refuses a content set that declares no people floor or reserve surplus', () => {
+    // Neither has a default: the engine holds no number of its own (ADR 0007
+    // decision 15).
+    const result = loadContent(
+      aContentSet({
+        drawParameters: aDrawParameters({ peopleFloor: undefined, reserveSurplus: -1 }),
+      }),
+    );
+
+    expect(result.ok ? [] : result.problems.map((problem) => problem.where)).toEqual([
+      'drawParameters.peopleFloor',
+      'drawParameters.reserveSurplus',
+    ]);
+  });
+});
+
 describe('what the shops stock', () => {
   it('refuses a content set with no shop parameters, since the engine holds none', () => {
     const result = loadContent(aContentSet({ shops: undefined }));

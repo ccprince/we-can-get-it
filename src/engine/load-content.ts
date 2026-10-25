@@ -430,13 +430,23 @@ function readDrawParameters(raw: unknown, problems: Problem[]): DrawParameters |
     'drawParameters.peopleHiddenPercent',
     problems,
   );
+  // Nought is a floor like any other: a location may be drawn with nobody on it.
+  const peopleFloor = readInteger(raw.peopleFloor, 'drawParameters.peopleFloor', 0, problems);
+  const reserveSurplus = readInteger(
+    raw.reserveSurplus,
+    'drawParameters.reserveSurplus',
+    0,
+    problems,
+  );
   if (
     motifsPerCampaign === undefined ||
     interMotifDistance === undefined ||
     locationCount === undefined ||
     rerolls === undefined ||
     goodsHiddenPercent === undefined ||
-    peopleHiddenPercent === undefined
+    peopleHiddenPercent === undefined ||
+    peopleFloor === undefined ||
+    reserveSurplus === undefined
   ) {
     return undefined;
   }
@@ -459,6 +469,8 @@ function readDrawParameters(raw: unknown, problems: Problem[]): DrawParameters |
     rerolls,
     goodsHiddenPercent,
     peopleHiddenPercent,
+    peopleFloor,
+    reserveSurplus,
   };
 }
 

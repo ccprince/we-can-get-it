@@ -63,7 +63,9 @@
     },
     "rerolls": 24,
     "goodsHiddenPercent": 33,
-    "peopleHiddenPercent": 33
+    "peopleHiddenPercent": 33,
+    "peopleFloor": 0,
+    "reserveSurplus": 1
   },
   "topology": {
     "leastPlaced": {

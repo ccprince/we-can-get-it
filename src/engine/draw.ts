@@ -1,7 +1,7 @@
 import { assembleMap } from './assemble';
 import { drawGoods, drawKinds, drawPeople } from './fill';
 import type { ContentSet } from './content';
-import { drawChecks, type Attempt, type Drawn, type Stage } from './draw-checks';
+import { drawChecks, reserveShortfall, type Attempt, type Drawn, type Stage } from './draw-checks';
 import type { DrawnGalaxy } from './galaxy';
 import { rngFromSeed, type Rng } from './rng';
 import { fails, type Problem } from './verdicts';
@@ -41,6 +41,8 @@ export type DrawResult = Drawn | { readonly ok: false; readonly problem: Problem
  * of it.
  */
 export function draw(content: ContentSet, rng: Rng): DrawResult {
+  const short = reserveShortfall(content);
+  if (short !== null) return { ok: false, problem: short };
   let made = rerolled('motif selection', content, rng, (next) => assembleMap(content, next));
   for (const [stage, fill] of laterStages) {
     if (!made.ok) return made;

@@ -417,11 +417,11 @@ describe('the draw-time pass', () => {
     ]);
   });
 
-  it('reports a reserve that runs out mid-draw rather than throwing', () => {
+  it('names the archetype a reserve is too thin in, rather than throwing or re-rolling', () => {
     // Two `processor` slots and one `processor` in the reserve: the load-time
-    // check passes, since one exists, and every draw runs out filling the
-    // second. Whether the reserve holds enough is #27's; what this asks is that
-    // the draw says so and does not throw past `startCampaign`.
+    // check passes, since one exists, and no draw could fill the second. The
+    // reserve is what is short and a re-roll cannot change it, so the draw says
+    // so up front (ADR 0008 decision 9) and does not throw past `startCampaign`.
     const content = loadedContentSet({
       locations: [aLocation({ archetype: 'processor' })],
       motifs: [
@@ -438,10 +438,10 @@ describe('the draw-time pass', () => {
     expect(failureOf(content)).toEqual([
       {
         verdict: 'fails',
-        where: 'locations',
+        where: 'drawParameters.reserveSurplus',
         what:
-          'the motif selection was re-rolled 2 times and still missed a location for every ' +
-          'slot: the reserve had no processor left for the works slot of lone-berth',
+          'the reserve holds 1 processor location, and an assembly of 1 motif can demand 2 of ' +
+          'them, which with the surplus of 0 needs 2',
       },
     ]);
   });

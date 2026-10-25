@@ -345,6 +345,18 @@ export type DrawParameters = {
    * decision 10).
    */
   readonly peopleHiddenPercent: number;
+  /**
+   * The fewest people every drawn location carries, checked after the people
+   * pass (ADR 0008 decision 12). The hiding rate is flat and galaxy-wide, so
+   * this is what stops a location being drawn with nobody on it.
+   */
+  readonly peopleFloor: number;
+  /**
+   * How many more locations of an archetype the reserve holds than the most
+   * simultaneous slots of it any legal assembly can demand (ADR 0008 decision
+   * 9). One number applied to every archetype, and not a ratio of the draw.
+   */
+  readonly reserveSurplus: number;
 };
 
 /**
