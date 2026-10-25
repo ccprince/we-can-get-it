@@ -134,18 +134,37 @@ whose value is that it stays rare (ADR 0010).
 
 ## Merging, when asked
 
-`gh pr merge <n> --rebase --delete-branch`. This repo allows all three methods and keeps a linear
-log; `delete_branch_on_merge` is off on the remote, so `--delete-branch` is what removes the branch.
+A ticket's slices are linked as a **GitHub stack**, and `gh pr merge` refuses a PR in one: a stacked
+PR merges only through the asynchronous merge API. That API takes a request and runs the merge in
+the background. This repo allows all three merge methods and keeps a linear log, so pass `rebase`.
 
-**A stack merges bottom-up**, one PR at a time, oldest first. GitHub retargets each child onto `main`
-as its parent merges, so the children need no edit — and because the hook reads the base from `gh`,
-a child pushed after that retarget is measured against `main`, which by then is the right base.
+**Merge the whole stack in one call, on the top PR.** A merge request on a stacked PR also merges
+every open PR below it. Pin it to the top PR's head, so that a push made after the request cancels
+the merge rather than slipping into it:
 
-`--delete-branch` removes the branch only if the command reaches its local steps. PR #30's merge
-went through on the remote and then aborted, leaving local `main` behind `origin/main` and the branch
-alive on both sides. Treat the local side as unfinished until checked: `git fetch`, confirm
-`origin/main`'s tree matches the branch tip you pushed, then `git reset --hard origin/main` and
-delete the branch yourself if it is still there.
+```
+sha=$(gh pr view <top> --json headRefOid --jq .headRefOid)
+gh api -X PUT repos/ccprince/we-can-get-it/pulls/<top>/merge-async \
+  -H "X-GitHub-Api-Version: 2026-03-10" \
+  -f merge_method=rebase -f merge_action=direct_merge -f sha=$sha
+```
+
+The answer is `pending` with a `uuid`. Poll
+`gh api repos/ccprince/we-can-get-it/pulls/<top>/merge-async/<uuid> -H "X-GitHub-Api-Version: 2026-03-10"`
+until `status` is `merged` or `failed`. A `failed` status carries a message saying why. Wait on it
+with a background `until` loop rather than in the foreground, and give the loop a deadline.
+
+**Fall back to bottom-up**, one PR at a time with the same call, when the one-call merge fails or
+when only part of the stack should land. #12's two-slice stack merged this way. After each parent
+merges, GitHub retargets the child onto `main` and **rebases it itself**, so the child's head SHA
+changes. Before merging the child, `git fetch` and confirm that `git diff <the tip you pushed>
+origin/<child>` is empty. The rebase should not change the tree, and that check is what tells you
+it didn't. Then pin the request to the child's new head.
+
+**Treat the local side as unfinished until checked.** #12's merge removed both remote branches on
+its own, even though `delete_branch_on_merge` is off. Check rather than assume:
+`git ls-remote --heads origin <branches>`. Then `git fetch --prune`, confirm `origin/main`'s tree
+matches the tip you pushed, fast-forward local `main`, and delete the local branches.
 
 Afterwards, verify in **separate short commands** rather than one chain — `git log`, then
 `gh pr view`, then `gh issue view`. A compound command run straight after a merge reads as a merge to
