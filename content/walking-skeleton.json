@@ -61,17 +61,25 @@
       "least": 4,
       "most": 6
     },
-    "rerolls": 8
+    "rerolls": 8,
+    "goodsHiddenPercent": 33,
+    "peopleHiddenPercent": 33
   },
   "archetypes": [
     {
-      "id": "extractor"
+      "id": "extractor",
+      "supplies": [],
+      "demands": []
     },
     {
-      "id": "processor"
+      "id": "processor",
+      "supplies": [],
+      "demands": []
     },
     {
-      "id": "market"
+      "id": "market",
+      "supplies": [],
+      "demands": []
     }
   ],
   "motifs": [

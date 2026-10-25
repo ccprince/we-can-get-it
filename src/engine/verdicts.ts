@@ -56,6 +56,19 @@ export function readNonEmptyTexts(
     problems.push(fails(where, 'is missing or empty'));
     return undefined;
   }
+  return readTexts(value, where, problems);
+}
+
+/** A list of lines of text that may be empty, all of them or none of them. */
+export function readTexts(
+  value: unknown,
+  where: string,
+  problems: Problem[],
+): readonly string[] | undefined {
+  if (!Array.isArray(value)) {
+    problems.push(fails(where, 'is missing'));
+    return undefined;
+  }
   const texts: string[] = [];
   value.forEach((entry, index) => {
     const text = readText(entry, `${where}[${index}]`, problems);

@@ -967,3 +967,100 @@ describe('the dial the draw is set by', () => {
     ]);
   });
 });
+
+/**
+ * What the later stages of the **draw** read off the content set: the **kinds**
+ * an **archetype** supplies and demands, which decide whether a kind stays in
+ * circulation, where each **buyer** stands, and how much of the catalogue and
+ * the cast a campaign hides (ADR 0008 decisions 10 and 11).
+ */
+describe('what the draw fills the map with', () => {
+  it('refuses an archetype supplying or demanding anything but a declared kind', () => {
+    const result = loadContent(
+      aContentSet({
+        ...aCatalogue(),
+        archetypes: [
+          anArchetype({ supplies: ['cloth', 'warm'] }),
+          anArchetype({ id: 'extractor', demands: ['ore'] }),
+          anArchetype({ id: 'processor' }),
+        ],
+      }),
+    );
+
+    expect(result.ok ? [] : result.problems).toEqual([
+      {
+        verdict: 'fails',
+        where: 'archetypes[0].supplies[1]',
+        what: 'names warm, which is a quality tag and not a kind',
+      },
+      {
+        verdict: 'fails',
+        where: 'archetypes[1].demands[0]',
+        what: 'names a kind that does not exist: ore',
+      },
+    ]);
+  });
+
+  it('reads the kinds an archetype supplies and demands', () => {
+    const result = loadContent(
+      aContentSet({
+        ...aCatalogue(),
+        archetypes: [
+          anArchetype({ supplies: ['cloth'] }),
+          anArchetype({ id: 'extractor', demands: ['cloth'] }),
+          anArchetype({ id: 'processor' }),
+        ],
+      }),
+    );
+
+    expect(result.ok ? [] : result.problems).toEqual([]);
+  });
+
+  it('refuses a buyer standing nowhere the reserve holds, since a person needs a place', () => {
+    // A person stands at a location, and the draw takes them out with it when
+    // that location is not drawn (ADR 0008 decision 10).
+    const result = loadContent(
+      aContentSet({ ...aCatalogue({ buyers: [aBuyer({ locationId: 'atlantis' })] }) }),
+    );
+
+    expect(result.ok ? [] : result.problems).toEqual([
+      {
+        verdict: 'fails',
+        where: 'buyers[0].locationId',
+        what: 'names a location the reserve does not hold: atlantis',
+      },
+    ]);
+  });
+
+  it('refuses a hiding rate that is not a percentage, and accepts none and all', () => {
+    // The rates are declared, galaxy-wide and flat (ADR 0008 decisions 10 and
+    // 20), as whole percentages so the draw does no fractional arithmetic.
+    const over = loadContent(
+      aContentSet({ drawParameters: aDrawParameters({ goodsHiddenPercent: 101 }) }),
+    );
+    const missing = loadContent(
+      aContentSet({ drawParameters: aDrawParameters({ peopleHiddenPercent: undefined }) }),
+    );
+    const ends = loadContent(
+      aContentSet({
+        drawParameters: aDrawParameters({ goodsHiddenPercent: 0, peopleHiddenPercent: 100 }),
+      }),
+    );
+
+    expect(over.ok ? [] : over.problems).toEqual([
+      {
+        verdict: 'fails',
+        where: 'drawParameters.goodsHiddenPercent',
+        what: 'is 101, which is more than 100',
+      },
+    ]);
+    expect(missing.ok ? [] : missing.problems).toEqual([
+      {
+        verdict: 'fails',
+        where: 'drawParameters.peopleHiddenPercent',
+        what: 'is missing or not a whole number',
+      },
+    ]);
+    expect(ends.ok ? [] : ends.problems).toEqual([]);
+  });
+});

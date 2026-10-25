@@ -48,13 +48,17 @@ export type Location = {
  * validator reads it; nobody else does, which is why it is a designer's word
  * for a designer's thing (ADR 0008 decision 1).
  *
- * One field for now. Which **kinds** each archetype **supplies** and
- * **demands** is the kinds stage of the cascade, which is #33, and it is
- * declared here as an entity with an id so that gaining them is a field and
- * not a change of shape.
+ * The **kinds** it **supplies** and **demands** are what the trade guide
+ * publishes, and what keeps a kind in circulation: the draw may drop a kind
+ * entire only if no drawn archetype supplies or demands it (ADR 0008
+ * decision 11). Both are lists of plain values, read for membership only.
  */
 export type Archetype = {
   readonly id: string;
+  /** Kind ids. */
+  readonly supplies: readonly string[];
+  /** Kind ids. */
+  readonly demands: readonly string[];
 };
 
 /**
@@ -200,6 +204,12 @@ export type Want = { readonly predicate: readonly Term[] } | { readonly goodId: 
 export type Buyer = {
   readonly id: string;
   readonly name: string;
+  /**
+   * Where this person stands. A person needs a drawn location to stand on, so
+   * one whose location is not drawn is **hidden** with it; one whose location
+   * is drawn is hidden or not on their own account (ADR 0008 decision 10).
+   */
+  readonly locationId: string;
   readonly wants: readonly Want[];
   /** Tags this buyer pays more for. */
   readonly bonusTags: readonly string[];
@@ -292,6 +302,20 @@ export type DrawParameters = {
    * surfaces as a content defect rather than hiding behind retries.
    */
   readonly rerolls: number;
+  /**
+   * The chance, in whole percent, that the draw hides any one **good**. Flat
+   * and galaxy-wide, and bounded by the **usability floor**: a kind is never
+   * hidden below it, and is dropped entire where it may be (ADR 0008
+   * decision 11).
+   */
+  readonly goodsHiddenPercent: number;
+  /**
+   * The chance, in whole percent, that the draw hides any one person standing
+   * at a drawn location. Per person and independent of the location, so a
+   * drawn location is a fresh question about who is there (ADR 0008
+   * decision 10).
+   */
+  readonly peopleHiddenPercent: number;
 };
 
 /**
