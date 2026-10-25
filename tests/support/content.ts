@@ -16,7 +16,7 @@ function asObjects(value: unknown): RawObject[] | undefined {
   return Array.isArray(value) ? (value as RawObject[]) : undefined;
 }
 
-/** A list of plain values, or none if it was not given. */
+/** A list of plain values, or an empty one if it was not given. */
 function asStrings(value: unknown): string[] {
   return Array.isArray(value) ? (value as string[]) : [];
 }
