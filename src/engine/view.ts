@@ -4,7 +4,7 @@ import { departureTo, offeredCommands, type Command } from './commands';
 import type { Lane } from './content';
 import { goodNamed, locationNamed, type DrawnGalaxy } from './galaxy';
 import { daysToFly, fareToFly, otherEnd, withinRange } from './map';
-import { offerFor, tierOf, type Tier } from './match';
+import { matchOf, type Tier } from './match';
 import { openWants, peopleHere, type OpenWant } from './selling';
 import { holdUsed, lotsHere, mostYouCanBuy } from './trade';
 
@@ -321,11 +321,11 @@ function wantFor(campaign: Campaign, { id, buyer, want }: OpenWant): WantView {
     wording: 'goodId' in want ? `wants ${goodNamed(galaxy, want.goodId).name}` : want.plainly,
     matches: campaign.cargo.map(({ goodId }) => {
       const good = goodNamed(galaxy, goodId);
-      const tier = tierOf(want, buyer, good);
+      const { tier, offer } = matchOf(want, buyer, good, content.offers);
       return {
         good: good.name,
         tier,
-        offer: offerFor(good, tier, content.offers),
+        offer,
         reason: tier === 'refused' ? buyer.refusalLine : null,
         sell: { kind: 'sell', want: id, good: goodId },
       };

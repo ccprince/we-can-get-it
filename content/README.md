@@ -148,7 +148,8 @@ the shop shows them (ADR 0009 decision 3).
 What a buyer pays for a good, as a whole percent of its **worth**, at each **match tier** that pays
 at all: `grudgingPercent`, `acceptablePercent` and `greatPercent`. A refused good is not paid for.
 The three must rise strictly, so a better tier pays better, and an offer may pass 100. The offer is
-`floor(worth × percent / 100)`, and nothing is authored per want (ADR 0007 decision 13).
+`floor(worth × percent / 100)`, and nothing is authored per want (ADR 0007 decision 13). The
+skeleton's three percentages are placeholders to be found by play, like every number here.
 
 ### `tags`
 

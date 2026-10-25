@@ -2,7 +2,7 @@ import type { Campaign, Cargo } from './campaign';
 import type { CommandResult } from './commands';
 import type { Buyer, Want } from './content';
 import { goodNamed } from './galaxy';
-import { offerFor, tierOf } from './match';
+import { matchOf } from './match';
 
 /**
  * Selling a unit of a good to a buyer, against one of their wants. **Trade is
@@ -10,7 +10,7 @@ import { offerFor, tierOf } from './match';
  * and replays, and it spends no part of the day.
  *
  * What the read model offers as a sale and what a sale is refused for read the
- * same tier from `match`, so the two cannot drift apart.
+ * same match from `matchOf`, so the two cannot drift apart.
  */
 
 /** A want a buyer still has open, with the id a sale names it by. */
@@ -69,8 +69,7 @@ export function sell(campaign: Campaign, wantId: string, goodId: string): Comman
   }
 
   const good = goodNamed(campaign.galaxy, goodId);
-  const tier = tierOf(open.want, open.buyer, good);
-  const offer = offerFor(good, tier, campaign.content.offers);
+  const { offer } = matchOf(open.want, open.buyer, good, campaign.content.offers);
   if (offer === null) {
     return { rejected: { code: 'refused-by-the-buyer', message: open.buyer.refusalLine } };
   }
