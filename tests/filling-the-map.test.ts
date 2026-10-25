@@ -273,7 +273,9 @@ describe('the whole cascade, seed for seed', () => {
   it('leaves hidden goods and hidden people no trace inside the campaign', () => {
     // On the same terms as a hidden location (ADR 0008 decision 4): the
     // campaign holds the galaxy the draw gave and nothing of the reserve
-    // beyond it, and nothing a player reads names what was hidden.
+    // beyond it, and nothing a player reads names what was hidden. No view
+    // shows goods or people yet, so today the galaxy is what carries this, and
+    // the read is the guard for the surfaces that will.
     const content = aVaryingReserve();
     let hiddenAtAll = 0;
 
