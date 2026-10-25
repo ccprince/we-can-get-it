@@ -1,9 +1,6 @@
 import type { Command, LaneView, View } from '../engine';
+import { buttonChrome } from './chrome';
 import { Hold, Shop } from './Trade';
-
-// The chrome both buttons wear; only their padding differs.
-const buttonChrome =
-  'rounded border border-stone-600 text-stone-200 hover:border-stone-400 hover:bg-stone-800';
 
 /**
  * The campaign's reading surfaces. Everything shown here comes out of one
