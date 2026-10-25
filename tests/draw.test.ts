@@ -381,13 +381,20 @@ describe('the draw-time pass', () => {
 
   it('gives the same galaxy for the same seed, re-rolls and all', () => {
     // The re-rolls sit inside the deterministic function of the seed
-    // (ADR 0008 decision 17), so a save that is a seed still replays.
+    // (ADR 0008 decision 17), so a save that is a seed still replays. The
+    // seeds that matter are the ones whose first attempt missed: left free they
+    // open on one location, so held to three they must have re-rolled.
     const content = aLopsidedReserve({
       drawParameters: aDrawParameters({ locationCount: { least: 3, most: 3 } }),
     });
+    const free = aLopsidedReserve({
+      drawParameters: aDrawParameters({ locationCount: { least: 1, most: 3 } }),
+    });
+    const rerolled = SEEDS.filter((seed) => chartOf(free, seed).locations.length === 1);
 
-    for (const seed of SEEDS) {
-      expect(chartOf(content, seed)).toEqual(chartOf(content, seed));
+    expect(rerolled.length).toBeGreaterThan(0);
+    for (const seed of rerolled) {
+      expect(chartOf(content, seed)).toEqual(chartOf(loadedContentSet(content), seed));
     }
   });
 
@@ -404,9 +411,8 @@ describe('the draw-time pass', () => {
         verdict: 'fails',
         where: 'drawParameters.locationCount',
         what:
-          'the motif selection was re-rolled 4 times and failed the location-count range ' +
-          'every time; the last time, it placed 1 location, and the content set ' +
-          'declared 2 to 2',
+          'the motif selection was re-rolled 4 times and still missed the location-count ' +
+          'range: it placed 1 location, and the content set declared 2 to 2',
       },
     ]);
   });
@@ -434,8 +440,8 @@ describe('the draw-time pass', () => {
         verdict: 'fails',
         where: 'locations',
         what:
-          'the motif selection was re-rolled 2 times and failed slot filling every time; ' +
-          'the last time, the reserve had no processor left for the works slot of lone-berth',
+          'the motif selection was re-rolled 2 times and still missed a location for every ' +
+          'slot: the reserve had no processor left for the works slot of lone-berth',
       },
     ]);
   });

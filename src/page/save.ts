@@ -38,14 +38,14 @@ const KEY = 'we-can-get-it/campaign';
  */
 export type Resumed =
   | { readonly campaign: Campaign }
-  | { readonly undrawable: readonly Problem[] }
+  | { readonly problems: readonly Problem[] }
   | { readonly rejected: Reason; readonly at: number; readonly of: number }
   | { readonly otherContent: true };
 
 export function resume(content: ContentSet, save: Save): Resumed {
   if (save.content !== identify(content)) return { otherContent: true };
   const opened = startCampaign(content, save.seed);
-  if (!opened.ok) return { undrawable: opened.problems };
+  if (!opened.ok) return { problems: opened.problems };
   let campaign = opened.campaign;
   for (const [index, command] of save.commands.entries()) {
     const result = takeCommand(campaign, command);
