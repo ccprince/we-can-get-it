@@ -229,17 +229,18 @@ describe('connectivity at baseline range', () => {
 describe('the start-node guarantee', () => {
   /**
    * One motif, a spur: a market hub with three lanes, one of them out to the
-   * dead end, and a works beside it with four. The works is the busier place;
-   * the hub is the one a campaign may open at (ADR 0006 decision 16). Each
-   * typed slot has one location that fits it.
+   * dead end, and a works beside it with four. The works is the busier
+   * location; the hub is the one a campaign may open at (ADR 0006
+   * decision 16). A second market sits at the end of one of the works' lanes,
+   * so a market alone is not enough: either market may fill the hub.
    */
   function aHubBesideABusierWorks(overrides: RawObject = {}): ContentSet {
     return loadedContentSet({
       locations: [
         aLocation(),
-        aLocation({ id: 'hollow', name: "Grieve's Hollow", archetype: 'extractor' }),
+        aLocation({ id: 'bellwether', name: 'Bellwether Yards' }),
         aLocation({ id: 'shoals', name: 'Thennet Shoals', archetype: 'processor' }),
-        aLocation({ id: 'bellwether', name: 'Bellwether Yards', archetype: 'extractor' }),
+        aLocation({ id: 'hollow', name: "Grieve's Hollow", archetype: 'extractor' }),
         aLocation({ id: 'caravel', name: 'Caravel Station', archetype: 'extractor' }),
         aLocation({ id: 'lament', name: 'Lamentation', archetype: 'extractor' }),
       ],
@@ -252,19 +253,17 @@ describe('the start-node guarantee', () => {
             aSlot({ id: 'works', archetype: 'processor' }),
             aSlot({ id: 'dead-end' }),
             aSlot({ id: 'pit-a' }),
-            aSlot({ id: 'pit-b' }),
+            aSlot({ id: 'pit-b', archetype: 'market' }),
             aSlot({ id: 'pit-c' }),
           ],
           lanes: [
-            aMotifLane({ ends: ['hub', 'dead-end'], distance: 9 }),
+            aMotifLane({ ends: ['hub', 'dead-end'], distance: 6 }),
             aMotifLane({ ends: ['hub', 'works'], distance: 4 }),
-            aMotifLane({ ends: ['hub', 'pit-a'], distance: 4 }),
+            // Beyond a range of 8, though the works is a way round to pit-a.
+            aMotifLane({ ends: ['hub', 'pit-a'], distance: 9 }),
             aMotifLane({ ends: ['works', 'pit-a'], distance: 4 }),
             aMotifLane({ ends: ['works', 'pit-b'], distance: 4 }),
             aMotifLane({ ends: ['works', 'pit-c'], distance: 4 }),
-            // A second way to the dead end, so the map stays connected however
-            // short the range a test gives it.
-            aMotifLane({ ends: ['pit-a', 'dead-end'], distance: 4 }),
           ],
         }),
       ],
@@ -273,13 +272,25 @@ describe('the start-node guarantee', () => {
     });
   }
 
-  it('opens at a market with enough neighbours, not merely the busiest place', () => {
-    for (const seed of SEEDS) {
-      expect(drawn(aHubBesideABusierWorks(), seed).startId).toBe('kestrel');
+  /** The location a slot of the first placed motif was filled with. */
+  function filling(galaxy: DrawnGalaxy, slot: string): string | undefined {
+    return galaxy.motifs[0]?.slots.find((filled) => filled.slot === slot)?.location;
+  }
+
+  it('opens at a market with enough neighbours, not merely the busiest market', () => {
+    const content = aHubBesideABusierWorks();
+    const galaxies = SEEDS.map((seed) => drawn(content, seed));
+
+    // Both markets come up in the hub, so which one opens is the guarantee's.
+    expect(new Set(galaxies.map((galaxy) => filling(galaxy, 'hub')))).toEqual(
+      new Set(['kestrel', 'bellwether']),
+    );
+    for (const galaxy of galaxies) {
+      expect(galaxy.startId).toBe(filling(galaxy, 'hub'));
     }
   });
 
-  it('fails loudly when no drawn place can open the campaign', () => {
+  it('fails loudly when no drawn location can open the campaign', () => {
     // The hub has three neighbours and four are asked of it. The draw does
     // not open somewhere worse instead (ADR 0008 decision 17).
     const content = aHubBesideABusierWorks({
@@ -293,38 +304,40 @@ describe('the start-node guarantee', () => {
         where: 'topology.startHub',
         what:
           'the motif selection was re-rolled 1 times and still missed the start-node guarantee: ' +
-          'it opened at shoals, a processor with 4 neighbours within the range of 20, 4 of them ' +
+          'it opened at shoals, a processor with 4 neighbours within the range of 20, 2 of them ' +
           'in a spur, and the content set declared a market with at least 4, 1 of them in a spur',
       },
     ]);
   });
 
   it('counts only the neighbours within baseline range', () => {
-    // At a range of 8 the hub's lane to the dead end is beyond reach, so the
-    // hub has two neighbours to fly to and not three.
+    // At a range of 8 the hub's lane to pit-a is beyond reach, so the hub has
+    // two neighbours to fly to and not three. With the hub ruled out, nothing
+    // may open, and the draw opens at its busiest location for the guarantee
+    // to refuse.
     const content = aHubBesideABusierWorks({
       start: aStart({ ship: aShip({ range: 8 }) }),
       drawParameters: aDrawParameters({ rerolls: 0 }),
     });
 
-    // With the hub ruled out, nothing may open and the draw opens at its
-    // busiest place, which the guarantee then refuses.
     const what = failureOf(content)[0]?.what;
     expect(what).toMatch(/missed the start-node guarantee: it opened at shoals/);
     expect(what).toContain('within the range of 8');
   });
 
-  it('opens beside a spur, which the record of the assembly says it is', () => {
-    // A chokepoint hub of three leaves, and a spur to join it to. Only a hub
-    // whose joining lane runs to the spur has a spur among its neighbours, so
-    // held to one, every seed opens beside the spur; left free, some do not.
+  it("counts a spur's dead end as a spur, and not the spur's other locations", () => {
+    // A chokepoint gate of two leaves, and a spur whose junction is a market
+    // with an approach and a dead end. Joined, the gate may have three
+    // neighbours and one of them in the spur, but none of them a dead end: the
+    // only market beside a spur's dead end is the junction, and only when the
+    // joining lane gives it a third neighbour.
     const reserve = {
       locations: [
         aLocation(),
-        aLocation({ id: 'bellwether', name: 'Bellwether Yards', archetype: 'extractor' }),
+        aLocation({ id: 'bellwether', name: 'Bellwether Yards' }),
         aLocation({ id: 'shoals', name: 'Thennet Shoals', archetype: 'extractor' }),
         aLocation({ id: 'hollow', name: "Grieve's Hollow", archetype: 'extractor' }),
-        aLocation({ id: 'caravel', name: 'Caravel Station', archetype: 'processor' }),
+        aLocation({ id: 'caravel', name: 'Caravel Station', archetype: 'extractor' }),
         aLocation({ id: 'lament', name: 'Lamentation', archetype: 'processor' }),
       ],
       motifs: [
@@ -345,43 +358,31 @@ describe('the start-node guarantee', () => {
           id: 'spur',
           shape: 'spur',
           slots: [
-            aSlot({ id: 'junction', archetype: 'processor' }),
-            aSlot({ id: 'dead-end', archetype: 'processor' }),
+            aSlot({ id: 'junction', archetype: 'market' }),
+            aSlot({ id: 'approach', archetype: 'processor' }),
+            aSlot({ id: 'dead-end', archetype: 'extractor' }),
           ],
-          lanes: [aMotifLane({ ends: ['junction', 'dead-end'], distance: 9 })],
+          lanes: [
+            aMotifLane({ ends: ['junction', 'approach'], distance: 4 }),
+            aMotifLane({ ends: ['junction', 'dead-end'], distance: 9 }),
+          ],
         }),
       ],
-      drawParameters: aDrawParameters({ motifsPerCampaign: 2, rerolls: 40 }),
-      topology: aTopology({ leastPlaced: { spur: 1, chokepoint: 1 } }),
+      drawParameters: aDrawParameters({ motifsPerCampaign: 2, rerolls: 60 }),
     };
-    const held = loadedContentSet({
-      ...reserve,
-      topology: aTopology({
-        leastPlaced: { spur: 1, chokepoint: 1 },
-        startHub: { archetype: 'market', neighbours: 3, spurs: 1 },
-      }),
-    });
-    const free = loadedContentSet({
-      ...reserve,
-      topology: aTopology({
-        leastPlaced: { spur: 1, chokepoint: 1 },
-        startHub: { archetype: 'market', neighbours: 0, spurs: 0 },
-      }),
-    });
-
-    const opensBesideTheSpur = (content: ContentSet, seed: number) => {
-      const galaxy = drawn(content, seed);
-      const spur = galaxy.motifs.find((placed) => placed.shape === 'spur');
-      const inTheSpur = new Set(spur?.slots.map(({ location }) => location));
-      return galaxy.lanes.some(
-        (lane) => lane.ends.includes(galaxy.startId) && lane.ends.some((end) => inTheSpur.has(end)),
-      );
+    const startingAt = (startHub: RawObject) => {
+      const content = loadedContentSet({
+        ...reserve,
+        topology: aTopology({ leastPlaced: { spur: 1, chokepoint: 1 }, startHub }),
+      });
+      return SEEDS.map((seed) => {
+        const galaxy = drawn(content, seed);
+        const spur = galaxy.motifs.find((placed) => placed.shape === 'spur');
+        return spur?.slots.find(({ slot }) => slot === 'junction')?.location === galaxy.startId;
+      });
     };
 
-    expect(SEEDS.every((seed) => opensBesideTheSpur(free, seed))).toBe(false);
-    for (const seed of SEEDS) {
-      expect(drawn(held, seed).startId).toBe('kestrel');
-      expect(opensBesideTheSpur(held, seed)).toBe(true);
-    }
+    expect(startingAt({ archetype: 'market', neighbours: 3, spurs: 0 })).toContain(false);
+    expect(startingAt({ archetype: 'market', neighbours: 3, spurs: 1 })).not.toContain(false);
   });
 });

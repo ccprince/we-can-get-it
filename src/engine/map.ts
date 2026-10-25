@@ -56,9 +56,23 @@ export function laneBetween(
 }
 
 /**
- * The places a ship of this **range** can fly to from one location, by any
- * number of lanes, the location itself included. A lane beyond range is a wall
- * and is not walked (ADR 0006 decision 14).
+ * The locations one lane within this **range** leads to from a location. A
+ * lane beyond range is a wall and leads nowhere (ADR 0006 decision 14).
+ */
+export function flyableFrom(
+  galaxy: Pick<DrawnGalaxy, 'lanes'>,
+  locationId: string,
+  range: number,
+): readonly string[] {
+  return galaxy.lanes.flatMap((lane) => {
+    const there = otherEnd(lane, locationId);
+    return there !== null && lane.distance <= range ? [there] : [];
+  });
+}
+
+/**
+ * The locations a ship of this **range** can fly to from one location, by any
+ * number of lanes, the location itself included.
  */
 export function reachableFrom(
   galaxy: Pick<DrawnGalaxy, 'lanes'>,
@@ -68,9 +82,8 @@ export function reachableFrom(
   const reached = new Set([locationId]);
   const frontier = [locationId];
   for (let here = frontier.pop(); here !== undefined; here = frontier.pop()) {
-    for (const lane of galaxy.lanes) {
-      const there = otherEnd(lane, here);
-      if (there !== null && lane.distance <= range && !reached.has(there)) {
+    for (const there of flyableFrom(galaxy, here, range)) {
+      if (!reached.has(there)) {
         reached.add(there);
         frontier.push(there);
       }

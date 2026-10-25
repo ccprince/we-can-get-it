@@ -1,7 +1,7 @@
 import type { ContentSet, Lane, Location, Motif, Range, Slot } from './content';
 import type { Attempt } from './draw-checks';
 import type { DrawnGalaxy, PlacedMotif } from './galaxy';
-import { asAStart, mayOpen } from './start-hub';
+import { holdsStartHub, readAsStart } from './start-hub';
 import { drawFrom, drawWithin, type Rng } from './rng';
 
 /**
@@ -230,21 +230,27 @@ function placedLocations(placed: Placement, reserve: readonly Location[]): reado
 }
 
 /**
- * Where the campaign opens: of the drawn places that may open it under the
- * **start-node guarantee** (ADR 0006 decision 16), the one the most lanes
- * touch, and the first in placement order when several tie — which is
- * **derived order**, from the seed and the content set alone (ADR 0009
- * decision 3).
+ * Where the campaign opens: of the drawn locations that hold the **start-node
+ * guarantee** (ADR 0006 decision 16), the one the most lanes touch, and the
+ * first in placement order when several tie — which is **derived order**, from
+ * the seed and the content set alone (ADR 0009 decision 3). Every lane counts
+ * toward the ranking, a lane beyond range included: the guarantee has already
+ * asked for enough within it, and the ranking is the reading of
+ * "best-connected" the assembly made before there was a guarantee.
  *
- * A map with no such place opens at its best-connected place instead, and the
- * guarantee's check refuses it: the selection never weakens the guarantee, it
- * only finds the place that holds it when there is one.
+ * A map with no such location opens at its best-connected one instead, so that
+ * the guarantee's check has a start to name when it refuses the map: the
+ * selection never weakens the guarantee, it only finds the location that holds
+ * it when there is one.
  */
 function hubOf(map: Pick<DrawnGalaxy, 'locations' | 'lanes' | 'motifs'>, content: ContentSet) {
-  const mayOpenIt = map.locations.filter((location) =>
-    mayOpen(asAStart(map, location.id, content.start.ship.range), content.topology.startHub),
+  const holding = map.locations.filter((location) =>
+    holdsStartHub(
+      readAsStart(map, location.id, content.start.ship.range),
+      content.topology.startHub,
+    ),
   );
-  const pool = mayOpenIt.length > 0 ? mayOpenIt : map.locations;
+  const pool = holding.length > 0 ? holding : map.locations;
   const busiest = pool.reduce((best, location) =>
     lanesAt(map.lanes, location.id) > lanesAt(map.lanes, best.id) ? location : best,
   );
