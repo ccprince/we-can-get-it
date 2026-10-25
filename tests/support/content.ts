@@ -76,13 +76,17 @@ export function anArchetype(overrides: RawObject = {}): RawObject {
 
 /**
  * The parameters the **draw** reads: the **motif count**, which is the one dial
- * (ADR 0008 decision 5), and how far apart the motifs it places are strung.
- * Both are placeholders to be measured.
+ * (ADR 0008 decision 5), how far apart the motifs it places are strung, the
+ * range the location count must land in and how many re-rolls it may take to
+ * land there. All are placeholders to be measured.
  */
 export function aDrawParameters(overrides: RawObject = {}): RawObject {
   return {
     motifsPerCampaign: 1,
     interMotifDistance: { least: 14, most: 18 },
+    // Wide enough that no fixture about something else lands outside it.
+    locationCount: { least: 1, most: 30 },
+    rerolls: 8,
     ...overrides,
   };
 }

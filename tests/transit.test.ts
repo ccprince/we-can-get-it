@@ -1,7 +1,8 @@
 import { describe, expect, it } from 'vitest';
-import { isRejected, startCampaign, takeCommand, view } from '../src/engine';
+import { isRejected, takeCommand, view } from '../src/engine';
 import type { Campaign, Command, ContentSet } from '../src/engine';
 import { aGalaxy, aMotifLane, aLocation, aShip, aStart, loadedContentSet } from './support/content';
+import { started } from './support/campaign';
 
 /**
  * **Transit is a place, played day by day**: a multi-day haul is not one
@@ -43,7 +44,7 @@ function accepted(campaign: Campaign, ...commands: readonly Command[]): Campaign
 
 describe('a leg flown day by day', () => {
   it('passes each day in transit with its own digest, and lands on the last', () => {
-    const campaign = startCampaign(aGalaxyOfTwo(), SEED);
+    const campaign = started(aGalaxyOfTwo(), SEED);
 
     const first = view(accepted(campaign, TO_BELLWETHER));
     expect(first.transit).toEqual({
@@ -64,7 +65,7 @@ describe('a leg flown day by day', () => {
   });
 
   it('is not a teleport: the player is still out on the day before arrival', () => {
-    const campaign = startCampaign(aGalaxyOfTwo(), SEED);
+    const campaign = started(aGalaxyOfTwo(), SEED);
 
     const stillOut = view(accepted(campaign, TO_BELLWETHER, WAIT));
 
@@ -76,7 +77,7 @@ describe('a leg flown day by day', () => {
     const content = aGalaxyOfTwo({
       lanes: [aMotifLane({ ends: ['kestrel', 'bellwether'], distance: 3 })],
     });
-    const campaign = startCampaign(content, SEED);
+    const campaign = started(content, SEED);
 
     const landed = view(accepted(campaign, TO_BELLWETHER));
 
@@ -85,7 +86,7 @@ describe('a leg flown day by day', () => {
   });
 
   it('charges nothing more once underway: the fare was paid at departure', () => {
-    const campaign = startCampaign(aGalaxyOfTwo(), SEED);
+    const campaign = started(aGalaxyOfTwo(), SEED);
 
     const landed = view(accepted(campaign, TO_BELLWETHER, WAIT, WAIT));
 
@@ -95,7 +96,7 @@ describe('a leg flown day by day', () => {
   it('spends the days the ship’s speed asked for, and no more', () => {
     // Distance 12 at speed 6 is two days rather than three (ADR 0006 d9).
     const content = aGalaxyOfTwo({ start: aStart({ credits: 500, ship: aShip({ speed: 6 }) }) });
-    const campaign = startCampaign(content, SEED);
+    const campaign = started(content, SEED);
 
     const landed = view(accepted(campaign, TO_BELLWETHER, WAIT));
 
@@ -104,7 +105,7 @@ describe('a leg flown day by day', () => {
   });
 
   it('hands the player the chart’s departures again once landed', () => {
-    const campaign = startCampaign(aGalaxyOfTwo(), SEED);
+    const campaign = started(aGalaxyOfTwo(), SEED);
 
     const landed = view(accepted(campaign, TO_BELLWETHER, WAIT, WAIT));
 
@@ -116,13 +117,13 @@ describe('the digest of a leg', () => {
   it('says nothing on a day in transit, where nothing reaches the ship', () => {
     // The player is out of contact: galaxy news does not reach them, and
     // arrives as one span on landing (ADR 0005 decision 11).
-    const campaign = startCampaign(aGalaxyOfTwo(), SEED);
+    const campaign = started(aGalaxyOfTwo(), SEED);
 
     expect(view(accepted(campaign, TO_BELLWETHER)).digest?.entries).toEqual([]);
   });
 
   it('covers the span on the day the player lands', () => {
-    const campaign = startCampaign(aGalaxyOfTwo(), SEED);
+    const campaign = started(aGalaxyOfTwo(), SEED);
 
     const landed = view(accepted(campaign, TO_BELLWETHER, WAIT, WAIT));
 
@@ -136,7 +137,7 @@ describe('the digest of a leg', () => {
       lanes: [aMotifLane({ ends: ['kestrel', 'bellwether'], distance: 3 })],
     });
 
-    const landed = view(accepted(startCampaign(content, SEED), TO_BELLWETHER));
+    const landed = view(accepted(started(content, SEED), TO_BELLWETHER));
 
     expect(landed.digest?.entries).toEqual([
       { text: '1 day out of Kestrel Reach, you set down at Bellwether Yards.' },

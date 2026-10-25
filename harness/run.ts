@@ -111,7 +111,14 @@ function measure(config: HarnessConfig, loaded: readonly LoadedSetting[]): reado
 function measureCampaign(loaded: LoadedSetting, seed: number, days: number): readonly Row[] {
   const { setting, content, policy } = loaded;
   const rows: Row[] = [];
-  let campaign = startCampaign(content, seed);
+  const opened = startCampaign(content, seed);
+  if (!opened.ok) {
+    throw new Error(
+      `${setting.name}, seed ${seed}: the draw failed — ` +
+        opened.problems.map((problem) => `${problem.where} ${problem.what}`).join('; '),
+    );
+  }
+  let campaign = opened.campaign;
 
   for (let count = 0; count < days; count += 1) {
     const read = view(campaign);

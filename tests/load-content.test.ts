@@ -918,6 +918,27 @@ describe('the dial the draw is set by', () => {
     expect(result.ok ? [] : result.problems).toEqual([]);
   });
 
+  it('refuses a draw that declares no location-count range, which it is checked against', () => {
+    const result = loadContent(
+      aContentSet({ drawParameters: aDrawParameters({ locationCount: undefined }) }),
+    );
+
+    expect(result.ok ? [] : result.problems).toEqual([
+      { verdict: 'fails', where: 'drawParameters.locationCount', what: 'is missing' },
+    ]);
+  });
+
+  it('refuses a re-roll bound that is not a count, since the retries are counted', () => {
+    // Nought is a bound — the first draw has to pass — and less is not.
+    const none = loadContent(aContentSet({ drawParameters: aDrawParameters({ rerolls: 0 }) }));
+    const less = loadContent(aContentSet({ drawParameters: aDrawParameters({ rerolls: -1 }) }));
+
+    expect(none.ok ? [] : none.problems).toEqual([]);
+    expect(less.ok ? [] : less.problems).toEqual([
+      { verdict: 'fails', where: 'drawParameters.rerolls', what: 'is -1, which is less than 0' },
+    ]);
+  });
+
   it('refuses an archetype enumerated twice, since an id means one thing', () => {
     const result = loadContent(aContentSet({ archetypes: [anArchetype(), anArchetype()] }));
 

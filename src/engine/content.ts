@@ -279,6 +279,19 @@ export type DrawParameters = {
    * the same thing.
    */
   readonly interMotifDistance: Range;
+  /**
+   * The range the drawn galaxy's location count must land in, checked after
+   * assembly (ADR 0008 decision 8). A **validated range and not a dial**: the
+   * dial is the motif count, and an assembly outside this re-rolls the motif
+   * selection.
+   */
+  readonly locationCount: Range;
+  /**
+   * How many times the draw re-rolls a stage that failed a check before it
+   * fails loudly (ADR 0008 decision 17). Counted, so that an inadequate reserve
+   * surfaces as a content defect rather than hiding behind retries.
+   */
+  readonly rerolls: number;
 };
 
 /**

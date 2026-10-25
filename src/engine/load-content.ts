@@ -390,7 +390,17 @@ function readDrawParameters(raw: unknown, problems: Problem[]): DrawParameters |
     'drawParameters.interMotifDistance',
     problems,
   );
-  if (motifsPerCampaign === undefined || interMotifDistance === undefined) return undefined;
+  const locationCount = readRange(raw.locationCount, 'drawParameters.locationCount', problems);
+  // Nought re-rolls is a bound like any other: the first draw has to pass.
+  const rerolls = readInteger(raw.rerolls, 'drawParameters.rerolls', 0, problems);
+  if (
+    motifsPerCampaign === undefined ||
+    interMotifDistance === undefined ||
+    locationCount === undefined ||
+    rerolls === undefined
+  ) {
+    return undefined;
+  }
 
   // An inter-motif lane is a lane, and a lane of no distance would be the
   // zero-day hop ADR 0006 decision 6 refuses.
@@ -403,7 +413,7 @@ function readDrawParameters(raw: unknown, problems: Problem[]): DrawParameters |
     );
     return undefined;
   }
-  return { motifsPerCampaign, interMotifDistance };
+  return { motifsPerCampaign, interMotifDistance, locationCount, rerolls };
 }
 
 /**

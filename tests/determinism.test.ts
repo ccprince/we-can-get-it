@@ -1,7 +1,8 @@
 import { describe, expect, it } from 'vitest';
-import { isRejected, startCampaign, takeCommand, view } from '../src/engine';
+import { isRejected, takeCommand, view } from '../src/engine';
 import type { Command, ContentSet, View } from '../src/engine';
 import { aGalaxy, aMotifLane, aLocation, aStart, loadedContentSet } from './support/content';
+import { started } from './support/campaign';
 
 /**
  * Determinism is a test, not a convention: the measurement method this project
@@ -17,7 +18,7 @@ import { aGalaxy, aMotifLane, aLocation, aStart, loadedContentSet } from './supp
  * same galaxy every time is proved where it is drawn, in `draw.test.ts`.
  */
 function play(content: ContentSet, seed: number, commands: readonly Command[]): View {
-  let campaign = startCampaign(content, seed);
+  let campaign = started(content, seed);
   for (const command of commands) {
     const result = takeCommand(campaign, command);
     if (isRejected(result)) throw new Error(result.rejected.message);

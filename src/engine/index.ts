@@ -5,7 +5,7 @@
  *
  *   loadContent(raw)             -> { ok: true, content, reports }
  *                                  | { ok: false, problems, reports }
- *   startCampaign(content, seed) -> Campaign
+ *   startCampaign(content, seed) -> { ok: true, campaign } | { ok: false, problems }
  *   takeCommand(campaign, cmd)   -> { campaign } | { rejected: Reason }
  *   view(campaign)               -> View
  *   identify(content)            -> string
@@ -31,7 +31,7 @@ export type {
 export { identify } from './identify';
 
 export { startCampaign } from './campaign';
-export type { Campaign, Digest, DigestEntry } from './campaign';
+export type { Campaign, Digest, DigestEntry, StartResult } from './campaign';
 
 export { isRejected, takeCommand } from './commands';
 export type { Command, CommandResult, Reason } from './commands';

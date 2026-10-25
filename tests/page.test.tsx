@@ -10,10 +10,11 @@
  */
 import { cleanup, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { isRejected, startCampaign, takeCommand, view } from '../src/engine';
+import { isRejected, takeCommand, view } from '../src/engine';
 import type { Campaign, Command, ContentSet } from '../src/engine';
 import { CampaignSurfaces } from '../src/page/CampaignSurfaces';
 import { aGalaxy, aMotifLane, aLocation, aShip, aStart, loadedContentSet } from './support/content';
+import { started } from './support/campaign';
 
 afterEach(cleanup);
 
@@ -25,7 +26,7 @@ function surfaces(
     readonly campaign?: Campaign;
   } = {},
 ) {
-  const campaign = options.campaign ?? startCampaign(loadedContentSet(), SEED);
+  const campaign = options.campaign ?? started(loadedContentSet(), SEED);
   return render(
     <CampaignSurfaces
       view={view(campaign)}
@@ -70,7 +71,7 @@ describe('the campaign surfaces', () => {
   });
 
   it('shows a refusal in the player’s own terms when the engine gives one', () => {
-    const campaign = startCampaign(loadedContentSet(), SEED);
+    const campaign = started(loadedContentSet(), SEED);
     render(
       <CampaignSurfaces
         view={view(campaign)}
@@ -127,14 +128,14 @@ function aGalaxyOfFour(overrides: Record<string, unknown> = {}): ContentSet {
 }
 
 function flying(content: ContentSet, command: Command): Campaign {
-  const result = takeCommand(startCampaign(content, SEED), command);
+  const result = takeCommand(started(content, SEED), command);
   if (isRejected(result)) throw new Error(result.rejected.message);
   return result.campaign;
 }
 
 describe('the chart on the page', () => {
   it('shows each lane with its days, its fare and where it leads', () => {
-    surfaces({ campaign: startCampaign(aGalaxyOfTwo(), SEED) });
+    surfaces({ campaign: started(aGalaxyOfTwo(), SEED) });
 
     const lane = screen.getByRole('row', { name: /Bellwether Yards/ });
     expect(lane.textContent).toContain('3 days');
@@ -143,7 +144,7 @@ describe('the chart on the page', () => {
 
   it('shows a lane beyond the ship’s range as unflyable rather than hiding it', () => {
     const content = aGalaxyOfTwo({ start: aStart({ credits: 500, ship: aShip({ range: 10 }) }) });
-    surfaces({ campaign: startCampaign(content, SEED) });
+    surfaces({ campaign: started(content, SEED) });
 
     expect(screen.getByText(/beyond your range/i)).toBeDefined();
     expect(screen.queryByRole('button', { name: /Depart for Bellwether Yards/ })).toBeNull();
@@ -152,7 +153,7 @@ describe('the chart on the page', () => {
   it('departs along a lane, handing the engine’s own command back', () => {
     const taken: Command[] = [];
     surfaces({
-      campaign: startCampaign(aGalaxyOfTwo(), SEED),
+      campaign: started(aGalaxyOfTwo(), SEED),
       onCommand: (command) => taken.push(command),
     });
 
@@ -164,7 +165,7 @@ describe('the chart on the page', () => {
   it('says a lane is beyond range wherever it sits on the chart, not only from here', () => {
     // The chart carries the whole galaxy (ADR 0006 decision 5), so what the
     // ship cannot reach is readable before the player is standing at its end.
-    surfaces({ campaign: startCampaign(aGalaxyOfFour(), SEED) });
+    surfaces({ campaign: started(aGalaxyOfFour(), SEED) });
 
     const far = screen.getByRole('row', { name: /Grieve's Hollow/ });
     expect(far.textContent).toContain('Beyond your range');
@@ -182,7 +183,7 @@ describe('the chart on the page', () => {
       locations: [aLocation(), aLocation({ id: 'caravel', name: 'Caravel Station' })],
       lanes: [],
     });
-    surfaces({ campaign: startCampaign(content, SEED) });
+    surfaces({ campaign: started(content, SEED) });
 
     const places = screen.getByRole('list', { name: 'Locations' });
     expect(places.textContent).toContain('Kestrel Reach');

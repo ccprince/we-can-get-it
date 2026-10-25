@@ -88,4 +88,19 @@ describe('the page', () => {
     expect(await screen.findByText('The content set will not load.')).toBeDefined();
     expect(screen.getByText(/locations — names no locations/)).toBeDefined();
   });
+
+  it('says so when the content set loads and will not draw, naming the check', async () => {
+    // A draw that exhausts its re-rolls fails the load like any content
+    // mistake (ADR 0008 decision 17). The walking skeleton places four to six
+    // locations, so a range of exactly ten can never be met.
+    const content = JSON.parse(walkingSkeleton) as { drawParameters: Record<string, unknown> };
+    content.drawParameters.locationCount = { least: 10, most: 10 };
+    serve(JSON.stringify(content));
+    render(<App />);
+
+    expect(await screen.findByText('The content set will not load.')).toBeDefined();
+    expect(
+      screen.getByText(/drawParameters.locationCount — the motif selection was re-rolled/),
+    ).toBeDefined();
+  });
 });
