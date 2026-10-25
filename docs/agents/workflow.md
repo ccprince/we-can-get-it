@@ -126,7 +126,17 @@ already reviewed can be read while the next is being built.
    only — the ticket is not done until the stack is. Once a PR exists the hook reads its base from
    `gh`, so `prBase` matters only in the window before the PR is opened.
 
-5. **Stop when the stack is up.** The stack is the deliverable. Merging is the human's call unless
+5. **Link the PRs as a GitHub stack** once the last slice's PR is open, numbers bottom to top. Step 4
+   already made each PR's base the head of the one below, which is what the call checks:
+
+   ```
+   gh api -X POST repos/ccprince/we-can-get-it/stacks -H "X-GitHub-Api-Version: 2026-03-10" \
+     -F 'pull_requests[]=<first>' -F 'pull_requests[]=<second>'   # one -F per slice
+   ```
+
+   A `201` is the stack; a `422` names the base that does not match. A one-slice ticket has no stack.
+
+6. **Stop when the stack is up.** The stack is the deliverable. Merging is the human's call unless
    they ask.
 
 If a slice fails the budget, it is two slices. Split it rather than reaching for `SIZE_EXEMPT=1`,
@@ -134,32 +144,24 @@ whose value is that it stays rare (ADR 0010).
 
 ## Merging, when asked
 
-A ticket's slices are linked as a **GitHub stack**, and `gh pr merge` refuses a PR in one: a stacked
-PR merges only through the asynchronous merge API. That API takes a request and runs the merge in
-the background. This repo allows all three merge methods and keeps a linear log, so pass `rebase`.
+Step 5 linked the slices as a **GitHub stack**, and `gh pr merge` refuses a PR in one: a stacked PR
+merges only through the asynchronous merge API, which takes a request and runs the merge in the
+background.
 
-**Merge the whole stack in one call, on the top PR.** A merge request on a stacked PR also merges
-every open PR below it. Pin it to the top PR's head, so that a push made after the request cancels
-the merge rather than slipping into it:
+**Merge the whole stack in one call, on the top PR**: `tools/merge-stack.sh <top>`, run in the
+background. A merge request on a stacked PR also merges every open PR below it; #33's two-slice
+stack merged in one request. The script pins the request to the PR's head as it stands, so a push
+made after it cancels the merge rather than slipping into it. It passes `rebase`, since this repo
+keeps a linear log, then polls with a ten-minute deadline (a second argument changes it) and
+prints the final status. Exit `0` is merged; `1` is failed, with GitHub's message saying why; `2`
+is a refused request or the deadline.
 
-```
-sha=$(gh pr view <top> --json headRefOid --jq .headRefOid)
-gh api -X PUT repos/ccprince/we-can-get-it/pulls/<top>/merge-async \
-  -H "X-GitHub-Api-Version: 2026-03-10" \
-  -f merge_method=rebase -f merge_action=direct_merge -f sha=$sha
-```
-
-The answer is `pending` with a `uuid`. Poll
-`gh api repos/ccprince/we-can-get-it/pulls/<top>/merge-async/<uuid> -H "X-GitHub-Api-Version: 2026-03-10"`
-until `status` is `merged` or `failed`. A `failed` status carries a message saying why. Wait on it
-with a background `until` loop rather than in the foreground, and give the loop a deadline.
-
-**Fall back to bottom-up**, one PR at a time with the same call, when the one-call merge fails or
-when only part of the stack should land. #12's two-slice stack merged this way. After each parent
-merges, GitHub retargets the child onto `main` and **rebases it itself**, so the child's head SHA
-changes. Before merging the child, `git fetch` and confirm that `git diff <the tip you pushed>
+**Fall back to bottom-up**, `tools/merge-stack.sh` on one PR at a time, when the one-call merge
+fails or when only part of the stack should land. #12's two-slice stack merged this way. After each
+parent merges, GitHub retargets the child onto `main` and **rebases it itself**, so the child's head
+SHA changes. Before merging the child, `git fetch` and confirm that `git diff <the tip you pushed>
 origin/<child>` is empty. The rebase should not change the tree, and that check is what tells you
-it didn't. Then pin the request to the child's new head.
+it didn't. Then run the script on the child, which pins to its new head.
 
 **Treat the local side as unfinished until checked.** #12's merge removed both remote branches on
 its own, even though `delete_branch_on_merge` is off. Check rather than assume:
