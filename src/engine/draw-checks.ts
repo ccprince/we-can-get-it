@@ -6,6 +6,10 @@ import type { Rng } from './rng';
  * A stage of the draw's cascade that a missed invariant re-rolls (ADR 0008
  * decision 2), named as the failure report names it. A check names the stage
  * its miss re-rolls — the narrowest that could fix it (decision 17).
+ *
+ * The three passes after the map have no check of their own yet: whether what
+ * they leave is legal — the usability floor in the drawn galaxy, the people
+ * floor — is #27's, which registers its checks against these stages.
  */
 export type Stage = 'motif selection' | 'kinds pass' | 'goods pass' | 'people pass';
 

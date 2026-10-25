@@ -21,14 +21,19 @@ import { drawFrom, drawHidden, type Rng } from './rng';
  * is dropped where hiding its goods at the declared rate would take it below
  * its floor: the draw wants more variation there than the floor allows, and a
  * kind nothing drawn trades in is the one place it may take it whole.
+ *
+ * The roll here only decides the drop, and is spent: a kind that stays has its
+ * goods rolled afresh by the goods pass, which is the stage that hides them.
+ * Kinds are settled before goods because the cascade's order says so (decision
+ * 2), and a drop cannot wait for the goods pass to propose it.
  */
 export function drawKinds(galaxy: DrawnGalaxy, content: ContentSet, rng: Rng): Attempt {
-  const anchored = kindsTradedIn(galaxy, content);
+  const tradedIn = kindsTradedIn(galaxy, content);
   const kinds: string[] = [];
   let next = rng;
 
   for (const kind of content.tags.filter((tag) => tag.class === 'kind')) {
-    if (anchored.has(kind.id)) {
+    if (tradedIn.has(kind.id)) {
       kinds.push(kind.id);
       continue;
     }
@@ -73,11 +78,15 @@ export function drawGoods(galaxy: DrawnGalaxy, content: ContentSet, rng: Rng): A
   return { ok: true, galaxy: { ...galaxy, goods }, rng: next };
 }
 
-/** The hidden ones, cut down to at most `most` by drawing the rest back. */
-function keepingTheFloor<T>(hidden: readonly T[], most: number, rng: Rng): readonly [T[], Rng] {
+/** The hidden ones, cut down to at most `mostHidden` by drawing the rest back. */
+function keepingTheFloor<T>(
+  hidden: readonly T[],
+  mostHidden: number,
+  rng: Rng,
+): readonly [T[], Rng] {
   const still = [...hidden];
   let next = rng;
-  while (still.length > most) {
+  while (still.length > mostHidden) {
     const [restored, after] = drawFrom(still, next);
     next = after;
     still.splice(still.indexOf(restored), 1);
@@ -94,9 +103,13 @@ function keepingTheFloor<T>(hidden: readonly T[], most: number, rng: Rng): reado
  */
 export function drawPeople(galaxy: DrawnGalaxy, content: ContentSet, rng: Rng): Attempt {
   const drawn = new Set(galaxy.locations.map((location) => location.id));
-  const standing = content.buyers.filter((person) => drawn.has(person.locationId));
-  const [hidden, next] = hiddenAmong(standing, content.drawParameters.peopleHiddenPercent, rng);
-  const people = standing.filter((person) => !hidden.includes(person));
+  const atDrawnLocations = content.buyers.filter((person) => drawn.has(person.locationId));
+  const [hidden, next] = hiddenAmong(
+    atDrawnLocations,
+    content.drawParameters.peopleHiddenPercent,
+    rng,
+  );
+  const people = atDrawnLocations.filter((person) => !hidden.includes(person));
   return { ok: true, galaxy: { ...galaxy, people }, rng: next };
 }
 
