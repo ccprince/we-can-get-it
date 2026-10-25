@@ -20,11 +20,26 @@ describe('the walking skeleton content set', () => {
     ]);
   });
 
-  it('starts a campaign at the location it names, on a chart with lanes to fly', () => {
+  /**
+   * A seed that opens at Tallow Cross, found by the **seed-finder** rather than
+   * by hand (#13). Which place opens a campaign is the draw's answer, so a test
+   * that names one needs a seed that produces it; the predicate is recorded so
+   * the seed can be re-found when the content changes:
+   *
+   *   npm run seeds -- content/walking-skeleton.json start-is tallow
+   */
+  const OPENS_AT_TALLOW_CROSS = 1;
+
+  it('starts a campaign at the location the seed opens, on a chart with lanes to fly', () => {
     const result = loadContent(raw);
     if (!result.ok) throw new Error('the content set did not load');
 
-    expect(view(started(result.content, 20261022)).here?.name).toBe('Tallow Cross');
+    const read = view(started(result.content, OPENS_AT_TALLOW_CROSS));
+
+    expect(read.here?.name).toBe('Tallow Cross');
+    // Lanes to fly, which is the other half of the title: a chart whose lanes
+    // all left from somewhere else would strand the hand-play this set is for.
+    expect(read.chart.lanes.filter((lane) => lane.depart !== null)).not.toEqual([]);
   });
 
   it('holds every topology check it declares, on every seed tried', () => {
