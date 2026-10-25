@@ -106,6 +106,10 @@ export function loadContent(raw: unknown): LoadResult {
     }
   }
 
+  if (motifs !== undefined && locations !== undefined) {
+    problems.push(...unfillableSlots(motifs, locations));
+  }
+
   // The whole-set checks and the distributions read the vocabulary, the
   // catalogue, the cast and the bounds, and nothing else — so a content set
   // whose calendar or chart would not read still gets both, which is the half
@@ -443,8 +447,8 @@ function readKnownArchetype(
  * content set with no motifs in it has nothing to assemble a map from, so an
  * empty reserve is a mistake rather than a galaxy with nothing in it yet.
  *
- * Whether the location reserve can actually **fill** every slot of every motif
- * is a different and later question, checked before any draw by #12.
+ * Whether the location reserve can **fill** every slot is a different and later
+ * question, which `unfillableSlots` asks once both have read.
  */
 function readMotifs(
   raw: unknown,
@@ -469,6 +473,37 @@ function readMotifs(
     return undefined;
   }
   return motifs;
+}
+
+/**
+ * Every typed slot must have some location in the reserve of its
+ * **archetype**, checked before any draw (ADR 0006 decision 4, ADR 0007
+ * decision 17). A slot nothing could fill fails every draw that places its
+ * motif, and caught here it is named as the mistake it is rather than surfacing
+ * as a re-roll that never passes. An untyped slot takes anything, and the
+ * reserve is never empty.
+ *
+ * Whether the reserve holds *enough* of an archetype for every slot an assembly
+ * can demand at once is the reserve's adequacy, and is #27's.
+ */
+function unfillableSlots(
+  motifs: readonly Motif[],
+  locations: readonly Location[],
+): readonly Problem[] {
+  const held = new Set(locations.map((location) => location.archetype));
+  return motifs.flatMap((motif, at) =>
+    motif.slots.flatMap((slot, index) =>
+      slot.archetype === null || held.has(slot.archetype)
+        ? []
+        : [
+            fails(
+              `motifs[${at}].slots[${index}].archetype`,
+              `is ${slot.archetype}, and no location in the reserve is one, so the slot ` +
+                'can never be filled',
+            ),
+          ],
+    ),
+  );
 }
 
 /** A motif's slots. A motif with none of them would place no locations. */
