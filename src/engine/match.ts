@@ -56,3 +56,18 @@ export function offerFor(good: Good, tier: Tier, offers: OfferParameters): numbe
   }[tier];
   return Math.floor((good.worth * percent) / 100);
 }
+
+/**
+ * What a good earns against a want: its tier and what the buyer pays for it.
+ * The one reading the read model quotes and a sale is paid by, so what the
+ * player is shown before they commit is what they are paid.
+ */
+export function matchOf(
+  want: Want,
+  buyer: Buyer,
+  good: Good,
+  offers: OfferParameters,
+): { readonly tier: Tier; readonly offer: number | null } {
+  const tier = tierOf(want, buyer, good);
+  return { tier, offer: offerFor(good, tier, offers) };
+}

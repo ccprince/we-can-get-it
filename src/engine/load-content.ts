@@ -1208,6 +1208,11 @@ function readWant(
   }
 
   const predicate = readPredicate(raw.predicate, `${where}.predicate`, tags, problems);
+  // Every term negated asks for nothing, and would be met by any good at all.
+  if (predicate !== undefined && predicate.every((term) => term.negated)) {
+    problems.push(fails(`${where}.predicate`, 'has no positive term, so it asks for nothing'));
+    return undefined;
+  }
   const plainly = readText(raw.plainly, `${where}.plainly`, problems);
   return predicate === undefined || plainly === undefined ? undefined : { predicate, plainly };
 }

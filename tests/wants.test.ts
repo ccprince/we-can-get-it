@@ -259,6 +259,14 @@ describe('what a want cannot be written as', () => {
     ).toContain('buyers[0].refusalLine');
   });
 
+  it('a predicate of negated terms alone', () => {
+    const wants = [aWant({ predicate: [{ tag: 'warm', negated: true }] })];
+
+    expect(
+      problemsOf({ buyers: [aBuyer({ wants }), anElsewhereBuyer()] }).map(({ where }) => where),
+    ).toContain('buyers[0].wants[0].predicate');
+  });
+
   it('two wants asking for the same thing', () => {
     expect(
       problemsOf({ buyers: [aBuyer({ wants: [aWant(), aWant()] }), anElsewhereBuyer()] }),
