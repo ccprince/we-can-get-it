@@ -163,37 +163,32 @@ function opening(content: ContentSet, found: Found): CampaignState {
       return newCampaign(content);
 
     case 'not-a-save':
-      return {
-        state: 'unresumable',
+      return unresumable(
         content,
-        title: WILL_NOT_REPLAY,
-        why: 'What is stored where the page keeps its save is not a save.',
-        stored: found.stored,
-      };
+        found.stored,
+        WILL_NOT_REPLAY,
+        'What is stored where the page keeps its save is not a save.',
+      );
 
     case 'save': {
       const resumed = resume(content, found.save);
       if ('otherContent' in resumed) {
-        return {
-          state: 'unresumable',
+        return unresumable(
           content,
-          title: 'The saved campaign was played on a different content set.',
-          why:
-            'The content set has changed since this campaign was saved.' +
+          found.stored,
+          'The saved campaign was played on a different content set.',
+          'The content set has changed since this campaign was saved.' +
             ' Restoring the content set it was played on will resume it.',
-          stored: found.stored,
-        };
+        );
       }
       if ('rejected' in resumed) {
-        return {
-          state: 'unresumable',
+        return unresumable(
           content,
-          title: WILL_NOT_REPLAY,
-          why:
-            `The engine refused command ${resumed.at} of ${resumed.of}:` +
+          found.stored,
+          WILL_NOT_REPLAY,
+          `The engine refused command ${resumed.at} of ${resumed.of}:` +
             ` ${resumed.rejected.message}`,
-          stored: found.stored,
-        };
+        );
       }
       const asked = seedAskedFor(location.search);
       return {
@@ -209,6 +204,16 @@ function opening(content: ContentSet, found: Found): CampaignState {
       };
     }
   }
+}
+
+/** A save that will not replay, shown and kept as it was stored. */
+function unresumable(
+  content: ContentSet,
+  stored: string,
+  title: string,
+  why: string,
+): CampaignState {
+  return { state: 'unresumable', content, title, why, stored };
 }
 
 /** A new campaign, saved at once so that what is stored is what is in play. */
