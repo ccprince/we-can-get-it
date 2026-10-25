@@ -114,7 +114,7 @@ export function drawPeople(galaxy: DrawnGalaxy, content: ContentSet, rng: Rng): 
 }
 
 /** The kinds some drawn location's archetype supplies or demands. */
-function kindsTradedIn(galaxy: DrawnGalaxy, content: ContentSet): ReadonlySet<string> {
+export function kindsTradedIn(galaxy: DrawnGalaxy, content: ContentSet): ReadonlySet<string> {
   const drawn = new Set(galaxy.locations.map((location) => location.archetype));
   return new Set(
     content.archetypes

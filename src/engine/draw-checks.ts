@@ -1,4 +1,13 @@
-import { shapes, within, type ContentSet, type Shape } from './content';
+import {
+  goodsCarrying,
+  roleTags,
+  shapes,
+  within,
+  type Buyer,
+  type ContentSet,
+  type Shape,
+} from './content';
+import { kindsTradedIn } from './fill';
 import type { DrawnGalaxy } from './galaxy';
 import { reachableFrom } from './map';
 import { holdsStartHub, readAsStart } from './start-hub';
@@ -9,9 +18,9 @@ import type { Rng } from './rng';
  * decision 2), named as the failure report names it. A check names the stage
  * its miss re-rolls — the narrowest that could fix it (decision 17).
  *
- * The three passes after the map have no check of their own yet: whether what
- * they leave is legal — the usability floor in the drawn galaxy, the people
- * floor — is #27's, which registers its checks against these stages.
+ * A check on what a later pass leaves names that pass when it is the narrowest
+ * that could fix the miss: the substance of the goods is the goods pass's, and
+ * a kind dropped that should have stayed is the kinds pass's.
  */
 export type Stage = 'motif selection' | 'kinds pass' | 'goods pass' | 'people pass';
 
@@ -60,7 +69,7 @@ export type DrawCheck = {
 /**
  * Every check the pass runs. A check registers by being listed here, so the
  * topology checks (#45) and the substance checks (#27) add entries and never
- * edit the pass.
+ * edit the pass. The substance checks (#27) read what the cascade filled in.
  */
 export const drawChecks: readonly DrawCheck[] = [
   {
@@ -130,7 +139,132 @@ export const drawChecks: readonly DrawCheck[] = [
             `least ${startHub.neighbours}, ${startHub.spurs} of them in a spur`;
     },
   },
+  {
+    // A kind is dropped entire only if no drawn archetype supplies or demands
+    // it (ADR 0008 decision 11).
+    stage: 'kinds pass',
+    invariant: 'a kind a drawn archetype trades in stays in circulation',
+    where: 'archetypes',
+    miss: (galaxy, content) => {
+      const dropped = [...kindsTradedIn(galaxy, content)].filter(
+        (kind) => !galaxy.kinds.includes(kind),
+      );
+      return dropped.length === 0
+        ? null
+        : `it dropped ${dropped.join(', ')}, which a drawn archetype supplies or demands`;
+    },
+  },
+  {
+    // The draw never takes a usable kind below its floor (ADR 0008 decision
+    // 11). A kind the reserve holds fewer goods of than the floor was never
+    // usable, and hiding is not what left it short.
+    stage: 'goods pass',
+    invariant: 'the usability floor',
+    where: 'bounds.usabilityFloor',
+    miss: (galaxy, content) => {
+      const { usabilityFloor } = content.bounds;
+      const short = galaxy.kinds.filter((kind) => {
+        const held = content.goods.filter((good) => good.kind === kind).length;
+        return held >= usabilityFloor && goodsCarrying(galaxy, kind) < usabilityFloor;
+      });
+      return short.length === 0
+        ? null
+        : `it left ${short.join(', ')} with fewer goods than the floor of ${usabilityFloor}`;
+    },
+  },
+  {
+    // A role tag is a learnable pattern or it is a one-off answer (ADR 0007
+    // decision 7). Read over the buyers who could be drawn: the goods pass
+    // runs before the people pass, so a tag one of them holds must be spread.
+    // A tag no drawn good carries is absent rather than a one-off answer, and
+    // the goods pass could not bring it back: its kind was dropped whole.
+    stage: 'goods pass',
+    invariant: 'the role-tag spread',
+    where: 'bounds.goodsPerRoleTag',
+    miss: (galaxy, content) => {
+      const { least } = content.bounds.goodsPerRoleTag;
+      const thin = [...roleTags({ buyers: buyersAtDrawnLocations(galaxy, content) })]
+        .filter((tag) => goodsCarrying(galaxy, tag) > 0 && goodsCarrying(galaxy, tag) < least)
+        .sort();
+      return thin.length === 0
+        ? null
+        : `${thin.join(', ')} held in a role but sat on fewer than ${least} drawn goods`;
+    },
+  },
+  {
+    // The ration is on the number of quirk tags the galaxy holds, and a quirk
+    // the reserve rations correctly can be absent from the draw (ADR 0007
+    // decision 8, ADR 0008 decision 16).
+    stage: 'goods pass',
+    invariant: 'the quirk ration',
+    where: 'bounds.quirkRation',
+    miss: (galaxy, content) => {
+      const { quirkRation } = content.bounds;
+      const drawn = drawnQuirks(galaxy, content);
+      return drawn.length <= quirkRation
+        ? null
+        : `it drew ${drawn.length} quirk tags, and the content set rationed them to ${quirkRation}`;
+    },
+  },
+  {
+    // A quirk is idiosyncratic because one buyer cares, not because one good
+    // carries it: it still has to be a pattern a player could have found.
+    stage: 'goods pass',
+    invariant: 'the quirk spread',
+    where: 'bounds.goodsPerRoleTag',
+    miss: (galaxy, content) => {
+      const { least } = content.bounds.goodsPerRoleTag;
+      const thin = drawnQuirks(galaxy, content).filter((tag) => goodsCarrying(galaxy, tag) < least);
+      return thin.length === 0
+        ? null
+        : `${thin.join(', ')} drawn on fewer than ${least} goods, too few to be a pattern`;
+    },
+  },
+  {
+    // A want naming a good has to name one the player can find (ADR 0007
+    // decision 6): drawn, and supplied by a place that was drawn.
+    stage: 'goods pass',
+    invariant: 'a named good is reachable',
+    where: 'buyers',
+    miss: (galaxy, content) => {
+      const supplied = kindsSuppliedIn(galaxy, content);
+      const unreached = buyersAtDrawnLocations(galaxy, content).flatMap((buyer) =>
+        buyer.wants.flatMap((want) => {
+          if (!('goodId' in want)) return [];
+          const good = galaxy.goods.find((drawn) => drawn.id === want.goodId);
+          if (good === undefined) return [`${buyer.id} wants ${want.goodId}, which was hidden`];
+          return supplied.has(good.kind)
+            ? []
+            : [`${buyer.id} wants ${want.goodId}, which no drawn location supplies`];
+        }),
+      );
+      return unreached.length === 0 ? null : unreached.join('; ');
+    },
+  },
 ];
+
+/** The buyers who stand at a drawn location, before the people pass hides any. */
+function buyersAtDrawnLocations(galaxy: DrawnGalaxy, content: ContentSet): readonly Buyer[] {
+  const drawn = new Set(galaxy.locations.map((location) => location.id));
+  return content.buyers.filter((buyer) => drawn.has(buyer.locationId));
+}
+
+/** The quirk tags some drawn good carries, in id order. */
+function drawnQuirks(galaxy: DrawnGalaxy, content: ContentSet): readonly string[] {
+  return content.tags
+    .filter((tag) => tag.class === 'quirk' && goodsCarrying(galaxy, tag.id) > 0)
+    .map((tag) => tag.id);
+}
+
+/** The kinds a drawn location's archetype supplies, which is what a shop stocks. */
+function kindsSuppliedIn(galaxy: DrawnGalaxy, content: ContentSet): ReadonlySet<string> {
+  const drawn = new Set(galaxy.locations.map((location) => location.archetype));
+  return new Set(
+    content.archetypes
+      .filter((archetype) => drawn.has(archetype.id))
+      .flatMap((archetype) => archetype.supplies),
+  );
+}
 
 /** The motif invariant for one shape: at least so many of it placed. */
 function leastPlacedCheck(shape: Shape): DrawCheck {
