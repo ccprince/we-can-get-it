@@ -1,5 +1,6 @@
 import type { Command, LaneView, View } from '../engine';
 import { buttonChrome } from './chrome';
+import { Guide } from './Guide';
 import { Hold, People, Shop } from './Trade';
 
 /**
@@ -84,6 +85,8 @@ export function CampaignSurfaces({
           </table>
         )}
       </section>
+
+      <Guide entries={view.guide.entries} />
 
       <section className="mt-8">
         <h2 className="text-xs tracking-widest text-stone-500 uppercase">Digest</h2>
