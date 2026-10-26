@@ -10,6 +10,7 @@
  *   drawGalaxy(content, seed)    -> { ok: true, galaxy } | { ok: false, problems }
  *   view(campaign)               -> View
  *   identify(content)            -> string
+ *   crossProduct(content, galaxy | null) -> CrossProduct
  */
 export { loadContent } from './load-content';
 export type { LoadResult, Problem, Report } from './load-content';
@@ -31,6 +32,10 @@ export type {
 } from './content';
 
 export { identify } from './identify';
+
+export { crossProduct } from './cross-product';
+export type { CrossProduct, Drawn, PlacedSlot, SlotFilling, Survey } from './cross-product';
+export type { Spread } from './content-reports';
 
 export { drawGalaxy } from './draw';
 export type { DrawReport } from './draw';
