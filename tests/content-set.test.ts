@@ -2,7 +2,7 @@ import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import { crossProduct, drawGalaxy, loadContent, view } from '../src/engine';
 import { started } from './support/campaign';
-import { layoutFaults } from './support/layout';
+import { layoutFaults, tightestGap } from './support/layout';
 
 /**
  * The content set the page hand-plays is known to load (ADR 0003 decision 3).
@@ -78,15 +78,25 @@ describe('the walking skeleton content set', () => {
     expect(seeds.filter((seed) => !drawGalaxy(result.content, seed).ok)).toEqual([]);
   });
 
+  it('opens the hand-play seed with the stock it opened with before the chart had a layout', () => {
+    // The layout is the draw's last stage, and draws nothing the campaign
+    // goes on to spend (ADR 0011 decision 6): pinned from before it existed.
+    const result = loadContent(raw);
+    if (!result.ok) throw new Error('the content set did not load');
+
+    const lots = view(started(result.content, 20261022)).here?.lots ?? [];
+
+    expect(lots.map(({ good, quantity, price }) => [good, quantity, price])).toEqual([
+      ['Sailcloth', 3, 25],
+      ['Bolt of silk', 7, 49],
+    ]);
+  });
+
   it('draws every galaxy flat, with no place crowding a lane, on every seed tried', () => {
     const result = loadContent(raw);
     if (!result.ok) throw new Error('the content set did not load');
     const { content } = result;
-    // The tightest gap any motif allows: a share of the shortest lane in one.
-    const shortest = Math.min(
-      ...content.motifs.flatMap(({ lanes }) => lanes.map(({ distance }) => distance)),
-    );
-    const gap = (shortest * content.topology.minimumGapPercent) / 100;
+    const gap = tightestGap(content);
 
     for (let seed = 1; seed <= 200; seed += 1) {
       const drawn = drawGalaxy(content, seed);

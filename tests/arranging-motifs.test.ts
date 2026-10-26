@@ -11,7 +11,7 @@ import {
   aTopology,
   loadedContentSet,
 } from './support/content';
-import { drawnApart, layoutFaults } from './support/layout';
+import { drawnApart, layoutFaults, tightestGap } from './support/layout';
 
 /**
  * The draw arranges the motifs as its last stage: each motif after the first
@@ -63,14 +63,6 @@ function drawn(content: ContentSet, seed: number): DrawnGalaxy {
   return result.galaxy;
 }
 
-/** The gap the content set asks for, over the galaxy's shortest motif lane. */
-function gapOf(content: ContentSet): number {
-  const shortest = Math.min(
-    ...content.motifs.flatMap((motif) => motif.lanes.map((l) => l.distance)),
-  );
-  return (shortest * content.topology.minimumGapPercent) / 100;
-}
-
 describe('arranging the motifs', () => {
   it('gives every drawn location layout coordinates', () => {
     const galaxy = drawn(aCrowdedMap(), 1);
@@ -82,7 +74,7 @@ describe('arranging the motifs', () => {
     const content = aCrowdedMap();
 
     for (const seed of SEEDS) {
-      expect(layoutFaults(drawn(content, seed), gapOf(content)), `seed ${seed}`).toEqual([]);
+      expect(layoutFaults(drawn(content, seed), tightestGap(content)), `seed ${seed}`).toEqual([]);
     }
   });
 
@@ -119,6 +111,31 @@ describe('arranging the motifs', () => {
     for (const lane of between) {
       expect(drawnApart(galaxy, ...lane.ends)).toBeGreaterThanOrEqual(lane.distance - 1e-9);
     }
+  });
+
+  it('draws a lane to its distance from a motif of one place, at the middle of nothing', () => {
+    // The one place is the whole layout so far, so it has no outward side:
+    // anywhere away from it is outward.
+    const content = loadedContentSet({
+      locations: [aLocation(), aLocation({ id: 'bellwether' }), aLocation({ id: 'caravel' })],
+      motifs: [
+        aMotif(),
+        aMotif({
+          id: 'pair',
+          slots: [aSlot({ id: 'a' }), aSlot({ id: 'b' })],
+          lanes: [{ ends: ['a', 'b'], distance: 6 }],
+        }),
+      ],
+      drawParameters: aDrawParameters({
+        motifsPerCampaign: 2,
+        interMotifDistance: { least: 8, most: 8 },
+      }),
+    });
+    const seed = SEEDS.find((each) => drawn(content, each).motifs[0]?.motif === 'lone-berth') ?? 0;
+    const galaxy = drawn(content, seed);
+    const between = galaxy.lanes.find((lane) => lane.distance === 8);
+
+    expect(between && drawnApart(galaxy, ...between.ends)).toBeCloseTo(8, 6);
   });
 
   it('draws the same layout from the same content set and seed', () => {

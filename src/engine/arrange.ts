@@ -15,7 +15,8 @@ import { drawInt, type Rng } from './rng';
  * never shrunk or bent: only those lanes stretch.
  *
  * It runs after people even though it reads only the map, so that every
- * earlier stage draws exactly what it drew before there was a layout. It never
+ * earlier stage draws exactly what it drew before there was a layout, and it
+ * hands the generator on unspent, so the shops stock as they did too. It never
  * fails and never re-rolls.
  */
 export function arrangeMotifs(galaxy: DrawnGalaxy, content: ContentSet, rng: Rng): Attempt {
@@ -58,7 +59,9 @@ export function arrangeMotifs(galaxy: DrawnGalaxy, content: ContentSet, rng: Rng
     inside.push(...own);
   }
 
-  return { ok: true, galaxy: { ...galaxy, layout }, rng: next };
+  // The generator goes on as it came in. The campaign spends it next, on the
+  // shops, and a layout added to the draw must change nothing it already made.
+  return { ok: true, galaxy: { ...galaxy, layout }, rng };
 }
 
 /** A placed motif's layout from load, by the location that filled each slot. */
@@ -90,7 +93,8 @@ function directions(reach: number): readonly Point[] {
   const steps: Point[] = [];
   for (let x = -reach; x <= reach; x += 1) {
     for (let y = -reach; y <= reach; y += 1) {
-      if (divisor(Math.abs(x), Math.abs(y)) === 1) {
+      const common = divisor(x, y);
+      if (common * common === 1) {
         const length = Math.sqrt(x * x + y * y);
         steps.push({ x: x / length, y: y / length });
       }
@@ -99,6 +103,7 @@ function directions(reach: number): readonly Point[] {
   return steps;
 }
 
+/** The greatest common divisor, up to its sign. */
 function divisor(one: number, other: number): number {
   return other === 0 ? one : divisor(other, one % other);
 }
@@ -108,12 +113,13 @@ const waysToPlace: readonly Way[] = directions(3).flatMap((heading) =>
 );
 
 /**
- * How much longer each step draws the joining lane, as a share of its
- * distance, and how many steps it may take. Not numbers of the game: they bound
- * how far the stage looks for room, and placing outward along a tree finds it.
+ * How finely the joining lane is lengthened, as a share of its distance, and
+ * how far. A lane is drawn as long as a motif needs to fit and no longer, to
+ * within one step, so the step is the search's resolution and not a number of
+ * the game; nor is the bound, which outward placement does not reach in play.
  */
-const stretchStep = 1 / 2;
-const stretches = 64;
+const stretchStep = 1 / 8;
+const stretches = 256;
 
 /**
  * Where the motif's locations go: the first way in the drawn order that fits
@@ -158,7 +164,9 @@ function fit(
   const outward = (placed: ReadonlyMap<string, Point>, way: Way, stretch: number) => {
     const next = onward === undefined ? undefined : placed.get(onward);
     return (
-      [...placed.values()].every((point) => ahead(point, away) > 0) &&
+      // An anchor at the very middle has no outward side, and all ways are out.
+      (away.x * away.x + away.y * away.y === 0 ||
+        [...placed.values()].every((point) => ahead(point, away) > 0)) &&
       (next === undefined || ahead(next, way.heading) >= lengthAt(stretch) - gap)
     );
   };
