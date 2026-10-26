@@ -2,6 +2,7 @@ import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import { crossProduct, drawGalaxy, loadContent, view } from '../src/engine';
 import { started } from './support/campaign';
+import { layoutFaults } from './support/layout';
 
 /**
  * The content set the page hand-plays is known to load (ADR 0003 decision 3).
@@ -75,6 +76,22 @@ describe('the walking skeleton content set', () => {
     expect(topology.farHaul).toBeGreaterThan(0);
     expect(topology.startHub).toEqual({ archetype: 'market', neighbours: 3, spurs: 1 });
     expect(seeds.filter((seed) => !drawGalaxy(result.content, seed).ok)).toEqual([]);
+  });
+
+  it('draws every galaxy flat, with no place crowding a lane, on every seed tried', () => {
+    const result = loadContent(raw);
+    if (!result.ok) throw new Error('the content set did not load');
+    const { content } = result;
+    // The tightest gap any motif allows: a share of the shortest lane in one.
+    const shortest = Math.min(
+      ...content.motifs.flatMap(({ lanes }) => lanes.map(({ distance }) => distance)),
+    );
+    const gap = (shortest * content.topology.minimumGapPercent) / 100;
+
+    for (let seed = 1; seed <= 200; seed += 1) {
+      const drawn = drawGalaxy(content, seed);
+      expect(drawn.ok ? layoutFaults(drawn.galaxy, gap) : [], `seed ${seed}`).toEqual([]);
+    }
   });
 
   it('opens with something on sale, so the page has a shop to buy from', () => {

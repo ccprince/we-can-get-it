@@ -47,7 +47,7 @@ export function layOutMotif(
  * The **minimum gap**: how near a location may sit to a lane that does not
  * touch it, as a share of the shortest lane (ADR 0011 decision 4).
  */
-function minimumGap(lanes: readonly Lane[], minimumGapPercent: number): number {
+export function minimumGap(lanes: readonly Lane[], minimumGapPercent: number): number {
   const shortest = Math.min(...lanes.map((lane) => lane.distance));
   return lanes.length === 0 ? 0 : (shortest * minimumGapPercent) / 100;
 }
@@ -58,7 +58,7 @@ function minimumGap(lanes: readonly Lane[], minimumGapPercent: number): number {
  * location meet only there; one lying along another puts a location on a lane
  * it is not on, and the gap catches that.
  */
-function flaw(
+export function flaw(
   layout: ReadonlyMap<string, Point>,
   lanes: readonly Lane[],
   gap: number,

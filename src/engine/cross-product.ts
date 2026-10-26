@@ -98,6 +98,12 @@ export type Survey = {
 export type Drawn = Survey & {
   /** Each placed slot and the location that filled it, in placement order. */
   readonly placed: readonly PlacedSlot[];
+  /**
+   * Each **inter-motif lane**, drawn against its distance, **most stretched
+   * first**: the draw lengthens these, and only these, to fit the motifs
+   * together (ADR 0011 decisions 5 and 6). Ties keep the order the draw laid them in.
+   */
+  readonly interMotifStretch: readonly LaneDrawn[];
 };
 
 export type PlacedSlot = {
@@ -120,7 +126,14 @@ export function crossProduct(content: ContentSet, galaxy: DrawnGalaxy | null): C
         .map((location) => location.id),
     })),
     asWritten: survey(content.tags, content),
-    drawn: galaxy === null ? null : { ...surveyDrawn(content, galaxy), placed: placed(galaxy) },
+    drawn:
+      galaxy === null
+        ? null
+        : {
+            ...surveyDrawn(content, galaxy),
+            placed: placed(galaxy),
+            interMotifStretch: interMotifStretch(galaxy),
+          },
   };
 }
 
@@ -130,6 +143,16 @@ function motifLayout(motif: Motif): MotifLayout {
     lanes: motif.lanes.map((lane) => ({ ...lane, drawn: drawnLength(motif.layout, lane) })),
     worstDistortion: worstDistortion(motif.layout, motif.lanes),
   };
+}
+
+function interMotifStretch(galaxy: DrawnGalaxy): readonly LaneDrawn[] {
+  const motifOf = new Map(
+    galaxy.motifs.flatMap((motif, at) => motif.slots.map(({ location }) => [location, at])),
+  );
+  return galaxy.lanes
+    .filter((lane) => motifOf.get(lane.ends[0]) !== motifOf.get(lane.ends[1]))
+    .map((lane) => ({ ...lane, drawn: drawnLength(galaxy.layout, lane) }))
+    .sort((one, other) => other.drawn / other.distance - one.drawn / one.distance);
 }
 
 function slotFillings(content: ContentSet): readonly SlotFilling[] {

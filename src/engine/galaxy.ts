@@ -1,4 +1,5 @@
 import type { Buyer, Good, Lane, Location, Shape } from './content';
+import type { Point } from './layout';
 
 /**
  * The **drawn galaxy**: what the **draw** produced, and the whole of the galaxy
@@ -30,6 +31,12 @@ export type DrawnGalaxy = {
   readonly goods: readonly Good[];
   /** The people drawn, in id order, each standing at a drawn location. */
   readonly people: readonly Buyer[];
+  /**
+   * Each drawn location's **layout coordinates**, by location id: the chart's,
+   * and read by nothing else (ADR 0011 decision 7). Rebuilt from the seed with
+   * the rest of the galaxy and never saved.
+   */
+  readonly layout: ReadonlyMap<string, Point>;
 };
 
 /**
