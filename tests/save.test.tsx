@@ -59,11 +59,10 @@ async function click(name: string | RegExp) {
   fireEvent.click(button);
 }
 
-/** Take the first departure the chart offers, then go back to where the day is ended. */
+/** Take the first departure the chart offers. */
 async function departFirst() {
   fireEvent.click(await screen.findByRole('tab', { name: 'Chart' }));
   await click(/^Depart for /);
-  fireEvent.click(screen.getByRole('tab', { name: 'Here' }));
 }
 
 describe('saving and resuming a campaign', () => {

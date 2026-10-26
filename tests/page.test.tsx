@@ -210,6 +210,15 @@ describe('the chart on the page', () => {
     expect(taken).toEqual([{ kind: 'depart', toId: 'bellwether' }]);
   });
 
+  it('goes back to where the player is on departing, where the day is ended', () => {
+    surfaces({ campaign: started(aGalaxyOfTwo(), SEED) });
+    openTab('Chart');
+
+    fireEvent.click(screen.getByRole('button', { name: /Depart for Bellwether Yards/ }));
+
+    expect(screen.getByRole('tab', { name: 'Here', selected: true })).toBeDefined();
+  });
+
   it('says a lane is beyond range wherever it sits on the chart, not only from here', () => {
     // The chart carries the whole galaxy (ADR 0006 decision 5), so what the
     // ship cannot reach is readable before the player is standing at its end.

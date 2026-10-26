@@ -65,7 +65,6 @@ describe('the page', () => {
     const destination = depart.textContent?.replace('Depart for ', '') ?? '';
 
     fireEvent.click(depart);
-    fireEvent.click(screen.getByRole('tab', { name: 'Here' }));
     // A leg is flown day by day, and how many days depends on the lane this
     // campaign happened to be dealt (ADR 0005 decision 10).
     while (screen.queryByRole('heading', { name: destination }) === null) {
