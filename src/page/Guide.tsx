@@ -30,9 +30,10 @@ export function Guide({ entries }: { readonly entries: readonly GuideEntryView[]
 }
 
 function Known({ known }: { readonly known: KnownView }) {
+  const current = known.daysAgo === 0;
   return (
     <div className="mt-1 text-sm">
-      <p className={known.daysAgo === 0 ? 'text-stone-400' : 'text-amber-300'}>
+      <p className={current ? 'text-stone-400' : 'text-amber-300'}>
         As of {known.asOf.label}
         {known.daysAgo === 0
           ? ' (today)'
