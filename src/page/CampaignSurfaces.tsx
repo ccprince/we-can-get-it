@@ -15,7 +15,8 @@ import { Hold, People, Shop } from './Trade';
  * always in view, and tabs for where the player is, the **chart** and the
  * **trade guide**. What the player can do belongs to where they are, so the
  * menu sits on that tab and not on the reference tabs. Which tab is open is
- * view state.
+ * view state. Departing goes back to it, since in transit ending the day is
+ * the whole of what the player does.
  */
 type Tab = 'here' | 'chart' | 'guide';
 
@@ -72,7 +73,15 @@ export function CampaignSurfaces({
 
       <div role="tabpanel" aria-label={tabs.find(([key]) => key === tab)?.[1]}>
         {tab === 'here' && <Here view={view} onCommand={onCommand} />}
-        {tab === 'chart' && <Chart view={view} onCommand={onCommand} />}
+        {tab === 'chart' && (
+          <Chart
+            view={view}
+            onCommand={(command) => {
+              onCommand(command);
+              setTab('here');
+            }}
+          />
+        )}
         {tab === 'guide' && <Guide entries={view.guide.entries} />}
       </div>
 
