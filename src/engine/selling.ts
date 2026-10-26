@@ -17,6 +17,8 @@ import { matchOf } from './match';
 export type OpenWant = {
   /** The buyer and the want's place in their wants, which are in want order. */
   readonly id: string;
+  /** The want's place in the buyer's wants, which the id names it by. */
+  readonly at: number;
   readonly buyer: Buyer;
   readonly want: Want;
   /** Units the buyer will still take: the want's quantity less what was sold to it. */
@@ -39,7 +41,7 @@ export function openWants(campaign: Campaign, buyer: Buyer): readonly OpenWant[]
     .map((want, at): OpenWant => {
       const id = `${buyer.id}#${at}`;
       const sold = campaign.delivered.find((each) => each.want === id)?.units ?? 0;
-      return { id, buyer, want, remaining: want.quantity - sold };
+      return { id, at, buyer, want, remaining: want.quantity - sold };
     })
     .filter(({ remaining }) => remaining > 0);
 }
