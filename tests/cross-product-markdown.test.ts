@@ -27,7 +27,7 @@ describe('the cross-product report as Markdown', () => {
     expect(headings).toEqual([
       '## Problems',
       '## Reports from the load',
-      '## Slots',
+      '## Motif Slots',
       '## As written: goods per kind',
       '## As written: goods per role tag',
       '## As written: prose missing the tells of a tag the good holds',
@@ -55,6 +55,6 @@ describe('the cross-product report as Markdown', () => {
     });
 
     expect(text).toMatch(/## Problems[\s\S]*- \*\*fails\*\* `fareRate`/);
-    expect(text).not.toContain('## Slots');
+    expect(text).not.toContain('## Motif Slots');
   });
 });

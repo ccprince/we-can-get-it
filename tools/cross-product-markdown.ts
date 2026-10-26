@@ -58,18 +58,7 @@ function verdicts(subject: Subject): readonly string[] {
 function sections(crossProduct: CrossProduct): readonly string[] {
   const { asWritten, drawn } = crossProduct;
   return [
-    '## Slots',
-    '',
-    'The reserve locations that can fill each slot. A short list is an over-narrow motif.',
-    '',
-    ...(crossProduct.slots.length === 0
-      ? ['- none']
-      : crossProduct.slots.map(
-          ({ motif, slot, archetype, fillers }) =>
-            `- \`${motif}\` / \`${slot}\` (${archetype ?? 'untyped'}): ` +
-            `${fillers.length} — ${fillers.join(', ') || 'nobody'}`,
-        )),
-    '',
+    ...motifSlots(crossProduct),
     ...survey('As written', asWritten),
     ...(drawn === null
       ? []
@@ -85,6 +74,36 @@ function sections(crossProduct: CrossProduct): readonly string[] {
               )),
           '',
         ]),
+  ];
+}
+
+function motifSlots({ slots, archetypes }: CrossProduct): readonly string[] {
+  const motifs = [...new Set(slots.map(({ motif }) => motif))];
+  return [
+    '## Motif Slots',
+    '',
+    'How many reserve locations can fill each slot. Having enough matters, not which ones.',
+    '',
+    ...motifs.flatMap((motif) => [
+      `### \`${motif}\``,
+      '',
+      ...slots
+        .filter((one) => one.motif === motif)
+        .map(
+          ({ slot, archetype, locations }) =>
+            `- \`${slot}\` (${archetype ?? 'untyped'}): ` +
+            `${locations} ${locations === 1 ? 'location' : 'locations'}`,
+        ),
+      '',
+    ]),
+    '### Locations by archetype',
+    '',
+    ...(archetypes.length === 0
+      ? ['- none']
+      : archetypes.map(
+          ({ archetype, locations }) => `- ${archetype}: ${locations.join(', ') || 'none'}`,
+        )),
+    '',
   ];
 }
 

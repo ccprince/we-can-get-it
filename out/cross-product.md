@@ -15,20 +15,34 @@ Suspicions, for a writer to judge. Never a reason to fail.
 - **judge** `calendar` a year is 8 months, 48 weeks, 288 days
 - **judge** `goods` goods per kind: 3 goods — cloth, ore, tools
 
-## Slots
+## Motif Slots
 
-The reserve locations that can fill each slot. A short list is an over-narrow motif.
+How many reserve locations can fill each slot. Having enough matters, not which ones.
 
-- `crossing` / `east` (processor): 4 — anvil, kestrel, shoals, spindleworks
-- `crossing` / `gate` (market): 4 — bellwether, caravel, quay, tallow
-- `crossing` / `west` (untyped): 12 — anvil, bellwether, caravel, cinder, hollow, kestrel, lament, quay, shoals, spindleworks, tallow, tithe
-- `loop` / `landing` (market): 4 — bellwether, caravel, quay, tallow
-- `loop` / `pits` (extractor): 4 — cinder, hollow, lament, tithe
-- `loop` / `yard` (untyped): 12 — anvil, bellwether, caravel, cinder, hollow, kestrel, lament, quay, shoals, spindleworks, tallow, tithe
-- `spur` / `approach` (processor): 4 — anvil, kestrel, shoals, spindleworks
-- `spur` / `dead-end` (extractor): 4 — cinder, hollow, lament, tithe
-- `spur` / `junction` (market): 4 — bellwether, caravel, quay, tallow
-- `spur` / `roads` (untyped): 12 — anvil, bellwether, caravel, cinder, hollow, kestrel, lament, quay, shoals, spindleworks, tallow, tithe
+### `crossing`
+
+- `east` (processor): 4 locations
+- `gate` (market): 4 locations
+- `west` (untyped): 12 locations
+
+### `loop`
+
+- `landing` (market): 4 locations
+- `pits` (extractor): 4 locations
+- `yard` (untyped): 12 locations
+
+### `spur`
+
+- `approach` (processor): 4 locations
+- `dead-end` (extractor): 4 locations
+- `junction` (market): 4 locations
+- `roads` (untyped): 12 locations
+
+### Locations by archetype
+
+- extractor: cinder, hollow, lament, tithe
+- market: bellwether, caravel, quay, tallow
+- processor: anvil, kestrel, shoals, spindleworks
 
 ## As written: goods per kind
 
