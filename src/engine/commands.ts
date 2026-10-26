@@ -1,5 +1,6 @@
 import type { Campaign, DigestEntry, Leg, Whereabouts } from './campaign';
 import { locationNamed, type DrawnGalaxy } from './galaxy';
+import { learningOnDeparture, learningOnLanding } from './knowledge';
 import { daysToFly, fareToFly, laneBetween, withinRange } from './map';
 import { sell } from './selling';
 import { buy } from './trade';
@@ -212,8 +213,9 @@ function depart(campaign: Campaign, toId: string): CommandResult {
   }
 
   return {
+    // Leaving, the player takes the place as they last saw it.
     campaign: endTheDay({
-      ...campaign,
+      ...learningOnDeparture(campaign),
       credits: campaign.credits - fare,
       where: { kind: 'in-transit', leg },
     }),
@@ -222,14 +224,20 @@ function depart(campaign: Campaign, toId: string): CommandResult {
 
 function endTheDay(campaign: Campaign): Campaign {
   const ended = dayEnds(campaign);
+  const next = { ...campaign, day: campaign.day + 1, where: ended.where };
+  // A landing is where the player sees a place again, and so where what they
+  // held of it is corrected (ADR 0006 decision 17).
+  const landed =
+    campaign.where.kind === 'in-transit' && ended.where.kind === 'at'
+      ? learningOnLanding(next)
+      : { campaign: next, entries: [] };
   return {
-    ...campaign,
-    day: campaign.day + 1,
-    where: ended.where,
+    ...landed.campaign,
     // One digest, at every day boundary, whose content varies by where the
-    // player is (ADR 0005 decision 8). Beyond a landing nothing reaches them
-    // yet: the change budget is out of scope for this milestone.
-    digest: { day: campaign.day, entries: ended.entries },
+    // player is (ADR 0005 decision 8). Beyond a landing and what it corrects
+    // nothing reaches them yet: the change budget is out of scope for this
+    // milestone.
+    digest: { day: campaign.day, entries: [...ended.entries, ...landed.entries] },
   };
 }
 

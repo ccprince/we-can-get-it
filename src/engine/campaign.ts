@@ -1,6 +1,7 @@
 import type { ContentSet, Ship } from './content';
 import { draw } from './draw';
 import type { DrawnGalaxy } from './galaxy';
+import { learning, sightingHere, type Sighting } from './knowledge';
 import { rngFromSeed, type Rng } from './rng';
 import { stockShops, type Lot } from './stock';
 import type { Problem } from './verdicts';
@@ -93,6 +94,13 @@ export type Campaign = {
    * once, so its entry then holds the whole quantity (ADR 0007 decision 11).
    */
   readonly delivered: readonly Delivery[];
+  /**
+   * What the player has seen of each place they have been, as last known, in
+   * the order each was first seen. The **trade guide** reads it with an as-of
+   * date on everything (ADR 0006 decision 17); a place never visited has no
+   * entry, and nothing is ever removed.
+   */
+  readonly known: readonly Sighting[];
   /** The day that has just ended. Null until one has. */
   readonly digest: Digest | null;
 };
@@ -115,21 +123,22 @@ export function startCampaign(content: ContentSet, seed: number): StartResult {
   const { galaxy } = drawn;
   const [lots, rng] = stockShops(galaxy, content, drawn.rng);
 
-  return {
-    ok: true,
-    campaign: {
-      content,
-      galaxy,
-      seed,
-      rng,
-      day: content.start.day,
-      where: { kind: 'at', locationId: galaxy.startId },
-      credits: content.start.credits,
-      ship: content.start.ship,
-      lots,
-      cargo: [],
-      delivered: [],
-      digest: null,
-    },
+  const opening: Campaign = {
+    content,
+    galaxy,
+    seed,
+    rng,
+    day: content.start.day,
+    where: { kind: 'at', locationId: galaxy.startId },
+    credits: content.start.credits,
+    ship: content.start.ship,
+    lots,
+    cargo: [],
+    delivered: [],
+    known: [],
+    digest: null,
   };
+
+  // The player opens somewhere, and sees it.
+  return { ok: true, campaign: learning(opening, sightingHere(opening, [])) };
 }

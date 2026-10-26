@@ -284,10 +284,11 @@ export function aGalaxy(overrides: RawObject = {}): RawObject {
   ];
 
   // One archetype per place, so every slot has exactly one location that fits.
-  // A place may say which kinds it `supplies`, which its archetype declares.
-  const placed = places.map(({ supplies, ...location }) => ({
+  // A place may say which kinds it `supplies` and `demands`, which its archetype declares.
+  const placed = places.map(({ supplies, demands, ...location }) => ({
     location: { ...location, id: String(location.id), archetype: `only-${String(location.id)}` },
     supplies: asStrings(supplies),
+    demands: asStrings(demands),
   }));
 
   const slotOf = new Map(
@@ -298,8 +299,8 @@ export function aGalaxy(overrides: RawObject = {}): RawObject {
   );
 
   return {
-    archetypes: placed.map(({ location, supplies }) =>
-      anArchetype({ id: location.archetype, supplies }),
+    archetypes: placed.map(({ location, supplies, demands }) =>
+      anArchetype({ id: location.archetype, supplies, demands }),
     ),
     locations: placed.map(({ location }) => location),
     motifs: [
