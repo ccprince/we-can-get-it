@@ -47,6 +47,11 @@ function surfaces(
   );
 }
 
+/** The surfaces open on where the player is; the chart and the guide are a tab away. */
+function openTab(name: string) {
+  fireEvent.click(screen.getByRole('tab', { name }));
+}
+
 describe('the campaign surfaces', () => {
   it('shows where the player is, the day and their credits', () => {
     surfaces();
@@ -94,6 +99,32 @@ describe('the campaign surfaces', () => {
     );
 
     expect(screen.getByText('That is not a command.')).toBeDefined();
+  });
+
+  it('keeps a refusal in view on every tab, since a command can come from any of them', () => {
+    const campaign = started(loadedContentSet(), SEED);
+    render(
+      <CampaignSurfaces
+        view={view(campaign)}
+        seed={SEED}
+        refusal="That is not a command."
+        onCommand={vi.fn()}
+      />,
+    );
+
+    openTab('Chart');
+
+    expect(screen.getByText('That is not a command.')).toBeDefined();
+  });
+
+  it('offers what the player can do where they are, and not on the chart or the guide', () => {
+    surfaces();
+
+    expect(screen.getByRole('heading', { name: 'What you can do' })).toBeDefined();
+    openTab('Chart');
+    expect(screen.queryByRole('button', { name: 'End the day' })).toBeNull();
+    openTab('Trade guide');
+    expect(screen.queryByRole('button', { name: 'End the day' })).toBeNull();
   });
 });
 
@@ -150,6 +181,7 @@ function flying(content: ContentSet, command: Command): Campaign {
 describe('the chart on the page', () => {
   it('shows each lane with its days, its fare and where it leads', () => {
     surfaces({ campaign: started(aGalaxyOfTwo(), SEED) });
+    openTab('Chart');
 
     const lane = screen.getByRole('row', { name: /Bellwether Yards/ });
     expect(lane.textContent).toContain('3 days');
@@ -173,8 +205,10 @@ describe('the chart on the page', () => {
       start: aStart({ credits: 500, ship: aShip({ range: 10 }) }),
     });
     surfaces({ campaign: started(content, SEED) });
+    openTab('Chart');
 
-    expect(screen.getByText(/beyond your range/i)).toBeDefined();
+    const lane = screen.getByRole('row', { name: /Bellwether Yards/ });
+    expect(within(lane).getByText('Beyond your range')).toBeDefined();
     expect(screen.queryByRole('button', { name: /Depart for Bellwether Yards/ })).toBeNull();
   });
 
@@ -184,6 +218,7 @@ describe('the chart on the page', () => {
       campaign: started(aGalaxyOfTwo(), SEED),
       onCommand: (command) => taken.push(command),
     });
+    openTab('Chart');
 
     screen.getByRole('button', { name: /Depart for Bellwether Yards/ }).click();
 
@@ -194,17 +229,19 @@ describe('the chart on the page', () => {
     // The chart carries the whole galaxy (ADR 0006 decision 5), so what the
     // ship cannot reach is readable before the player is standing at its end.
     surfaces({ campaign: started(aGalaxyOfFour(), SEED) });
+    openTab('Chart');
 
-    const far = screen
-      .getAllByRole('row', { name: /Grieve's Hollow/ })
-      .find((row) => row.textContent.includes('Bellwether Yards'));
+    const far = within(screen.getByRole('list', { name: 'Lanes from Bellwether Yards' }))
+      .getAllByRole('listitem')
+      .find((lane) => lane.textContent.includes("Grieve's Hollow"));
     expect(far?.textContent).toContain('Beyond your range');
   });
 
   it('keeps the range reading while underway, and takes only the departures away', () => {
     surfaces({ campaign: flying(aGalaxyOfFour(), { kind: 'depart', toId: 'bellwether' }) });
+    openTab('Chart');
 
-    expect(screen.getByText('Beyond your range')).toBeDefined();
+    expect(screen.getAllByText('Beyond your range')).not.toHaveLength(0);
     expect(screen.queryByRole('button', { name: /Depart/ })).toBeNull();
   });
 
@@ -213,6 +250,7 @@ describe('the chart on the page', () => {
     // decision 15), so a chart with no lanes is a galaxy of one place.
     const content = aGalaxyOfTwo({ locations: [aLocation()], lanes: [] });
     surfaces({ campaign: started(content, SEED) });
+    openTab('Chart');
 
     const places = screen.getByRole('list', { name: 'Locations' });
     expect(places.textContent).toContain('Kestrel Reach');
@@ -223,6 +261,7 @@ describe('the chart on the page', () => {
     surfaces({ campaign: flying(aGalaxyOfTwo(), { kind: 'depart', toId: 'bellwether' }) });
 
     expect(screen.getByRole('heading', { name: 'In transit' })).toBeDefined();
+    expect(screen.getByRole('tab', { name: 'Underway' })).toBeDefined();
     expect(screen.getByText(/out of Kestrel Reach/)).toBeDefined();
     expect(screen.getByText(/bound for Bellwether Yards/)).toBeDefined();
     expect(screen.queryByRole('button', { name: /Depart/ })).toBeNull();
@@ -357,6 +396,7 @@ function aGuidedGalaxy(): ContentSet {
 describe('the trade guide on the page', () => {
   it('gives every location its kinds, and says an unvisited one is unvisited', () => {
     surfaces({ campaign: started(aGuidedGalaxy(), SEED) });
+    openTab('Trade guide');
 
     const bellwether = screen.getByRole('listitem', { name: 'Bellwether Yards' });
     expect(bellwether.textContent).toContain('Supplies tools');
@@ -366,6 +406,7 @@ describe('the trade guide on the page', () => {
 
   it('dates what was seen and says how old it is once the player has left', () => {
     surfaces({ campaign: flying(aGuidedGalaxy(), { kind: 'depart', toId: 'bellwether' }) });
+    openTab('Trade guide');
 
     const kestrel = screen.getByRole('listitem', { name: 'Kestrel Reach' });
     expect(kestrel.textContent).toContain('As of Firstday, 1 Thessaly, year 1, 1 day ago');
@@ -374,6 +415,7 @@ describe('the trade guide on the page', () => {
 
   it('shows the place the player stands in as of today', () => {
     surfaces({ campaign: started(aGuidedGalaxy(), SEED) });
+    openTab('Trade guide');
 
     expect(screen.getByRole('listitem', { name: 'Kestrel Reach' }).textContent).toContain(
       '(today)',

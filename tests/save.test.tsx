@@ -59,11 +59,23 @@ async function click(name: string | RegExp) {
   fireEvent.click(button);
 }
 
+/**
+ * Take the first departure the chart offers, then go back to the first tab,
+ * where the page opens and where the day is ended.
+ */
+async function departFirst() {
+  fireEvent.click(await screen.findByRole('tab', { name: 'Chart' }));
+  await click(/^Depart for /);
+  const [here] = screen.getAllByRole('tab');
+  if (here === undefined) throw new Error('the page has no tabs');
+  fireEvent.click(here);
+}
+
 describe('saving and resuming a campaign', () => {
   it('replays a recorded command sequence into the identical view', async () => {
     const page = await open();
     await click('End the day');
-    await click(/^Depart for /);
+    await departFirst();
     await click('End the day');
     const played = page.container.innerHTML;
 
@@ -102,7 +114,7 @@ describe('saving and resuming a campaign', () => {
   it('refuses a save played on a different content set, says so, and keeps the save', async () => {
     const page = await open();
     await click('End the day');
-    await click(/^Depart for /);
+    await departFirst();
     const stored = localStorage.getItem(KEY);
 
     // One value changed, prose only: every stored command is still accepted.
@@ -125,7 +137,7 @@ describe('saving and resuming a campaign', () => {
   it('resumes a save on the same content set written in another order', async () => {
     const page = await open();
     await click('End the day');
-    await click(/^Depart for /);
+    await departFirst();
     const played = page.container.innerHTML;
 
     const reordered = JSON.parse(walkingSkeleton) as { locations: unknown[]; motifs: unknown[] };
