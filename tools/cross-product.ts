@@ -1,5 +1,5 @@
 import { mkdirSync, writeFileSync } from 'node:fs';
-import { dirname } from 'node:path';
+import { basename, dirname, extname } from 'node:path';
 import { crossProduct, drawGalaxy, loadContent } from '../src/engine';
 import type { CrossProduct, DrawnGalaxy, Problem } from '../src/engine';
 import { markdown } from './cross-product-markdown';
@@ -23,7 +23,10 @@ import { readJson } from './files';
  * wrong, and a script wrapping this wants to know it was.
  */
 
-const DEFAULT_OUT = 'out/cross-product.md';
+/** Named for the content set, so reports on two of them sit side by side. */
+function defaultOut(contentPath: string): string {
+  return `out/${basename(contentPath, extname(contentPath))}-cross-product.md`;
+}
 
 function main(): void {
   const asked = parse(process.argv.slice(2));
@@ -71,7 +74,7 @@ const USAGE = 'usage: npm run report -- <content set> [--seed <n>] [--out <path>
 function parse(args: readonly string[]): Asked {
   let contentPath: string | undefined;
   let seed: number | null = null;
-  let out = DEFAULT_OUT;
+  let out: string | undefined;
   for (let at = 0; at < args.length; at += 1) {
     const word = args[at];
     if (word === '--seed') {
@@ -89,7 +92,7 @@ function parse(args: readonly string[]): Asked {
     }
   }
   if (contentPath === undefined) throw new Error(USAGE);
-  return { contentPath, seed, out };
+  return { contentPath, seed, out: out ?? defaultOut(contentPath) };
 }
 
 try {
