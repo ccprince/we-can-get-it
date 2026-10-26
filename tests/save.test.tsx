@@ -59,16 +59,11 @@ async function click(name: string | RegExp) {
   fireEvent.click(button);
 }
 
-/**
- * Take the first departure the chart offers, then go back to the first tab,
- * where the page opens and where the day is ended.
- */
+/** Take the first departure the chart offers, then go back to where the day is ended. */
 async function departFirst() {
   fireEvent.click(await screen.findByRole('tab', { name: 'Chart' }));
   await click(/^Depart for /);
-  const [here] = screen.getAllByRole('tab');
-  if (here === undefined) throw new Error('the page has no tabs');
-  fireEvent.click(here);
+  fireEvent.click(screen.getByRole('tab', { name: 'Here' }));
 }
 
 describe('saving and resuming a campaign', () => {
