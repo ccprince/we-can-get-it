@@ -1,8 +1,9 @@
 import { dateOf, type CalendarDate } from './calendar';
 import type { Campaign, DigestEntry } from './campaign';
 import { departureTo, offeredCommands, type Command } from './commands';
-import type { Lane } from './content';
+import type { Archetype, Lane, Want } from './content';
 import { goodNamed, locationNamed, type DrawnGalaxy } from './galaxy';
+import { sightingHere, wordCorrection, type Sighting } from './knowledge';
 import { daysToFly, fareToFly, otherEnd, withinRange } from './map';
 import { matchOf, type Tier } from './match';
 import { mostYouCanSell, openWants, peopleHere, type OpenWant } from './selling';
@@ -214,6 +215,66 @@ export type ChartView = {
 };
 
 /**
+ * The **trade guide**: every drawn location, in placement order, with its
+ * **standing character** published from day one and what the player has seen of
+ * it held as last known (ADR 0006 decision 17). A location is on it whether or
+ * not it has been visited, and nothing is filtered for relevance.
+ */
+export type GuideView = {
+  readonly entries: readonly GuideEntryView[];
+};
+
+export type GuideEntryView = {
+  readonly name: string;
+  /** Published, in the vocabulary of **kind**, and nothing more specific. */
+  readonly standing: StandingView;
+  /** What the player has seen of it, or null until they have been there. */
+  readonly known: KnownView | null;
+};
+
+/** The **kinds** a location supplies and demands: where to start looking. */
+export type StandingView = {
+  readonly supplies: readonly string[];
+  readonly demands: readonly string[];
+};
+
+/**
+ * What the player has seen of a location, as of a date. The place the player
+ * stands in is read as of today, so `daysAgo` is the age of the knowledge: zero
+ * only for a place being looked at now.
+ */
+export type KnownView = {
+  readonly asOf: CalendarDate;
+  readonly daysAgo: number;
+  /** In good-id order. */
+  readonly lots: readonly KnownLotView[];
+  /** In id order. */
+  readonly people: readonly KnownPersonView[];
+  /** What the landing that last updated this found different; in lots, then people. */
+  readonly corrections: readonly CorrectionView[];
+};
+
+export type KnownLotView = {
+  readonly good: string;
+  readonly kind: string;
+  readonly quantity: number;
+  readonly price: number;
+  readonly asOf: CalendarDate;
+};
+
+export type KnownPersonView = {
+  readonly name: string;
+  /** Each want still open when seen, in want order, worded as it is where they stand. */
+  readonly wants: readonly { readonly wording: string; readonly wanted: number }[];
+  readonly asOf: CalendarDate;
+};
+
+/** A difference the landing found, worded: what it is now, and what it was. */
+export type CorrectionView = {
+  readonly text: string;
+};
+
+/**
  * What is on offer, which is determined entirely by where the player is
  * (ADR 0005 decision 5). The commands, not their wording: the view words what
  * the engine returns (ADR 0003 decision 4).
@@ -227,6 +288,7 @@ export type View = {
   readonly here: HereView | null;
   readonly transit: TransitView | null;
   readonly chart: ChartView;
+  readonly guide: GuideView;
   readonly today: TodayView;
   readonly credits: CreditsView;
   readonly hold: HoldView;
@@ -251,6 +313,7 @@ export function view(campaign: Campaign): View {
           }
         : null,
     chart: chartFor(campaign),
+    guide: guideFor(campaign),
     today: { day: campaign.day, date: dateOf(calendar, campaign.day) },
     credits: { credits: campaign.credits },
     hold: holdFor(campaign),
@@ -270,6 +333,66 @@ function chartFor(campaign: Campaign): ChartView {
   return {
     locations: campaign.galaxy.locations.map(({ name }) => ({ name })),
     lanes: campaign.galaxy.lanes.map((lane) => laneFor(lane, campaign)),
+  };
+}
+
+function guideFor(campaign: Campaign): GuideView {
+  return {
+    entries: campaign.galaxy.locations.map((location) => {
+      const archetype = campaign.content.archetypes.find(({ id }) => id === location.archetype);
+      return {
+        name: location.name,
+        standing: standingOf(archetype),
+        known: knownAbout(campaign, location.id),
+      };
+    }),
+  };
+}
+
+/** The loader refuses a location naming an archetype it does not enumerate. */
+function standingOf(archetype: Archetype | undefined): StandingView {
+  if (archetype === undefined) throw new Error('a location names an archetype nobody declared');
+  return { supplies: archetype.supplies, demands: archetype.demands };
+}
+
+/**
+ * What is held of a location. The one the player stands in is read afresh, so
+ * that it never shows the shop as it was before the player's own trades; the
+ * corrections the landing found stay with it.
+ */
+function knownAbout(campaign: Campaign, locationId: string): KnownView | null {
+  const held = campaign.known.find((each) => each.locationId === locationId);
+  if (held === undefined) return null;
+  const here = campaign.where.kind === 'at' && campaign.where.locationId === locationId;
+  return knownView(campaign, here ? sightingHere(campaign, held.corrections) : held);
+}
+
+function knownView(campaign: Campaign, sighting: Sighting): KnownView {
+  const { galaxy, content } = campaign;
+  const asOf = dateOf(content.calendar, sighting.asOf);
+  return {
+    asOf,
+    daysAgo: campaign.day - sighting.asOf,
+    lots: sighting.lots.map((lot) => ({
+      ...goodAndKind(galaxy, lot.goodId),
+      quantity: lot.quantity,
+      price: lot.price,
+      asOf,
+    })),
+    people: sighting.people.map(({ buyerId, wants }) => {
+      const buyer = galaxy.people.find(({ id }) => id === buyerId);
+      if (buyer === undefined) throw new Error(`${buyerId} is not a person the galaxy holds`);
+      return {
+        name: buyer.name,
+        wants: wants.map(({ at, remaining }) => {
+          const want = buyer.wants[at];
+          if (want === undefined) throw new Error(`${buyerId} has no want ${at}`);
+          return { wording: wordingOf(galaxy, want), wanted: remaining };
+        }),
+        asOf,
+      };
+    }),
+    corrections: sighting.corrections.map((each) => ({ text: wordCorrection(campaign, each) })),
   };
 }
 
@@ -333,7 +456,7 @@ function wantFor(campaign: Campaign, open: OpenWant): WantView {
   return {
     want: id,
     wanted: remaining,
-    wording: 'goodId' in want ? `wants ${goodNamed(galaxy, want.goodId).name}` : want.plainly,
+    wording: wordingOf(galaxy, want),
     matches: campaign.cargo.map(({ goodId, quantity }) => {
       const good = goodNamed(galaxy, goodId);
       const { tier, failedTerm, offer } = matchOf(want, buyer, good, content.offers);
@@ -348,6 +471,11 @@ function wantFor(campaign: Campaign, open: OpenWant): WantView {
       };
     }),
   };
+}
+
+/** A want as it is said: a good by its name, a predicate in the buyer's own words. */
+function wordingOf(galaxy: DrawnGalaxy, want: Want): string {
+  return 'goodId' in want ? `wants ${goodNamed(galaxy, want.goodId).name}` : want.plainly;
 }
 
 function holdFor(campaign: Campaign): HoldView {
