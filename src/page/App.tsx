@@ -13,7 +13,7 @@ import {
 import { CampaignSurfaces } from './CampaignSurfaces';
 import { fetchContent } from './content';
 import { readSave, resume, writeSave, type Found, type Save } from './save';
-import { seedAskedFor, seedFromUrl } from './seed';
+import { freshSeed, seedAskedFor, seedFromUrl } from './seed';
 
 /**
  * The page holds only view state and renders read models handed to it by one
@@ -104,7 +104,11 @@ export function App() {
           <pre className="mt-2 font-mono text-xs whitespace-pre-wrap text-stone-400">
             {campaignState.stored}
           </pre>
-          <NewCampaign onStart={() => setCampaignState(newCampaign(content))} />
+          <NewCampaign
+            seed={null}
+            asked={seedAskedFor(location.search)}
+            onStart={(seed) => setCampaignState(newCampaign(content, seed))}
+          />
         </Frame>
       );
     }
@@ -140,9 +144,11 @@ export function App() {
             onCommand={take}
           />
           <NewCampaign
-            onStart={() => {
+            seed={campaign.seed}
+            asked={seedAskedFor(location.search)}
+            onStart={(seed) => {
               setRefusal(null);
-              setCampaignState(newCampaign(content));
+              setCampaignState(newCampaign(content, seed));
             }}
           />
         </Frame>
@@ -160,7 +166,7 @@ const WILL_NOT_REPLAY = 'The saved campaign will not replay.';
 function opening(content: ContentSet, found: Found): CampaignState {
   switch (found.kind) {
     case 'none':
-      return newCampaign(content);
+      return newCampaign(content, seedFromUrl(location.search));
 
     case 'not-a-save':
       return unresumable(
@@ -221,8 +227,7 @@ function unresumable(
  * A new campaign, saved at once so that what is stored is what is in play. A
  * draw that fails is a content set that will not load, and is shown as one.
  */
-function newCampaign(content: ContentSet): CampaignState {
-  const seed = seedFromUrl(location.search);
+function newCampaign(content: ContentSet, seed: number): CampaignState {
   const opened = startCampaign(content, seed);
   if (!opened.ok) return { state: 'unloadable', problems: opened.problems };
   return saving(content, opened.campaign, {
@@ -242,10 +247,19 @@ function saving(content: ContentSet, campaign: Campaign, save: Save): CampaignSt
 
 /**
  * Starting a new campaign saves over the one in progress, so it is asked for
- * twice: once to offer it, once to mean it. Whether the question is open is
+ * twice: once to offer it, once to mean it, and meaning it is a choice of seed:
+ * the one in play, the one the URL asks for, or a fresh one. Whether the question is open is
  * view state.
  */
-function NewCampaign({ onStart }: { readonly onStart: () => void }) {
+function NewCampaign({
+  seed,
+  asked,
+  onStart,
+}: {
+  readonly seed: number | null;
+  readonly asked: number | null;
+  readonly onStart: (seed: number) => void;
+}) {
   const [asking, setAsking] = useState(false);
   const button = 'rounded border border-stone-700 px-3 py-1.5 text-sm hover:border-stone-500';
 
@@ -269,15 +283,39 @@ function NewCampaign({ onStart }: { readonly onStart: () => void }) {
         This ends the campaign in progress and saves over it, and it cannot be got back.
       </p>
       <div className="mt-2 flex gap-2">
+        {seed !== null && (
+          <button
+            type="button"
+            onClick={() => {
+              setAsking(false);
+              onStart(seed);
+            }}
+            className={`${button} text-rose-300`}
+          >
+            Start over on seed {seed}
+          </button>
+        )}
+        {asked !== null && asked !== seed && (
+          <button
+            type="button"
+            onClick={() => {
+              setAsking(false);
+              onStart(asked);
+            }}
+            className={`${button} text-rose-300`}
+          >
+            Start on seed {asked}
+          </button>
+        )}
         <button
           type="button"
           onClick={() => {
             setAsking(false);
-            onStart();
+            onStart(freshSeed());
           }}
           className={`${button} text-rose-300`}
         >
-          Start it
+          Start on a new seed
         </button>
         <button
           type="button"
