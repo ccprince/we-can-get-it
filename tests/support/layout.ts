@@ -1,4 +1,4 @@
-import type { DrawnGalaxy } from '../../src/engine';
+import type { ContentSet, DrawnGalaxy, Point } from '../../src/engine';
 
 /**
  * The checks a test makes of a drawn **layout**, worked out here from the
@@ -7,7 +7,16 @@ import type { DrawnGalaxy } from '../../src/engine';
  * never disagree with it.
  */
 
-type Point = { readonly x: number; readonly y: number };
+/**
+ * The tightest **minimum gap** any motif in the content set allows: its share
+ * of the shortest lane inside a motif. A lane between motifs sets no gap.
+ */
+export function tightestGap(content: ContentSet): number {
+  const shortest = Math.min(
+    ...content.motifs.flatMap(({ lanes }) => lanes.map(({ distance }) => distance)),
+  );
+  return (shortest * content.topology.minimumGapPercent) / 100;
+}
 
 function at(galaxy: DrawnGalaxy, location: string): Point {
   const point = galaxy.layout.get(location);
