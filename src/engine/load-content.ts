@@ -244,7 +244,7 @@ function wantKey(want: Want): string {
  * id order before the lanes are sorted by them, and no two lanes join the same
  * pair, which the reader checks.
  */
-function motifInIdOrder(motif: Unlaid): Unlaid {
+function motifInIdOrder(motif: WrittenMotif): WrittenMotif {
   const lanes = motif.lanes.map(({ ends, distance }) => ({
     ends: byId(ends[0], ends[1]) <= 0 ? ends : ([ends[1], ends[0]] as const),
     distance,
@@ -584,7 +584,7 @@ function readLeastPlaced(raw: unknown, problems: Problem[]): Topology['leastPlac
 function unmeetableTopology(
   topology: Topology,
   draw: DrawParameters,
-  motifs: readonly Unlaid[],
+  motifs: readonly WrittenMotif[],
   archetypes: readonly Archetype[],
 ): readonly Problem[] {
   const problems: Problem[] = [];
@@ -813,7 +813,7 @@ function readMotifs(
   raw: unknown,
   archetypes: readonly Archetype[],
   problems: Problem[],
-): readonly Unlaid[] | undefined {
+): readonly WrittenMotif[] | undefined {
   const motifs = readEach(raw, 'motifs', problems, (entry, where) => {
     const id = readText(entry.id, `${where}.id`, problems);
     const shape = readShape(entry.shape, `${where}.shape`, problems);
@@ -838,7 +838,7 @@ function readMotifs(
 }
 
 /** A motif as written, before its **layout** is worked out. */
-type Unlaid = Omit<Motif, 'layout'>;
+type WrittenMotif = Omit<Motif, 'layout'>;
 
 /**
  * Each motif laid out once, from its authored distances and in id order, so
@@ -848,7 +848,7 @@ type Unlaid = Omit<Motif, 'layout'>;
  * never refused (decision 5), and the cross-product report is where.
  */
 function layOutMotifs(
-  motifs: readonly Unlaid[],
+  motifs: readonly WrittenMotif[],
   minimumGapPercent: number,
   problems: Problem[],
 ): readonly Motif[] {
@@ -857,14 +857,7 @@ function layOutMotifs(
     const slots = motif.slots.map((slot) => slot.id);
     const { layout, flaw } = layOutMotif(slots, motif.lanes, minimumGapPercent);
     if (flaw !== null) problems.push(fails(`motifs[${at}]`, `${motif.id} ${flaw}`));
-    return {
-      ...motif,
-      layout: slots.map((slot) => ({
-        slot,
-        x: layout.get(slot)?.x ?? 0,
-        y: layout.get(slot)?.y ?? 0,
-      })),
-    };
+    return { ...motif, layout };
   });
 }
 
@@ -880,7 +873,7 @@ function layOutMotifs(
  * can demand at once is the reserve's adequacy, and is #27's.
  */
 function unfillableSlots(
-  motifs: readonly Unlaid[],
+  motifs: readonly WrittenMotif[],
   locations: readonly Location[],
 ): readonly Problem[] {
   const inReserve = new Set(locations.map((location) => location.archetype));

@@ -69,6 +69,24 @@ describe('laying out a motif at load', () => {
     );
   });
 
+  it('lays a motif out the same however its slots and lanes were written', () => {
+    // Where a thing sat in the file never decides an outcome (ADR 0009
+    // decision 3), and a motif is one shape in every campaign (ADR 0011).
+    const lanes = [
+      ['a', 'b', 5],
+      ['b', 'c', 7],
+      ['c', 'd', 4],
+      ['a', 'd', 6],
+    ] as const;
+    const written = aShapeOf('square', ['a', 'b', 'c', 'd'], lanes);
+    const reversed = aShapeOf('square', ['d', 'c', 'b', 'a'], [...lanes].reverse());
+
+    const layoutOf = (motif: ReturnType<typeof aShapeOf>) =>
+      loadedContentSet({ motifs: [motif] }).motifs[0]?.layout;
+
+    expect(layoutOf(reversed)).toEqual(layoutOf(written));
+  });
+
   it('measures the minimum gap as the share of the shortest lane the content set declares', () => {
     // A triangle of 6, 6 and 10 draws its apex about 3.3 off the long lane:
     // outside a gap of half the shortest lane, inside one of six tenths.

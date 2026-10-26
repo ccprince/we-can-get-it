@@ -8,7 +8,7 @@ import {
   type Spread,
 } from './content-reports';
 import { locationNamed, type DrawnGalaxy } from './galaxy';
-import { drawnLength, worstDistortion, type Point } from './layout';
+import { drawnLength, worstDistortion } from './layout';
 import { judge, type Report } from './verdicts';
 
 /**
@@ -125,11 +125,10 @@ export function crossProduct(content: ContentSet, galaxy: DrawnGalaxy | null): C
 }
 
 function motifLayout(motif: Motif): MotifLayout {
-  const layout = new Map<string, Point>(motif.layout.map(({ slot, x, y }) => [slot, { x, y }]));
   return {
     motif: motif.id,
-    lanes: motif.lanes.map((lane) => ({ ...lane, drawn: drawnLength(layout, lane) })),
-    worstDistortion: worstDistortion(layout, motif.lanes),
+    lanes: motif.lanes.map((lane) => ({ ...lane, drawn: drawnLength(motif.layout, lane) })),
+    worstDistortion: worstDistortion(motif.layout, motif.lanes),
   };
 }
 

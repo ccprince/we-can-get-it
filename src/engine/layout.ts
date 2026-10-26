@@ -8,10 +8,10 @@
  * the seeded rng: no trigonometry, which differs between JavaScript engines.
  */
 
-export type Point = { readonly x: number; readonly y: number };
+import type { Lane } from './content';
 
-/** A lane as the layout sees it: its two ends and the distance it is drawn to. */
-export type Edge = { readonly ends: readonly [string, string]; readonly distance: number };
+/** A place in the layout, in units of **distance**: **layout coordinates**. */
+export type Point = { readonly x: number; readonly y: number };
 
 type LaidOut = { readonly layout: ReadonlyMap<string, Point>; readonly flaw: string | null };
 
@@ -25,16 +25,16 @@ type LaidOut = { readonly layout: ReadonlyMap<string, Point>; readonly flaw: str
  */
 export function layOutMotif(
   slots: readonly string[],
-  lanes: readonly Edge[],
+  lanes: readonly Lane[],
   minimumGapPercent: number,
 ): LaidOut {
-  const apart = shortestDistances(slots, lanes);
+  const shortest = shortestDistances(slots, lanes);
   const gap = minimumGap(lanes, minimumGapPercent);
   let best: (LaidOut & { readonly stress: number }) | null = null;
   for (const order of ringOrders(slots.length)) {
-    const placed = majorized(order, apart);
+    const placed = majorized(order, shortest);
     const layout = new Map(slots.map((slot, at) => [slot, placed[at] ?? origin]));
-    const tried = { layout, flaw: flaw(layout, lanes, gap), stress: stress(placed, apart) };
+    const tried = { layout, flaw: flaw(layout, lanes, gap), stress: stress(placed, shortest) };
     // A layout with no flaw beats any with one, and then the closer fit wins.
     const rank = (one: LaidOut & { readonly stress: number }) =>
       (one.flaw === null ? 0 : Infinity) + one.stress;
@@ -47,7 +47,7 @@ export function layOutMotif(
  * The **minimum gap**: how near a location may sit to a lane that does not
  * touch it, as a share of the shortest lane (ADR 0011 decision 4).
  */
-export function minimumGap(lanes: readonly Edge[], minimumGapPercent: number): number {
+function minimumGap(lanes: readonly Lane[], minimumGapPercent: number): number {
   const shortest = Math.min(...lanes.map((lane) => lane.distance));
   return lanes.length === 0 ? 0 : (shortest * minimumGapPercent) / 100;
 }
@@ -58,9 +58,9 @@ export function minimumGap(lanes: readonly Edge[], minimumGapPercent: number): n
  * location meet only there; one lying along another puts a location on a lane
  * it is not on, and the gap catches that.
  */
-export function flaw(
+function flaw(
   layout: ReadonlyMap<string, Point>,
-  lanes: readonly Edge[],
+  lanes: readonly Lane[],
   gap: number,
 ): string | null {
   for (const [at, one] of lanes.entries()) {
@@ -76,7 +76,9 @@ export function flaw(
   }
   for (const [location, point] of layout) {
     for (const lane of lanes) {
-      if (!lane.ends.includes(location) && distanceToSegment(point, segment(layout, lane)) < gap) {
+      const off = distanceToSegment(point, segment(layout, lane));
+      // On the lane is too near at any gap, a gap of nothing included.
+      if (!lane.ends.includes(location) && (off < gap || off === 0)) {
         return (
           `puts ${location} within the minimum gap of the lane ` +
           `from ${lane.ends[0]} to ${lane.ends[1]}`
@@ -88,7 +90,7 @@ export function flaw(
 }
 
 /** How long a lane is drawn: the straight line between its ends in the layout. */
-export function drawnLength(layout: ReadonlyMap<string, Point>, lane: Edge): number {
+export function drawnLength(layout: ReadonlyMap<string, Point>, lane: Lane): number {
   const [from, to] = segment(layout, lane);
   return length(to.x - from.x, to.y - from.y);
 }
@@ -99,7 +101,7 @@ export function drawnLength(layout: ReadonlyMap<string, Point>, lane: Edge): num
  */
 export function worstDistortion(
   layout: ReadonlyMap<string, Point>,
-  lanes: readonly Edge[],
+  lanes: readonly Lane[],
 ): number {
   return lanes.reduce((worst, lane) => {
     const drawn = drawnLength(layout, lane);
@@ -111,7 +113,7 @@ const origin: Point = { x: 0, y: 0 };
 
 type Segment = readonly [Point, Point];
 
-function segment(layout: ReadonlyMap<string, Point>, lane: Edge): Segment {
+function segment(layout: ReadonlyMap<string, Point>, lane: Lane): Segment {
   return [layout.get(lane.ends[0]) ?? origin, layout.get(lane.ends[1]) ?? origin];
 }
 
@@ -143,22 +145,22 @@ function distanceToSegment(p: Point, [a, b]: Segment): number {
  * join are held as far apart as all the lanes laid end to end, which keeps them
  * clear of each other without pulling on anything.
  */
-function shortestDistances(slots: readonly string[], lanes: readonly Edge[]): number[][] {
-  const apart = slots.map((_, i) => slots.map((__, j) => (i === j ? 0 : Infinity)));
+function shortestDistances(slots: readonly string[], lanes: readonly Lane[]): number[][] {
+  const shortest = slots.map((_, i) => slots.map((__, j) => (i === j ? 0 : Infinity)));
   for (const { ends, distance } of lanes) {
     const [i, j] = [slots.indexOf(ends[0]), slots.indexOf(ends[1])];
     for (const [from, to] of [
       [i, j],
       [j, i],
     ] as const) {
-      const row = apart[from];
+      const row = shortest[from];
       if (row !== undefined) row[to] = Math.min(row[to] ?? Infinity, distance);
     }
   }
-  for (const via of apart) {
-    for (const row of apart) {
+  for (const via of shortest) {
+    for (const row of shortest) {
       for (const [j, direct] of row.entries()) {
-        row[j] = Math.min(direct, (row[apart.indexOf(via)] ?? Infinity) + (via[j] ?? Infinity));
+        row[j] = Math.min(direct, (row[shortest.indexOf(via)] ?? Infinity) + (via[j] ?? Infinity));
       }
     }
   }
@@ -166,7 +168,9 @@ function shortestDistances(slots: readonly string[], lanes: readonly Edge[]): nu
     1,
     lanes.reduce((sum, lane) => sum + lane.distance, 0),
   );
-  return apart.map((row) => row.map((distance) => (distance === Infinity ? unjoined : distance)));
+  return shortest.map((row) =>
+    row.map((distance) => (distance === Infinity ? unjoined : distance)),
+  );
 }
 
 /** The pull between two slots: nearer pairs are held to their distance harder. */
@@ -174,11 +178,11 @@ function weight(distance: number): number {
   return 1 / (distance * distance);
 }
 
-function stress(placed: readonly Point[], apart: readonly number[][]): number {
+function stress(placed: readonly Point[], shortest: readonly number[][]): number {
   let total = 0;
   for (const [i, p] of placed.entries()) {
     for (const [j, q] of placed.entries()) {
-      const target = apart[i]?.[j] ?? 0;
+      const target = shortest[i]?.[j] ?? 0;
       if (j > i) total += weight(target) * (length(p.x - q.x, p.y - q.y) - target) ** 2;
     }
   }
@@ -222,9 +226,9 @@ function ringOrders(count: number): readonly (readonly number[])[] {
  * are rational points on the circle, `((1−t²)/(1+t²), 2t/(1+t²))`, so the start
  * needs no trigonometry (ADR 0011 decision 7). Returned by slot index.
  */
-function majorized(order: readonly number[], apart: readonly number[][]): readonly Point[] {
+function majorized(order: readonly number[], shortest: readonly number[][]): readonly Point[] {
   const count = order.length;
-  const radius = Math.max(1, ...apart.flat()) / 2;
+  const radius = Math.max(1, ...shortest.flat()) / 2;
   const placed: Point[] = [];
   for (const [seat, slot] of order.entries()) {
     const t = (4 * seat + 2 - 2 * count) / count;
@@ -238,7 +242,7 @@ function majorized(order: readonly number[], apart: readonly number[][]): readon
       let pull = 0;
       for (const [j, there] of placed.entries()) {
         if (i === j) continue;
-        const target = apart[i]?.[j] ?? 0;
+        const target = shortest[i]?.[j] ?? 0;
         const between = length(here.x - there.x, here.y - there.y);
         const scale = between === 0 ? 0 : target / between;
         x += weight(target) * (there.x + scale * (here.x - there.x));
