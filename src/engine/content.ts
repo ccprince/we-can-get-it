@@ -1,3 +1,5 @@
+import type { Point } from './layout';
+
 /**
  * The shape of a content set, after it has been through the loader.
  *
@@ -115,16 +117,13 @@ export type Motif = {
   readonly slots: readonly Slot[];
   readonly lanes: readonly MotifLane[];
   /**
-   * Where each slot sits in the motif's **layout**, in slot id order: worked
+   * Where each slot sits in the motif's **layout**, by slot id: worked
    * out once at load from the lanes' distances alone, so the motif is drawn
    * the same shape in every campaign it is placed in (ADR 0011 decision 4).
    * Read by the chart and the report, and by nothing with a rule in it.
    */
-  readonly layout: readonly SlotPoint[];
+  readonly layout: ReadonlyMap<string, Point>;
 };
-
-/** A slot's place in its motif's layout, in units of **distance**. */
-export type SlotPoint = { readonly slot: string; readonly x: number; readonly y: number };
 
 /**
  * The baseline ship, in its three independent purchases (ADR 0006 decision
