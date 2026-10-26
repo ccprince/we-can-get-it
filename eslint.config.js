@@ -121,6 +121,13 @@ export default tseslint.config(
             'Randomness comes from the seeded generator created in startCampaign and ' +
             'threaded explicitly (ADR 0009 decision 3).',
         },
+        // Their results differ between JavaScript engines, and the layout must
+        // be the same in every browser (ADR 0011 decision 7).
+        ...['sin', 'cos', 'tan', 'atan2'].map((property) => ({
+          object: 'Math',
+          property,
+          message: 'The layout uses only + − × ÷, Math.sqrt and the seeded rng (ADR 0011).',
+        })),
       ],
     },
   },

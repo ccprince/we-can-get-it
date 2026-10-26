@@ -1,6 +1,7 @@
 import { daysPerYear } from './calendar';
 import { checkContentSet } from './content-checks';
 import { reportsOn } from './content-reports';
+import { layOutMotif } from './layout';
 import {
   shapes,
   tagClasses,
@@ -94,6 +95,10 @@ export function loadContent(raw: unknown): LoadResult {
       ? undefined
       : readBuyers(raw.buyers, tags, goods, problems);
   const start = readStart(raw.start, problems);
+  const laidOut =
+    motifs === undefined || topology === undefined
+      ? undefined
+      : layOutMotifs(motifs, topology.minimumGapPercent, problems);
 
   // An inter-motif lane beyond the baseline ship's range would be a lane no
   // ship can fly, and a galaxy not flyable end to end. **Range** is the only
@@ -153,7 +158,7 @@ export function loadContent(raw: unknown): LoadResult {
     fareRate === undefined ||
     calendar === undefined ||
     archetypes === undefined ||
-    motifs === undefined ||
+    laidOut === undefined ||
     locations === undefined ||
     tags === undefined ||
     goods === undefined ||
@@ -175,7 +180,7 @@ export function loadContent(raw: unknown): LoadResult {
       fareRate,
       calendar,
       archetypes,
-      motifs,
+      motifs: laidOut,
       locations,
       tags,
       goods,
@@ -197,7 +202,8 @@ function inIdOrder(content: ContentSet): ContentSet {
   return {
     ...content,
     archetypes: sortedById(content.archetypes),
-    motifs: sortedById(content.motifs.map(motifInIdOrder)),
+    // Each motif was put in id order before it was laid out.
+    motifs: sortedById(content.motifs),
     locations: sortedById(content.locations),
     tags: sortedById(content.tags),
     goods: sortedById(content.goods),
@@ -238,7 +244,7 @@ function wantKey(want: Want): string {
  * id order before the lanes are sorted by them, and no two lanes join the same
  * pair, which the reader checks.
  */
-function motifInIdOrder(motif: Motif): Motif {
+function motifInIdOrder(motif: Unlaid): Unlaid {
   const lanes = motif.lanes.map(({ ends, distance }) => ({
     ends: byId(ends[0], ends[1]) <= 0 ? ends : ([ends[1], ends[0]] as const),
     distance,
@@ -520,10 +526,20 @@ function readTopology(raw: unknown, problems: Problem[]): Topology | undefined {
   const leastPlaced = readLeastPlaced(raw.leastPlaced, problems);
   const farHaul = readInteger(raw.farHaul, 'topology.farHaul', 0, problems);
   const startHub = readStartHub(raw.startHub, problems);
-  if (leastPlaced === undefined || farHaul === undefined || startHub === undefined) {
+  const minimumGapPercent = readPercent(
+    raw.minimumGapPercent,
+    'topology.minimumGapPercent',
+    problems,
+  );
+  if (
+    leastPlaced === undefined ||
+    farHaul === undefined ||
+    startHub === undefined ||
+    minimumGapPercent === undefined
+  ) {
     return undefined;
   }
-  return { leastPlaced, farHaul, startHub };
+  return { leastPlaced, farHaul, startHub, minimumGapPercent };
 }
 
 function readStartHub(raw: unknown, problems: Problem[]): StartHub | undefined {
@@ -568,7 +584,7 @@ function readLeastPlaced(raw: unknown, problems: Problem[]): Topology['leastPlac
 function unmeetableTopology(
   topology: Topology,
   draw: DrawParameters,
-  motifs: readonly Motif[],
+  motifs: readonly Unlaid[],
   archetypes: readonly Archetype[],
 ): readonly Problem[] {
   const problems: Problem[] = [];
@@ -797,7 +813,7 @@ function readMotifs(
   raw: unknown,
   archetypes: readonly Archetype[],
   problems: Problem[],
-): readonly Motif[] | undefined {
+): readonly Unlaid[] | undefined {
   const motifs = readEach(raw, 'motifs', problems, (entry, where) => {
     const id = readText(entry.id, `${where}.id`, problems);
     const shape = readShape(entry.shape, `${where}.shape`, problems);
@@ -821,6 +837,37 @@ function readMotifs(
   return motifs;
 }
 
+/** A motif as written, before its **layout** is worked out. */
+type Unlaid = Omit<Motif, 'layout'>;
+
+/**
+ * Each motif laid out once, from its authored distances and in id order, so
+ * where it sat in the file cannot change its shape (ADR 0011 decision 4). A
+ * motif whose layout has two lanes crossing or breaches the **minimum gap** is
+ * refused, by name. How far its lanes stray from their distances is reported,
+ * never refused (decision 5), and the cross-product report is where.
+ */
+function layOutMotifs(
+  motifs: readonly Unlaid[],
+  minimumGapPercent: number,
+  problems: Problem[],
+): readonly Motif[] {
+  return motifs.map((written, at) => {
+    const motif = motifInIdOrder(written);
+    const slots = motif.slots.map((slot) => slot.id);
+    const { layout, flaw } = layOutMotif(slots, motif.lanes, minimumGapPercent);
+    if (flaw !== null) problems.push(fails(`motifs[${at}]`, `${motif.id} ${flaw}`));
+    return {
+      ...motif,
+      layout: slots.map((slot) => ({
+        slot,
+        x: layout.get(slot)?.x ?? 0,
+        y: layout.get(slot)?.y ?? 0,
+      })),
+    };
+  });
+}
+
 /**
  * Every typed slot must have some location in the reserve of its
  * **archetype**, checked before any draw (ADR 0006 decision 4, ADR 0007
@@ -833,7 +880,7 @@ function readMotifs(
  * can demand at once is the reserve's adequacy, and is #27's.
  */
 function unfillableSlots(
-  motifs: readonly Motif[],
+  motifs: readonly Unlaid[],
   locations: readonly Location[],
 ): readonly Problem[] {
   const inReserve = new Set(locations.map((location) => location.archetype));

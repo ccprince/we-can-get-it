@@ -41,6 +41,7 @@ The report is Markdown, written to a file. It is written even when the content s
 | **Problems** | Mistakes, each **fails**: the load's problems, and the draw's if a seed was asked for and gave no galaxy. |
 | **Reports from the load** | Suspicions, each **judge**, exactly as the loader issues them. The missing-tell ones appear again below, by good. |
 | **Motif Slots** | One sub-heading per motif, listing its slots with how many reserve locations can fill each; an untyped slot counts every location. A low count is an over-narrow motif, visible before a draw exhausts its re-rolls. Closes with **Locations by archetype**, which locations each archetype holds, once. |
+| **Motif layouts** | One sub-heading per motif, worst first, giving its **worst distortion** — the largest ratio between a lane's drawn length on the chart and its distance, either way round — and each lane's drawn length against its distance. `1.00` is drawn exactly. Distortion is never a failure: some distances cannot be drawn, such as a triangle of 1, 1 and 5 (ADR 0011 decision 5). |
 | **goods per kind** | A distribution, widest group first, never a mean. Foremost: a kind with few goods is a lookup, not a search. |
 | **goods per role tag** | The same, over tags some buyer holds as a bonus or a refusal. |
 | **prose missing the tells of a tag the good holds** | A good whose prose carries none of a held tag's tell words. |
@@ -134,8 +135,13 @@ is declared and not yet checked against the motif's lanes.
 | `leastPlaced` | The **motif invariants**: at least so many placed motifs of each shape. Every shape is named, `0` for one the map need not hold. |
 | `startHub` | The **start-node guarantee** (ADR 0006 decision 16): the `archetype` the start must be (`null` for any), how many `neighbours` within baseline range it must have, and how many of those `spurs` — a dead end, one lane within range, placed by a motif whose shape is `spur`. Of the places that hold it, the start is the one the most lanes touch. |
 | `farHaul` | The far cluster no nearer than this: the longest lane *between* motifs must be at least this long (ADR 0008 decision 6). `0` asks for none. |
+| `minimumGapPercent` | The **minimum gap**, in whole percent of a motif's shortest lane: how near the chart may draw a location to a lane that does not touch it (ADR 0011 decision 4). |
 
-All three are placeholders, to be measured. An invariant no draw could meet — a minimum for a shape no
+All four are placeholders, to be measured. Each motif is laid out for the chart once, at load, from
+its lanes' distances alone, so it is drawn the same shape in every campaign. A motif whose layout has
+two lanes crossing, or puts a location within the minimum gap of a lane it is not on, fails the load
+by name: its lanes cannot be drawn flat, or its distances pull a place onto a lane, as five and five
+do onto a lane of ten. An invariant no draw could meet — a minimum for a shape no
 motif has, minimums summing past `drawParameters.motifsPerCampaign`, a far haul longer than
 `drawParameters.interMotifDistance.most` or asked of a one-motif campaign, a start hub of an unknown
 archetype, or spurs asked of it with no spur motif or more of them than neighbours — fails the

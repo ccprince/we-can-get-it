@@ -38,6 +38,8 @@ export type {
   ArchetypeLocations,
   CrossProduct,
   Drawn,
+  LaneDrawn,
+  MotifLayout,
   PlacedSlot,
   SlotFilling,
   Survey,

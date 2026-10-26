@@ -1,6 +1,6 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
-import { drawGalaxy, loadContent, view } from '../src/engine';
+import { crossProduct, drawGalaxy, loadContent, view } from '../src/engine';
 import { started } from './support/campaign';
 
 /**
@@ -18,6 +18,20 @@ describe('the walking skeleton content set', () => {
       { verdict: 'judge', where: 'calendar', what: 'a year is 8 months, 48 weeks, 288 days' },
       { verdict: 'judge', where: 'goods', what: 'goods per kind: 3 goods — cloth, ore, tools' },
     ]);
+  });
+
+  it('lays out every motif flat, and reports each lane drawn against its distance', () => {
+    // A motif whose lanes cross or crowd a place fails the load, so loading is
+    // the crossing-free half (ADR 0011 decision 4).
+    const result = loadContent(raw);
+    if (!result.ok) throw new Error('the content set did not load');
+
+    const { motifLayouts } = crossProduct(result.content, null);
+
+    expect(motifLayouts.map(({ motif }) => motif).sort()).toEqual(['crossing', 'loop', 'spur']);
+    for (const { lanes } of motifLayouts) {
+      for (const { drawn } of lanes) expect(drawn).toBeGreaterThan(0);
+    }
   });
 
   /**

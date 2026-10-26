@@ -114,7 +114,17 @@ export type Motif = {
   readonly shape: Shape;
   readonly slots: readonly Slot[];
   readonly lanes: readonly MotifLane[];
+  /**
+   * Where each slot sits in the motif's **layout**, in slot id order: worked
+   * out once at load from the lanes' distances alone, so the motif is drawn
+   * the same shape in every campaign it is placed in (ADR 0011 decision 4).
+   * Read by the chart and the report, and by nothing with a rule in it.
+   */
+  readonly layout: readonly SlotPoint[];
 };
+
+/** A slot's place in its motif's layout, in units of **distance**. */
+export type SlotPoint = { readonly slot: string; readonly x: number; readonly y: number };
 
 /**
  * The baseline ship, in its three independent purchases (ADR 0006 decision
@@ -409,6 +419,12 @@ export type Topology = {
   readonly farHaul: number;
   /** Where a campaign may open (ADR 0006 decision 16). */
   readonly startHub: StartHub;
+  /**
+   * The **minimum gap**, in whole percent of a motif's shortest lane: how near
+   * the **layout** may draw a location to a lane that does not touch it. A
+   * motif whose layout breaches it is refused at load (ADR 0011 decision 4).
+   */
+  readonly minimumGapPercent: number;
 };
 
 /**

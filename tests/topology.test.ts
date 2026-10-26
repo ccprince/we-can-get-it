@@ -208,10 +208,15 @@ describe('connectivity at baseline range', () => {
   it('lets a lane run beyond range where the far end is reached some other way', () => {
     // The wall with a price on it (ADR 0006 decision 14) is legal, as long
     // as it is not the only way to the place behind it.
-    const content = aThreePlaceGalaxy([
-      aMotifLane({ ends: ['bellwether', 'caravel'], distance: 30 }),
-      aMotifLane({ ends: ['kestrel', 'caravel'], distance: 8 }),
-    ]);
+    // Six and eight cannot reach thirty, so the layout draws Kestrel on the
+    // long lane: no gap, since the layout is not this test's subject.
+    const content = aThreePlaceGalaxy(
+      [
+        aMotifLane({ ends: ['bellwether', 'caravel'], distance: 30 }),
+        aMotifLane({ ends: ['kestrel', 'caravel'], distance: 8 }),
+      ],
+      { topology: aTopology({ minimumGapPercent: 0 }) },
+    );
 
     expect(drawn(content, 1).locations).toHaveLength(3);
   });

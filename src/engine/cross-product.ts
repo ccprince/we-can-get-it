@@ -1,4 +1,4 @@
-import { roleTags, type ContentSet, type Tag } from './content';
+import { roleTags, type ContentSet, type Motif, type Tag } from './content';
 import {
   holds,
   missingTell,
@@ -8,6 +8,7 @@ import {
   type Spread,
 } from './content-reports';
 import { locationNamed, type DrawnGalaxy } from './galaxy';
+import { drawnLength, worstDistortion, type Point } from './layout';
 import { judge, type Report } from './verdicts';
 
 /**
@@ -31,6 +32,12 @@ import { judge, type Report } from './verdicts';
 export type CrossProduct = {
   /** Every **slot** of every motif in the reserve, in motif id then slot id order. */
   readonly slots: readonly SlotFilling[];
+  /**
+   * Each motif's **layout** against its authored distances, **worst distortion
+   * first**: a distribution, so a motif that draws badly is not averaged away
+   * (ADR 0011 decision 5). Ties keep motif id order.
+   */
+  readonly motifLayouts: readonly MotifLayout[];
   /** Each archetype and the reserve locations of it, in archetype id order. */
   readonly archetypes: readonly ArchetypeLocations[];
   /** The content set as written: the whole reserve and catalogue. */
@@ -51,6 +58,24 @@ export type SlotFilling = {
   /** The archetype the slot is typed to, or null if it is untyped. */
   readonly archetype: string | null;
   readonly locations: number;
+};
+
+export type MotifLayout = {
+  readonly motif: string;
+  /** The motif's lanes, in the order the content set hands them over. */
+  readonly lanes: readonly LaneDrawn[];
+  /**
+   * The largest ratio between a lane's drawn length and its distance, either
+   * way round: one for a motif drawn exactly.
+   */
+  readonly worstDistortion: number;
+};
+
+export type LaneDrawn = {
+  readonly ends: readonly [string, string];
+  readonly distance: number;
+  /** How long the layout draws it, in units of distance. */
+  readonly drawn: number;
 };
 
 export type ArchetypeLocations = {
@@ -85,6 +110,9 @@ export type PlacedSlot = {
 export function crossProduct(content: ContentSet, galaxy: DrawnGalaxy | null): CrossProduct {
   return {
     slots: slotFillings(content),
+    motifLayouts: content.motifs
+      .map(motifLayout)
+      .sort((one, other) => other.worstDistortion - one.worstDistortion),
     archetypes: content.archetypes.map(({ id }) => ({
       archetype: id,
       locations: content.locations
@@ -93,6 +121,15 @@ export function crossProduct(content: ContentSet, galaxy: DrawnGalaxy | null): C
     })),
     asWritten: survey(content.tags, content),
     drawn: galaxy === null ? null : { ...surveyDrawn(content, galaxy), placed: placed(galaxy) },
+  };
+}
+
+function motifLayout(motif: Motif): MotifLayout {
+  const layout = new Map<string, Point>(motif.layout.map(({ slot, x, y }) => [slot, { x, y }]));
+  return {
+    motif: motif.id,
+    lanes: motif.lanes.map((lane) => ({ ...lane, drawn: drawnLength(layout, lane) })),
+    worstDistortion: worstDistortion(layout, motif.lanes),
   };
 }
 
