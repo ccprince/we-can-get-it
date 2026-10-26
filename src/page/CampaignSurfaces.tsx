@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import type { Command, LaneView, View } from '../engine';
 import { buttonChrome } from './chrome';
 import { Guide } from './Guide';
@@ -9,10 +10,15 @@ import { Hold, People, Shop } from './Trade';
  * words what the engine returned.
  *
  * Layout and keyboard map are deliberately unspecified in the canon: they are
- * settled by playing (CLAUDE.md), so this is the plainest arrangement that
- * shows where the player is, the day, their credits, what is on sale, the
- * hold, the digest and what they can do.
+ * settled by playing (CLAUDE.md). One long page grew too crowded to play, so
+ * the surfaces are split the way the prototype split them: a header that is
+ * always in view, and tabs for where the player is, the **chart** and the
+ * **trade guide**. What the player can do belongs to where they are, so the
+ * menu sits on that tab and not on the reference tabs. Which tab is open is
+ * view state.
  */
+type Tab = 'here' | 'chart' | 'guide';
+
 export function CampaignSurfaces({
   view,
   seed,
@@ -24,22 +30,72 @@ export function CampaignSurfaces({
   readonly refusal: string | null;
   readonly onCommand: (command: Command) => void;
 }) {
+  const [tab, setTab] = useState<Tab>('here');
+  const tabs: readonly (readonly [Tab, string])[] = [
+    ['here', view.here === null ? 'Underway' : 'Here'],
+    ['chart', 'Chart'],
+    ['guide', 'Trade guide'],
+  ];
+
   return (
     <>
-      <header className="border-b border-stone-700 pb-4">
+      <header className="sticky top-0 z-10 border-b border-stone-700 bg-stone-950 pt-2 pb-4">
         <h1 className="text-xl text-stone-100">
           {view.here === null ? 'In transit' : view.here.name}
         </h1>
         <p className="mt-1 text-sm text-stone-400">
-          {view.today.date.label} · {view.credits.credits} credits
+          {view.today.date.label} · {view.credits.credits} credits · hold {view.hold.used} of{' '}
+          {view.hold.capacity}
         </p>
+        {/* In the header, so a refusal is heard whichever tab the command came from. */}
+        {refusal !== null && <p className="mt-2 text-rose-300">{refusal}</p>}
       </header>
 
+      <div role="tablist" className="mt-4 flex gap-1 border-b border-stone-700">
+        {tabs.map(([key, label]) => (
+          <button
+            key={key}
+            type="button"
+            role="tab"
+            aria-selected={key === tab}
+            onClick={() => setTab(key)}
+            className={`px-3 py-1.5 text-sm ${
+              key === tab
+                ? 'border-b-2 border-stone-200 text-stone-100'
+                : 'text-stone-500 hover:text-stone-300'
+            }`}
+          >
+            {label}
+          </button>
+        ))}
+      </div>
+
+      <div role="tabpanel" aria-label={tabs.find(([key]) => key === tab)?.[1]}>
+        {tab === 'here' && <Here view={view} onCommand={onCommand} />}
+        {tab === 'chart' && <Chart view={view} onCommand={onCommand} />}
+        {tab === 'guide' && <Guide entries={view.guide.entries} />}
+      </div>
+
+      <footer className="mt-10 border-t border-stone-800 pt-3 font-mono text-xs text-stone-600">
+        seed {seed}
+      </footer>
+    </>
+  );
+}
+
+type SurfaceProps = { readonly view: View; readonly onCommand: (command: Command) => void };
+
+/** Where the player is: the day's news, the place or the crossing, trade, and the menu. */
+function Here({ view, onCommand }: SurfaceProps) {
+  return (
+    <>
+      <Digest view={view} />
+
       {view.here !== null && (
-        <p className="mt-4 leading-relaxed text-stone-300">{view.here.prose}</p>
+        <p className="mt-6 leading-relaxed text-stone-300">{view.here.prose}</p>
       )}
       {view.transit !== null && (
-        <p className="mt-4 leading-relaxed text-stone-300">
+        <p className="mt-6 leading-relaxed text-stone-300">
           {days(view.transit.daysOut, 'A day')} out of {view.transit.from}, bound for{' '}
           {view.transit.destination} with {days(view.transit.daysToRun, 'a day')} to run.
         </p>
@@ -48,65 +104,6 @@ export function CampaignSurfaces({
       {view.here !== null && <Shop lots={view.here.lots} onCommand={onCommand} />}
       {view.here !== null && <People people={view.here.people} onCommand={onCommand} />}
       <Hold hold={view.hold} />
-
-      <section className="mt-8">
-        <h2 className="text-xs tracking-widest text-stone-500 uppercase">The chart</h2>
-        <ul aria-label="Locations" className="mt-2 flex flex-wrap gap-x-4 text-sm text-stone-300">
-          {view.chart.locations.map((location) => (
-            <li key={location.name}>{location.name}</li>
-          ))}
-        </ul>
-        {view.chart.lanes.length === 0 ? (
-          <p className="mt-2 text-stone-500">No lanes are charted.</p>
-        ) : (
-          <table className="mt-2 w-full text-left text-sm">
-            <thead className="text-xs tracking-wide text-stone-500 uppercase">
-              <tr>
-                <th className="py-1 font-normal">Lane</th>
-                <th className="py-1 text-right font-normal">Days</th>
-                <th className="py-1 text-right font-normal">Fare</th>
-                <th className="py-1 font-normal" />
-              </tr>
-            </thead>
-            <tbody>
-              {view.chart.lanes.map((lane) => (
-                <tr key={lane.ends.join('–')} className="border-t border-stone-800">
-                  <td className="py-1.5 text-stone-300">
-                    {lane.ends[0]} – {lane.ends[1]}
-                  </td>
-                  <td className="py-1.5 text-right text-stone-300">{days(lane.days, '1 day')}</td>
-                  <td className="py-1.5 text-right text-stone-300">{lane.fare}</td>
-                  <td className="py-1.5 pl-3">
-                    <Departure lane={lane} onCommand={onCommand} />
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        )}
-      </section>
-
-      <Guide entries={view.guide.entries} />
-
-      <section className="mt-8">
-        <h2 className="text-xs tracking-widest text-stone-500 uppercase">Digest</h2>
-        {view.digest === null ? (
-          <p className="mt-2 text-stone-500">The day has not ended yet.</p>
-        ) : (
-          <div className="mt-2">
-            <p className="text-sm text-stone-400">{view.digest.date.label}</p>
-            {view.digest.entries.length === 0 ? (
-              <p className="mt-1 text-stone-500">Nothing reached you.</p>
-            ) : (
-              <ul className="mt-1 space-y-1 text-stone-300">
-                {view.digest.entries.map((entry) => (
-                  <li key={entry.text}>{entry.text}</li>
-                ))}
-              </ul>
-            )}
-          </div>
-        )}
-      </section>
 
       <section className="mt-8">
         <h2 className="text-xs tracking-widest text-stone-500 uppercase">What you can do</h2>
@@ -122,24 +119,136 @@ export function CampaignSurfaces({
             </button>
           ))}
         </div>
-        {refusal !== null && <p className="mt-3 text-rose-300">{refusal}</p>}
       </section>
-
-      <footer className="mt-10 border-t border-stone-800 pt-3 font-mono text-xs text-stone-600">
-        seed {seed}
-      </footer>
     </>
   );
 }
 
+function Digest({ view }: { readonly view: View }) {
+  return (
+    <section className="mt-6">
+      <h2 className="text-xs tracking-widest text-stone-500 uppercase">Digest</h2>
+      {view.digest === null ? (
+        <p className="mt-2 text-stone-500">The day has not ended yet.</p>
+      ) : (
+        <div className="mt-2">
+          <p className="text-sm text-stone-400">{view.digest.date.label}</p>
+          {view.digest.entries.length === 0 ? (
+            <p className="mt-1 text-stone-500">Nothing reached you.</p>
+          ) : (
+            <ul className="mt-1 space-y-1 text-stone-300">
+              {view.digest.entries.map((entry) => (
+                <li key={entry.text}>{entry.text}</li>
+              ))}
+            </ul>
+          )}
+        </div>
+      )}
+    </section>
+  );
+}
+
 /**
- * A lane's last column: the departure the engine offers along it, or the reason
- * there is none where the reason is the player's to act on.
+ * The **chart**, read from where the player stands: the departures from here
+ * first, then every place and the lanes that touch it. It carries the whole
+ * galaxy and not only what leaves from here (ADR 0006 decision 5), so each lane
+ * appears under both its ends.
+ */
+function Chart({ view, onCommand }: SurfaceProps) {
+  const from = view.here?.name ?? null;
+  return (
+    <>
+      <section className="mt-6">
+        <h2 className="text-xs tracking-widest text-stone-500 uppercase">
+          {from === null ? 'Departures' : `Departures from ${from}`}
+        </h2>
+        {from === null ? (
+          <p className="mt-2 text-stone-500">There are no departures while underway.</p>
+        ) : (
+          <Departures lanes={lanesAt(view, from)} from={from} onCommand={onCommand} />
+        )}
+      </section>
+
+      <section className="mt-8">
+        <h2 className="text-xs tracking-widest text-stone-500 uppercase">Every place</h2>
+        {view.chart.lanes.length === 0 && (
+          <p className="mt-2 text-stone-500">No lanes are charted.</p>
+        )}
+        <ul aria-label="Locations" className="mt-2 space-y-3">
+          {view.chart.locations.map((location) => (
+            <li key={location.name}>
+              <p className="text-stone-200">
+                {location.name}
+                {location.name === from && <span className="text-stone-500"> — you are here</span>}
+              </p>
+              <ul
+                aria-label={`Lanes from ${location.name}`}
+                className="ml-4 text-sm text-stone-400"
+              >
+                {lanesAt(view, location.name).map((lane) => (
+                  <li key={lane.ends.join('–')}>
+                    to {otherEnd(lane, location.name)}: {days(lane.days, '1 day')}, {lane.fare}{' '}
+                    credits
+                    {!lane.withinRange && (
+                      <>
+                        {' — '}
+                        <BeyondRange />
+                      </>
+                    )}
+                  </li>
+                ))}
+              </ul>
+            </li>
+          ))}
+        </ul>
+      </section>
+    </>
+  );
+}
+
+function Departures({
+  lanes,
+  from,
+  onCommand,
+}: {
+  readonly lanes: readonly LaneView[];
+  readonly from: string;
+  readonly onCommand: (command: Command) => void;
+}) {
+  if (lanes.length === 0) return <p className="mt-2 text-stone-500">No lane leaves from here.</p>;
+  return (
+    <table className="mt-2 w-full text-left text-sm">
+      <thead className="text-xs tracking-wide text-stone-500 uppercase">
+        <tr>
+          <th className="py-1 font-normal">To</th>
+          <th className="py-1 text-right font-normal">Days</th>
+          <th className="py-1 text-right font-normal">Fare</th>
+          <th className="py-1 font-normal" />
+        </tr>
+      </thead>
+      <tbody>
+        {lanes.map((lane) => (
+          <tr key={lane.ends.join('–')} className="border-t border-stone-800">
+            <td className="py-1.5 text-stone-300">{otherEnd(lane, from)}</td>
+            <td className="py-1.5 text-right text-stone-300">{days(lane.days, '1 day')}</td>
+            <td className="py-1.5 text-right text-stone-300">{lane.fare}</td>
+            <td className="py-1.5 pl-3">
+              <Departure lane={lane} onCommand={onCommand} />
+            </td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  );
+}
+
+/**
+ * A departure's last column: the departure the engine offers along the lane, or
+ * the reason there is none where the reason is the player's to act on.
  *
  * **Range** is the only gate on the map, and a lane beyond it says so rather
  * than vanishing: it is a wall with a price on it (ADR 0006 decisions 14, 20).
- * It says so wherever the lane sits on the chart, which carries the whole
- * galaxy and not only what leaves from here (decision 5) — so what the ship
+ * The whole-galaxy list says so too, wherever the lane sits, so what the ship
  * cannot reach is readable before the player is standing at its near end, and
  * in **transit** as well, where only the departures go away.
  */
@@ -150,10 +259,8 @@ function Departure({
   readonly lane: LaneView;
   readonly onCommand: (command: Command) => void;
 }) {
-  if (!lane.withinRange) return <span className="text-stone-500">Beyond your range</span>;
+  if (!lane.withinRange) return <BeyondRange />;
 
-  // Within range, but no departure along it from where the player stands: a
-  // lane that does not leave from here, or any lane at all while underway.
   const depart = lane.depart;
   if (depart === null) return null;
 
@@ -162,6 +269,18 @@ function Departure({
       Depart for {lane.destination}
     </button>
   );
+}
+
+function BeyondRange() {
+  return <span className="text-stone-500">Beyond your range</span>;
+}
+
+function lanesAt(view: View, name: string): readonly LaneView[] {
+  return view.chart.lanes.filter((lane) => lane.ends.includes(name));
+}
+
+function otherEnd(lane: LaneView, name: string): string {
+  return lane.ends[0] === name ? lane.ends[1] : lane.ends[0];
 }
 
 /**

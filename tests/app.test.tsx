@@ -58,12 +58,14 @@ describe('the page', () => {
     // there, with the span in the digest.
     serve(walkingSkeleton);
     render(<App />);
+    fireEvent.click(await screen.findByRole('tab', { name: 'Chart' }));
     const departures = await screen.findAllByRole('button', { name: /^Depart for / });
     const depart = departures[0];
     if (depart === undefined) throw new Error('the chart offered no departure');
     const destination = depart.textContent?.replace('Depart for ', '') ?? '';
 
     fireEvent.click(depart);
+    fireEvent.click(screen.getByRole('tab', { name: 'Underway' }));
     // A leg is flown day by day, and how many days depends on the lane this
     // campaign happened to be dealt (ADR 0005 decision 10).
     while (screen.queryByRole('heading', { name: destination }) === null) {
