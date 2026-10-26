@@ -34,7 +34,9 @@ describe('the page', () => {
     render(<App />);
 
     expect(await screen.findByRole('heading', { name: 'Tallow Cross' })).toBeDefined();
-    expect(screen.getByText(/Firstday, 1 Thessaly, year 1/)).toBeDefined();
+    expect(
+      screen.getByText(/Firstday, 1 Thessaly, year 1/, { selector: 'header p' }),
+    ).toBeDefined();
     expect(screen.getByText(/400 credits/)).toBeDefined();
   });
 
@@ -45,7 +47,7 @@ describe('the page', () => {
 
     fireEvent.click(wait);
 
-    expect(await screen.findByText(/Seconday, 2 Thessaly, year 1/)).toBeDefined();
+    await screen.findByText(/Seconday, 2 Thessaly, year 1/, { selector: 'header p' });
     expect(screen.getByText('Nothing reached you.')).toBeDefined();
   });
 

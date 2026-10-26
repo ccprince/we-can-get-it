@@ -211,7 +211,9 @@ describe('saving and resuming a campaign', () => {
       expect(screen.getByText(/not being saved, so a reload would lose it/)).toBeDefined();
 
       await click('End the day');
-      expect(screen.getByText(/Seconday, 2 Thessaly, year 1/)).toBeDefined();
+      expect(
+        screen.getByText(/Seconday, 2 Thessaly, year 1/, { selector: 'header p' }),
+      ).toBeDefined();
     } finally {
       vi.restoreAllMocks();
     }

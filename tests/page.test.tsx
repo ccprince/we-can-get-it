@@ -52,7 +52,9 @@ describe('the campaign surfaces', () => {
     surfaces();
 
     expect(screen.getByRole('heading', { name: 'Kestrel Reach' })).toBeDefined();
-    expect(screen.getByText(/Firstday, 1 Thessaly, year 1/)).toBeDefined();
+    expect(
+      screen.getByText(/Firstday, 1 Thessaly, year 1/, { selector: 'header p' }),
+    ).toBeDefined();
     expect(screen.getByText(/180 credits/)).toBeDefined();
   });
 
@@ -292,7 +294,11 @@ describe('the people here', () => {
     surfaces({ campaign: holding() });
 
     expect(screen.getByRole('heading', { name: 'Ilse Vantry' })).toBeDefined();
-    expect(screen.getByText(/wants something warm to sleep under/)).toBeDefined();
+    expect(
+      within(screen.getByRole('heading', { name: 'Ilse Vantry' }).parentElement!).getByText(
+        /wants something warm to sleep under/,
+      ),
+    ).toBeDefined();
     expect(
       screen.getByText(
         'Bolt of silk: grudging, 20 credits each — close, but not quite what they asked for',
@@ -323,5 +329,54 @@ describe('the people here', () => {
     surfaces({ campaign: after(rich, { kind: 'depart', toId: 'bellwether' }) });
 
     expect(screen.queryByRole('heading', { name: 'People here' })).toBeNull();
+  });
+});
+
+/** Kestrel supplies cloth and wants tools, Bellwether the other way round, three days apart. */
+function aGuidedGalaxy(): ContentSet {
+  return loadedContentSet(
+    aTradingGalaxy(
+      aGalaxy({
+        locations: [
+          aLocation({ supplies: ['cloth'], demands: ['tools'] }),
+          aLocation({
+            id: 'bellwether',
+            name: 'Bellwether Yards',
+            prose: 'A repair yard.',
+            supplies: ['tools'],
+            demands: ['cloth'],
+          }),
+        ],
+        lanes: [aMotifLane({ ends: ['kestrel', 'bellwether'], distance: 12 })],
+        start: aStart({ credits: 500 }),
+      }),
+    ),
+  );
+}
+
+describe('the trade guide on the page', () => {
+  it('gives every location its kinds, and says an unvisited one is unvisited', () => {
+    surfaces({ campaign: started(aGuidedGalaxy(), SEED) });
+
+    const bellwether = screen.getByRole('listitem', { name: 'Bellwether Yards' });
+    expect(bellwether.textContent).toContain('Supplies tools');
+    expect(bellwether.textContent).toContain('wants cloth');
+    expect(bellwether.textContent).toContain('Not yet visited.');
+  });
+
+  it('dates what was seen and says how old it is once the player has left', () => {
+    surfaces({ campaign: flying(aGuidedGalaxy(), { kind: 'depart', toId: 'bellwether' }) });
+
+    const kestrel = screen.getByRole('listitem', { name: 'Kestrel Reach' });
+    expect(kestrel.textContent).toContain('As of Firstday, 1 Thessaly, year 1, 1 day ago');
+    expect(kestrel.textContent).toContain('Ship blanket');
+  });
+
+  it('shows the place the player stands in as of today', () => {
+    surfaces({ campaign: started(aGuidedGalaxy(), SEED) });
+
+    expect(screen.getByRole('listitem', { name: 'Kestrel Reach' }).textContent).toContain(
+      '(today)',
+    );
   });
 });
