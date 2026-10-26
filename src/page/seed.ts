@@ -19,3 +19,8 @@ export function seedAskedFor(search: string): number | null {
   const seed = Number(asked);
   return Number.isSafeInteger(seed) ? seed : null;
 }
+
+/** A seed not asked for by anyone, for a campaign started on a new one. */
+export function freshSeed(): number {
+  return Math.floor(Math.random() * 2 ** 31);
+}

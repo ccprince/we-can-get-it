@@ -31,6 +31,7 @@ beforeEach(() => {
 afterEach(() => {
   cleanup();
   vi.unstubAllGlobals();
+  vi.restoreAllMocks();
 });
 
 /** Open the page and wait for the campaign to be on it. */
@@ -51,6 +52,11 @@ function reopenOn(page: ReturnType<typeof render>, content: unknown) {
   page.unmount();
   vi.stubGlobal('fetch', () => Promise.resolve(new Response(JSON.stringify(content))));
   return render(<App />);
+}
+
+/** The seed the stored save records. */
+function savedSeed(): number {
+  return JSON.parse(localStorage.getItem(KEY) ?? '').seed;
 }
 
 async function click(name: string | RegExp) {
@@ -164,27 +170,70 @@ describe('saving and resuming a campaign', () => {
     expect(page.container.innerHTML).toBe(played);
 
     await click('Start a new campaign');
-    await click('Start it');
+    await click('Start over on seed 20261022');
     expect(screen.getByText('The day has not ended yet.')).toBeDefined();
+    expect(savedSeed()).toBe(20261022);
+    expect(JSON.parse(localStorage.getItem(KEY) ?? '').commands).toEqual([]);
+  });
+
+  it('starts a new campaign on a fresh seed when asked to', async () => {
+    vi.spyOn(Math, 'random').mockReturnValue(0.5);
+    await open();
+    await click('End the day');
+
+    await click('Start a new campaign');
+    await click('Start on a new seed');
+
+    expect(await screen.findByText('seed 1073741824')).toBeDefined();
     expect(JSON.parse(localStorage.getItem(KEY) ?? '')).toEqual({
       content: identity,
-      seed: 20261022,
+      seed: 1073741824,
       commands: [],
     });
   });
 
+  it('offers the URL seed when it is not the one in play, and starts on it', async () => {
+    localStorage.setItem(KEY, JSON.stringify({ content: identity, seed: 20261022, commands: [] }));
+    history.replaceState(null, '', '/?seed=7');
+    try {
+      await open();
+      await click('Start a new campaign');
+      await click('Start on seed 7');
+
+      expect(await screen.findByText('seed 7')).toBeDefined();
+      expect(savedSeed()).toBe(7);
+    } finally {
+      history.replaceState(null, '', '/');
+    }
+  });
+
+  it('does not offer the URL seed when it is the one in play', async () => {
+    history.replaceState(null, '', '/?seed=20261022');
+    try {
+      await open();
+      await click('Start a new campaign');
+
+      expect(screen.queryByRole('button', { name: /^Start on seed / })).toBeNull();
+      expect(screen.getByRole('button', { name: 'Start over on seed 20261022' })).toBeDefined();
+    } finally {
+      history.replaceState(null, '', '/');
+    }
+  });
+
   it('offers a new campaign beside a save that will not replay, and only when asked', async () => {
+    vi.spyOn(Math, 'random').mockReturnValue(0.5);
     localStorage.setItem(KEY, 'not a save');
     render(<App />);
 
     await click('Start a new campaign');
     expect(localStorage.getItem(KEY)).toBe('not a save');
-    await click('Start it');
+    expect(screen.queryByRole('button', { name: /^Start over on seed / })).toBeNull();
+    await click('Start on a new seed');
 
     expect(await screen.findByRole('button', { name: 'End the day' })).toBeDefined();
     expect(JSON.parse(localStorage.getItem(KEY) ?? '')).toEqual({
       content: identity,
-      seed: 20261022,
+      seed: 1073741824,
       commands: [],
     });
   });
