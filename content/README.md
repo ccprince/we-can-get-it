@@ -39,7 +39,7 @@ The report is Markdown, written to a file. It is written even when the content s
 | --- | --- |
 | **Problems** | Mistakes, each **fails**: the load's problems, and the draw's if a seed was asked for and gave no galaxy. |
 | **Reports from the load** | Suspicions, each **judge**, exactly as the loader issues them. The missing-tell ones appear again below, by good. |
-| **Slots** | For every slot of every motif, the reserve locations that can fill it. A short list is an over-narrow motif, visible before a draw exhausts its re-rolls. |
+| **Motif Slots** | One sub-heading per motif, listing its slots with how many reserve locations can fill each; an untyped slot counts every location. A low count is an over-narrow motif, visible before a draw exhausts its re-rolls. Closes with **Locations by archetype**, which locations each archetype holds, once. |
 | **goods per kind** | A distribution, widest group first, never a mean. Foremost: a kind with few goods is a lookup, not a search. |
 | **goods per role tag** | The same, over tags some buyer holds as a bonus or a refusal. |
 | **prose missing the tells of a tag the good holds** | A good whose prose carries none of a held tag's tell words. |
