@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import type { Command, LaneView, View } from '../engine';
+import { ChartGraph } from './ChartGraph';
 import { buttonChrome } from './chrome';
 import { Guide } from './Guide';
 import { Hold, People, Shop } from './Trade';
@@ -158,8 +159,8 @@ function Digest({ view }: { readonly view: View }) {
 }
 
 /**
- * The **chart**, read from where the player stands: the departures from here
- * first, then every place and the lanes that touch it. It carries the whole
+ * The **chart**, read from where the player stands: the map drawn as a graph,
+ * then the departures from here, then every place and the lanes that touch it. It carries the whole
  * galaxy and not only what leaves from here (ADR 0006 decision 5), so each lane
  * appears under both its ends.
  */
@@ -167,6 +168,8 @@ function Chart({ view, onCommand }: SurfaceProps) {
   const from = view.here?.name ?? null;
   return (
     <>
+      <ChartGraph chart={view.chart} here={from} />
+
       <section className="mt-6">
         <h2 className="text-xs tracking-widest text-stone-500 uppercase">
           {from === null ? 'Departures' : `Departures from ${from}`}

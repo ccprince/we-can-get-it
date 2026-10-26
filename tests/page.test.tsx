@@ -418,3 +418,55 @@ describe('the trade guide on the page', () => {
     );
   });
 });
+
+/**
+ * The chart drawn as a graph, from the **layout coordinates** the engine hands
+ * over (ADR 0011). The page scales them to fit and places the labels; it reads
+ * nothing else off them.
+ */
+describe('the chart drawn as a graph', () => {
+  it('draws the graph above the list of departures, which stays', () => {
+    surfaces({ campaign: started(aGalaxyOfFour(), SEED) });
+    openTab('Chart');
+
+    const graph = screen.getByRole('img', { name: 'Chart' });
+    const departures = screen.getByRole('heading', { name: 'Departures from Kestrel Reach' });
+    expect(graph.compareDocumentPosition(departures) & Node.DOCUMENT_POSITION_FOLLOWING).toBe(
+      Node.DOCUMENT_POSITION_FOLLOWING,
+    );
+  });
+
+  it('labels each place with its name, and marks the one the player is at', () => {
+    surfaces({ campaign: started(aGalaxyOfFour(), SEED) });
+    openTab('Chart');
+
+    const graph = screen.getByRole('img', { name: 'Chart' });
+    for (const name of ['Kestrel Reach', 'Bellwether Yards', "Grieve's Hollow", 'Thennet Shoals']) {
+      expect(within(graph).getByText(name)).toBeDefined();
+    }
+    const current = graph.querySelectorAll('[aria-current="location"]');
+    expect([...current].map((place) => place.textContent)).toEqual(['Kestrel Reach']);
+  });
+
+  it('labels each lane with its days for this ship, and dashes a lane beyond range', () => {
+    surfaces({ campaign: started(aGalaxyOfFour(), SEED) });
+    openTab('Chart');
+
+    const graph = screen.getByRole('img', { name: 'Chart' });
+    // Bellwether to the Hollow is sixteen away: four days, and beyond range ten.
+    const far = within(graph).getByLabelText("Bellwether Yards to Grieve's Hollow");
+    const near = within(graph).getByLabelText('Kestrel Reach to Bellwether Yards');
+    expect(far.textContent).toBe('4 days');
+    expect(near.textContent).toBe('2 days');
+    expect(far.querySelector('line')?.getAttribute('stroke-dasharray')).not.toBeNull();
+    expect(near.querySelector('line')?.getAttribute('stroke-dasharray')).toBeNull();
+  });
+
+  it('marks no place as where the player is while underway', () => {
+    surfaces({ campaign: flying(aGalaxyOfFour(), { kind: 'depart', toId: 'bellwether' }) });
+    openTab('Chart');
+
+    const graph = screen.getByRole('img', { name: 'Chart' });
+    expect(graph.querySelectorAll('[aria-current="location"]')).toHaveLength(0);
+  });
+});
