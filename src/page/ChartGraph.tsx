@@ -1,4 +1,5 @@
 import type { ChartView, Point } from '../engine';
+import { days, otherEnd } from './wording';
 
 /**
  * The **chart** drawn as a graph: each place where its **layout coordinates**
@@ -17,18 +18,18 @@ export function ChartGraph({
   readonly chart: ChartView;
   readonly here: string | null;
 }) {
-  const at = fitted(chart);
-  const placeOf = (name: string) => at.get(name) ?? { x: 0, y: 0 };
+  const drawnAt = fitted(chart);
+  const locationAt = (name: string) => drawnAt.get(name) ?? { x: 0, y: 0 };
 
   return (
     <svg
       role="img"
       aria-label="Chart"
-      viewBox={`0 0 ${width} ${heightOf(at)}`}
+      viewBox={`0 0 ${width} ${heightOf(drawnAt)}`}
       className="mt-6 h-auto w-full max-w-xl"
     >
       {chart.lanes.map((lane) => {
-        const [from, to] = [placeOf(lane.ends[0]), placeOf(lane.ends[1])];
+        const [from, to] = [locationAt(lane.ends[0]), locationAt(lane.ends[1])];
         const label = laneLabelAt(from, to);
         return (
           <g key={lane.ends.join('–')} aria-label={`${lane.ends[0]} to ${lane.ends[1]}`}>
@@ -48,15 +49,15 @@ export function ChartGraph({
               dominantBaseline="middle"
               className="fill-stone-400 text-[11px]"
             >
-              {lane.days === 1 ? '1 day' : `${lane.days} days`}
+              {days(lane.days, '1 day')}
             </text>
           </g>
         );
       })}
       {chart.locations.map(({ name }) => {
-        const place = placeOf(name);
+        const place = locationAt(name);
         const current = name === here;
-        const label = placeLabelAt(name, chart, placeOf);
+        const label = nameLabelAt(name, chart, locationAt);
         return (
           <g key={name} aria-current={current ? 'location' : undefined}>
             <circle
@@ -105,17 +106,17 @@ function fitted(chart: ChartView): ReadonlyMap<string, Point> {
   const [left, top] = [Math.min(...xs), Math.min(...ys)];
   const across = Math.max(...xs) - left;
   const down = Math.max(...ys) - top;
-  const scale = Math.min(
+  const fits = Math.min(
     across === 0 ? Infinity : (width - 2 * sideMargin) / across,
     down === 0 ? Infinity : (tallest - 2 * margin) / down,
   );
+  const scale = fits === Infinity ? 0 : fits;
+  // Centred across, so a map narrower than the drawing does not hug its edge.
+  const inset = (width - across * scale) / 2;
   return new Map(
     chart.locations.map(({ name, layout }) => [
       name,
-      {
-        x: sideMargin + (layout.x - left) * (scale === Infinity ? 0 : scale),
-        y: margin + (layout.y - top) * (scale === Infinity ? 0 : scale),
-      },
+      { x: inset + (layout.x - left) * scale, y: margin + (layout.y - top) * scale },
     ]),
   );
 }
@@ -129,25 +130,34 @@ function heightOf(at: ReadonlyMap<string, Point>): number {
  * rather than across them. A dead end's name reads off its far end, and a hub's
  * off the side its lanes leave least.
  */
-function placeLabelAt(
+function nameLabelAt(
   name: string,
   chart: ChartView,
-  placeOf: (name: string) => Point,
+  locationAt: (name: string) => Point,
 ): Point & { readonly anchor: 'start' | 'middle' | 'end' } {
-  const here = placeOf(name);
-  const pull = chart.lanes
+  const here = locationAt(name);
+  const toward = chart.lanes
     .filter((lane) => lane.ends.includes(name))
-    .map((lane) => placeOf(lane.ends[0] === name ? lane.ends[1] : lane.ends[0]))
-    .reduce(
-      (sum, there) => {
-        const length = Math.hypot(there.x - here.x, there.y - here.y) || 1;
-        return { x: sum.x + (there.x - here.x) / length, y: sum.y + (there.y - here.y) / length };
-      },
-      { x: 0, y: 0 },
-    );
+    .map((lane) => locationAt(otherEnd(lane, name)))
+    .map((there) => {
+      const length = Math.hypot(there.x - here.x, there.y - here.y) || 1;
+      return { x: (there.x - here.x) / length, y: (there.y - here.y) / length };
+    });
+  const pull = toward.reduce((sum, one) => ({ x: sum.x + one.x, y: sum.y + one.y }), {
+    x: 0,
+    y: 0,
+  });
   const length = Math.hypot(pull.x, pull.y);
-  // With no lanes, or lanes pulling every way at once, the name goes above.
-  const away = length < 0.1 ? { x: 0, y: -1 } : { x: -pull.x / length, y: -pull.y / length };
+  // Lanes pulling evenly every way, as through the middle of a straight run,
+  // leave no open side: the name goes square to the first of them. With no
+  // lanes at all, it goes above.
+  const [first] = toward;
+  const away =
+    length >= 0.1
+      ? { x: -pull.x / length, y: -pull.y / length }
+      : first === undefined
+        ? { x: 0, y: -1 }
+        : { x: -first.y, y: first.x };
   const offset = 12;
   return {
     x: here.x + away.x * offset,

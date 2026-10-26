@@ -462,6 +462,21 @@ describe('the chart drawn as a graph', () => {
     expect(near.querySelector('line')?.getAttribute('stroke-dasharray')).toBeNull();
   });
 
+  it('draws a galaxy of one place at a size that can be shown', () => {
+    // Nothing to scale: the layout spans no distance either way.
+    surfaces({ campaign: started(aGalaxyOfTwo({ locations: [aLocation()], lanes: [] }), SEED) });
+    openTab('Chart');
+
+    const [, , across, down] = (
+      screen.getByRole('img', { name: 'Chart' }).getAttribute('viewBox') ?? ''
+    )
+      .split(' ')
+      .map(Number);
+    expect(across).toBeGreaterThan(0);
+    expect(down).toBeGreaterThan(0);
+    expect(Number.isFinite(down)).toBe(true);
+  });
+
   it('marks no place as where the player is while underway', () => {
     surfaces({ campaign: flying(aGalaxyOfFour(), { kind: 'depart', toId: 'bellwether' }) });
     openTab('Chart');

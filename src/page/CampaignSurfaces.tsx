@@ -2,6 +2,7 @@ import { useState } from 'react';
 import type { Command, LaneView, View } from '../engine';
 import { ChartGraph } from './ChartGraph';
 import { buttonChrome } from './chrome';
+import { days, otherEnd } from './wording';
 import { Guide } from './Guide';
 import { Hold, People, Shop } from './Trade';
 
@@ -293,18 +294,6 @@ function BeyondRange() {
 
 function lanesAt(view: View, name: string): readonly LaneView[] {
   return view.chart.lanes.filter((lane) => lane.ends.includes(name));
-}
-
-function otherEnd(lane: LaneView, name: string): string {
-  return lane.ends[0] === name ? lane.ends[1] : lane.ends[0];
-}
-
-/**
- * A count of days, worded. The singular reads differently in each place it
- * lands — mid-sentence, or opening one — so the caller says which it wants.
- */
-function days(count: number, one: string): string {
-  return count === 1 ? one : `${count} days`;
 }
 
 /** The view words what the engine returns (ADR 0003 decision 4). */
