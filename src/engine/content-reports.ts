@@ -1,4 +1,4 @@
-import { goodsCarrying, roleTags, type ContentSet, type Tag } from './content';
+import { goodsCarrying, roleTags, type ContentSet, type Good, type Tag } from './content';
 import { judge, type Report } from './verdicts';
 
 /**
@@ -74,32 +74,45 @@ function usability(subject: Subject): readonly Report[] {
  * reach every word grown from it.
  *
  * The converse — prose carrying the tells of a tag the good does *not* hold —
- * belongs to the cross-product report (#28).
+ * is the cross-product report's (#28).
  */
 function tells(subject: Subject): readonly Report[] {
-  return subject.goods.flatMap((good, index) => {
-    const prose = good.prose.toLowerCase();
-    const carried = subject.tags.filter(
-      (tag) => tag.id === good.kind || good.tags.includes(tag.id),
-    );
-    return carried
-      .filter((tag) => !tag.tells.some((tell) => prose.includes(tell.toLowerCase())))
-      .map((tag) =>
-        judge(
-          `goods[${index}].prose`,
-          `carries none of the tells of ${tag.id}: ${tag.tells.join(', ')}`,
-        ),
-      );
-  });
+  return subject.goods.flatMap((good, index) =>
+    subject.tags
+      .filter((tag) => holds(good, tag) && !proseCarries(good, tag))
+      .map((tag) => missingTell(`goods[${index}].prose`, tag)),
+  );
 }
 
+/** The report for prose carrying none of a held tag's tells; one wording for every surface. */
+export function missingTell(where: string, tag: Tag): Report {
+  return judge(where, `carries none of the tells of ${tag.id}: ${tag.tells.join(', ')}`);
+}
+
+/** Whether a good holds a tag, as its one kind or among the rest. */
+export function holds(good: Good, tag: Tag): boolean {
+  return tag.id === good.kind || good.tags.includes(tag.id);
+}
+
+/** The tell words of a tag that a good's prose carries, in the order the tag declares them. */
+export function tellsCarried(good: Good, tag: Tag): readonly string[] {
+  const prose = good.prose.toLowerCase();
+  return tag.tells.filter((tell) => prose.includes(tell.toLowerCase()));
+}
+
+export function proseCarries(good: Good, tag: Tag): boolean {
+  return tellsCarried(good, tag).length > 0;
+}
+
+/** Tags grouped by how many goods carry each: a distribution, widest group first. */
+export type Spread = readonly { readonly goods: number; readonly tags: readonly string[] }[];
+
 /**
- * Tags grouped by how many goods carry each, widest group first and each group
- * ordered by tag id — a distribution, so a pile of singletons cannot hide
- * behind a healthy average, and an explicit sort rather than the order the
+ * A distribution, so a pile of singletons cannot hide behind a healthy average:
+ * each group ordered by tag id, an explicit sort rather than the order the
  * content happened to be written in (ADR 0009 decision 3).
  */
-function distribution(subject: Subject, tags: readonly Tag[]): string {
+export function spread(subject: Pick<ContentSet, 'goods'>, tags: readonly Tag[]): Spread {
   const counted = new Map<number, string[]>();
   for (const tag of tags) {
     const sits = goodsCarrying(subject, tag.id);
@@ -108,7 +121,12 @@ function distribution(subject: Subject, tags: readonly Tag[]): string {
 
   return [...counted.entries()]
     .sort(([one], [other]) => other - one)
-    .map(([sits, named]) => `${goods(sits)} — ${[...named].sort().join(', ')}`)
+    .map(([sits, named]) => ({ goods: sits, tags: [...named].sort() }));
+}
+
+function distribution(subject: Subject, tags: readonly Tag[]): string {
+  return spread(subject, tags)
+    .map(({ goods: sits, tags: named }) => `${goods(sits)} — ${named.join(', ')}`)
     .join('; ');
 }
 
