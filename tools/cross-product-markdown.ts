@@ -1,0 +1,122 @@
+import type { CrossProduct, Problem, Report, Spread, Survey } from '../src/engine';
+
+/**
+ * The cross-product report as Markdown. This only **formats** what the engine
+ * returns as data (ADR 0007 decision 18): no rule and no judgement lives here,
+ * so a section is as wrong as the engine's data and no more. The sections are
+ * documented in `content/README.md`, which is where a writer looks.
+ *
+ * Problems and reports are never conflated: each is listed under the verdict
+ * it carries (#10).
+ */
+export type Subject = {
+  readonly contentPath: string;
+  /** The seed the galaxy was drawn with, or null for the content set alone. */
+  readonly seed: number | null;
+  /** What the loader said, which is where a mistake and a suspicion first come apart. */
+  readonly problems: readonly Problem[];
+  readonly reports: readonly Report[];
+  /** Why the draw gave no galaxy, when a seed was asked for and it gave none. */
+  readonly drawProblems: readonly Problem[];
+  /** Null when the content set would not load. */
+  readonly crossProduct: CrossProduct | null;
+};
+
+export function markdown(subject: Subject): string {
+  const { crossProduct } = subject;
+  const lines = [
+    `# Cross-product report: ${subject.contentPath}`,
+    '',
+    subject.seed === null
+      ? 'Over the content set as written. Pass `--seed` to report over a drawn galaxy as well.'
+      : `Over the content set as written, and over the galaxy seed ${subject.seed} draws.`,
+    '',
+    ...verdicts(subject),
+    ...(crossProduct === null ? [] : sections(crossProduct)),
+  ];
+  return `${lines.join('\n').trimEnd()}\n`;
+}
+
+function verdicts(subject: Subject): readonly string[] {
+  const problems = [...subject.problems, ...subject.drawProblems];
+  return [
+    '## Problems',
+    '',
+    'Mistakes. Each fails the load or the draw.',
+    '',
+    ...entries(problems, 'none'),
+    '',
+    '## Reports from the load',
+    '',
+    'Suspicions, for a writer to judge. Never a reason to fail.',
+    '',
+    ...entries(subject.reports, 'none'),
+    '',
+  ];
+}
+
+function sections(crossProduct: CrossProduct): readonly string[] {
+  const { asWritten, drawn } = crossProduct;
+  return [
+    '## Slots',
+    '',
+    'The reserve locations that can fill each slot. A short list is an over-narrow motif.',
+    '',
+    ...(crossProduct.slots.length === 0
+      ? ['- none']
+      : crossProduct.slots.map(
+          ({ motif, slot, archetype, fillers }) =>
+            `- \`${motif}\` / \`${slot}\` (${archetype ?? 'untyped'}): ` +
+            `${fillers.length} — ${fillers.join(', ') || 'nobody'}`,
+        )),
+    '',
+    ...survey('As written', asWritten),
+    ...(drawn === null
+      ? []
+      : [
+          ...survey('Drawn', drawn),
+          '## Drawn: slots placed',
+          '',
+          ...(drawn.placed.length === 0
+            ? ['- none']
+            : drawn.placed.map(
+                ({ motif, slot, location, archetype }) =>
+                  `- \`${motif}\` / \`${slot}\`: ${location} (${archetype})`,
+              )),
+          '',
+        ]),
+  ];
+}
+
+function survey(name: string, surveyed: Survey): readonly string[] {
+  return [
+    `## ${name}: goods per kind`,
+    '',
+    ...distribution(surveyed.goodsPerKind),
+    '',
+    `## ${name}: goods per role tag`,
+    '',
+    ...distribution(surveyed.goodsPerRoleTag),
+    '',
+    `## ${name}: prose missing the tells of a tag the good holds`,
+    '',
+    ...entries(surveyed.missingTells, 'none'),
+    '',
+    `## ${name}: prose carrying the tells of a tag the good does not hold`,
+    '',
+    ...entries(surveyed.strayTells, 'none'),
+    '',
+  ];
+}
+
+function distribution(counted: Spread): readonly string[] {
+  if (counted.length === 0) return ['- none'];
+  return counted.map(
+    ({ goods, tags }) => `- ${goods} ${goods === 1 ? 'good' : 'goods'}: ${tags.join(', ')}`,
+  );
+}
+
+function entries(found: readonly (Problem | Report)[], none: string): readonly string[] {
+  if (found.length === 0) return [`- ${none}`];
+  return found.map(({ verdict, where, what }) => `- **${verdict}** \`${where}\` ${what}`);
+}

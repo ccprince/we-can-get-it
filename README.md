@@ -22,6 +22,7 @@ tests/        through the engine's public seam, with fixed seeds and purpose-bui
 | `npm run check` | typecheck, lint, tests — what CI and the pre-commit hook run |
 | `npm test` | the test suite |
 | `npm run build` | bundles the page |
+| `npm run report -- <content set>` | writes the cross-product report (see `content/README.md`) |
 
 `npm install` installs the pre-commit hook, which runs `npm run check`.
 
