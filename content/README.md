@@ -29,7 +29,8 @@ so it cannot disagree with the game.
 ```
 npm run report -- content/walking-skeleton.json                    # the content set as written
 npm run report -- content/walking-skeleton.json --seed 3           # and the galaxy seed 3 draws
-npm run report -- content/walking-skeleton.json --out some/file.md # default: out/cross-product.md
+npm run report -- content/walking-skeleton.json --out some/file.md
+# without --out: out/walking-skeleton-cross-product.md
 ```
 
 The report is Markdown, written to a file. It is written even when the content set will not load
