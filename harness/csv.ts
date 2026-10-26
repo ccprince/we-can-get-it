@@ -21,6 +21,10 @@ export type Row = {
   /** Whether the day was spent in **transit** rather than at a landing (#9). */
   readonly inTransit: boolean;
   readonly credits: number;
+  /** Locations the **trade guide** holds something seen of, cumulative (#19). */
+  readonly placesKnown: number;
+  /** Days old the oldest of that is, so the curve shows how stale a run lets knowledge get. */
+  readonly oldestKnownDays: number;
 };
 
 /**
@@ -30,6 +34,7 @@ export type Row = {
  * line two campaigns up day by day.
  */
 export function rowFor(setting: string, seed: number, read: View): Row {
+  const ages = read.guide.entries.flatMap(({ known }) => (known === null ? [] : [known.daysAgo]));
   return {
     setting,
     seed,
@@ -39,10 +44,21 @@ export function rowFor(setting: string, seed: number, read: View): Row {
     location: read.here?.name ?? read.transit?.destination ?? 'nowhere',
     inTransit: read.here === null,
     credits: read.credits.credits,
+    placesKnown: ages.length,
+    oldestKnownDays: Math.max(0, ...ages),
   };
 }
 
-const COLUMNS = ['setting', 'seed', 'day', 'location', 'inTransit', 'credits'] as const;
+const COLUMNS = [
+  'setting',
+  'seed',
+  'day',
+  'location',
+  'inTransit',
+  'credits',
+  'placesKnown',
+  'oldestKnownDays',
+] as const;
 
 /**
  * The CSV, with nothing in it that varies between two runs of the same config:
