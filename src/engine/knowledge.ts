@@ -1,6 +1,5 @@
 import type { Campaign, DigestEntry } from './campaign';
-import type { Buyer } from './content';
-import { goodNamed, locationNamed } from './galaxy';
+import { goodNamed, locationNamed, personNamed } from './galaxy';
 import { openWants, peopleHere } from './selling';
 import type { Lot } from './stock';
 import { lotsHere } from './trade';
@@ -19,7 +18,7 @@ export type Sighting = {
   readonly locationId: string;
   /** The day the player saw it. */
   readonly asOf: number;
-  /** The lots as seen, in good-id order. */
+  /** The lots as seen, in the order the shop listed them: good-id order (`stockShops`). */
   readonly lots: readonly Lot[];
   /** The people as seen, in id order, with the wants each still had open. */
   readonly people: readonly SeenPerson[];
@@ -61,10 +60,7 @@ export function sightingHere(campaign: Campaign, corrections: readonly Correctio
     lots: lotsHere(campaign),
     people: peopleHere(campaign).map((buyer) => ({
       buyerId: buyer.id,
-      wants: openWants(campaign, buyer).map(({ id, remaining }) => ({
-        at: Number(id.slice(buyer.id.length + 1)),
-        remaining,
-      })),
+      wants: openWants(campaign, buyer).map(({ at, remaining }) => ({ at, remaining })),
     })),
     corrections,
   };
@@ -125,7 +121,7 @@ function correctionsBetween(was: Sighting, now: Sighting): readonly Correction[]
   for (const person of was.people) {
     const found = now.people.find(({ buyerId }) => buyerId === person.buyerId);
     if (found === undefined) people.push({ kind: 'person-gone', buyerId: person.buyerId });
-    else if (JSON.stringify(found.wants) !== JSON.stringify(person.wants)) {
+    else if (!sameWants(found, person)) {
       people.push({ kind: 'person-changed', buyerId: person.buyerId });
     }
   }
@@ -137,8 +133,19 @@ function correctionsBetween(was: Sighting, now: Sighting): readonly Correction[]
   return [...lots, ...people];
 }
 
+function sameWants(a: SeenPerson, b: SeenPerson): boolean {
+  return (
+    a.wants.length === b.wants.length &&
+    a.wants.every((want, at) => {
+      const other = b.wants[at];
+      return other !== undefined && want.at === other.at && want.remaining === other.remaining;
+    })
+  );
+}
+
 /** A correction as a player reads it: what it was, and what it is. */
 export function wordCorrection(campaign: Pick<Campaign, 'galaxy'>, correction: Correction): string {
+  const name = (buyerId: string) => personNamed(campaign.galaxy, buyerId).name;
   switch (correction.kind) {
     case 'lot-changed':
       return (
@@ -150,11 +157,11 @@ export function wordCorrection(campaign: Pick<Campaign, 'galaxy'>, correction: C
     case 'lot-new':
       return `${goodOf(campaign, correction.now)}: now on sale, ${stocked(correction.now)}.`;
     case 'person-changed':
-      return `${buyerOf(campaign, correction.buyerId).name}: what they are after has changed.`;
+      return `${name(correction.buyerId)}: what they are after has changed.`;
     case 'person-gone':
-      return `${buyerOf(campaign, correction.buyerId).name}: no longer here.`;
+      return `${name(correction.buyerId)}: no longer here.`;
     case 'person-new':
-      return `${buyerOf(campaign, correction.buyerId).name}: now here.`;
+      return `${name(correction.buyerId)}: now here.`;
   }
 }
 
@@ -164,10 +171,4 @@ function stocked({ quantity, price }: Lot): string {
 
 function goodOf(campaign: Pick<Campaign, 'galaxy'>, lot: Lot): string {
   return goodNamed(campaign.galaxy, lot.goodId).name;
-}
-
-function buyerOf(campaign: Pick<Campaign, 'galaxy'>, buyerId: string): Buyer {
-  const buyer = campaign.galaxy.people.find(({ id }) => id === buyerId);
-  if (buyer === undefined) throw new Error(`${buyerId} is not a person the drawn galaxy holds`);
-  return buyer;
 }

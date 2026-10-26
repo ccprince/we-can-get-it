@@ -2,7 +2,7 @@ import { dateOf, type CalendarDate } from './calendar';
 import type { Campaign, DigestEntry } from './campaign';
 import { departureTo, offeredCommands, type Command } from './commands';
 import type { Archetype, Lane, Want } from './content';
-import { goodNamed, locationNamed, type DrawnGalaxy } from './galaxy';
+import { goodNamed, locationNamed, personNamed, type DrawnGalaxy } from './galaxy';
 import { sightingHere, wordCorrection, type Sighting } from './knowledge';
 import { daysToFly, fareToFly, otherEnd, withinRange } from './map';
 import { matchOf, type Tier } from './match';
@@ -380,8 +380,7 @@ function knownView(campaign: Campaign, sighting: Sighting): KnownView {
       asOf,
     })),
     people: sighting.people.map(({ buyerId, wants }) => {
-      const buyer = galaxy.people.find(({ id }) => id === buyerId);
-      if (buyer === undefined) throw new Error(`${buyerId} is not a person the galaxy holds`);
+      const buyer = personNamed(galaxy, buyerId);
       return {
         name: buyer.name,
         wants: wants.map(({ at, remaining }) => {

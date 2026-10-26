@@ -70,3 +70,13 @@ export function goodNamed(galaxy: Pick<DrawnGalaxy, 'goods'>, goodId: string): G
   if (good === undefined) throw new Error(`${goodId} is not a good the drawn galaxy holds`);
   return good;
 }
+
+/**
+ * The person an id names. Every buyer id in a campaign names a person the
+ * **draw** kept, so this is total for any galaxy the draw produced.
+ */
+export function personNamed(galaxy: Pick<DrawnGalaxy, 'people'>, buyerId: string): Buyer {
+  const buyer = galaxy.people.find((candidate) => candidate.id === buyerId);
+  if (buyer === undefined) throw new Error(`${buyerId} is not a person the drawn galaxy holds`);
+  return buyer;
+}
