@@ -74,6 +74,7 @@
       "ring": 0
     },
     "farHaul": 16,
+    "minimumGapPercent": 25,
     "startHub": {
       "archetype": "market",
       "neighbours": 3,

@@ -44,6 +44,27 @@ How many reserve locations can fill each slot. Having enough matters, not which 
 - market: bellwether, caravel, quay, tallow
 - processor: anvil, kestrel, shoals, spindleworks
 
+## Motif layouts
+
+Each motif's worst distortion, worst first, and each lane's drawn length against its distance.
+
+### `spur`: worst distortion 1.07
+
+- `approach` to `junction`: distance 5, drawn 5.16
+- `dead-end` to `junction`: distance 16, drawn 17.12
+- `junction` to `roads`: distance 3, drawn 3.05
+
+### `crossing`: worst distortion 1.00
+
+- `east` to `gate`: distance 9, drawn 9.01
+- `gate` to `west`: distance 4, drawn 4.00
+
+### `loop`: worst distortion 1.00
+
+- `landing` to `pits`: distance 10, drawn 10.00
+- `landing` to `yard`: distance 6, drawn 6.00
+- `pits` to `yard`: distance 7, drawn 7.00
+
 ## As written: goods per kind
 
 - 3 goods: cloth, ore, tools

@@ -132,6 +132,9 @@ export function aTopology(overrides: RawObject = {}): RawObject {
     farHaul: 0,
     // Any place may open, so a fixture's start is its best-connected place.
     startHub: { archetype: null, neighbours: 0, spurs: 0, ...(startHub as RawObject | undefined) },
+    // A placeholder, and narrow, so a fixture's motif is refused only for a
+    // location drawn on a lane. A test about the gap states the one it means.
+    minimumGapPercent: 10,
     ...rest,
   };
 }

@@ -28,6 +28,7 @@ describe('the cross-product report as Markdown', () => {
       '## Problems',
       '## Reports from the load',
       '## Motif Slots',
+      '## Motif layouts',
       '## As written: goods per kind',
       '## As written: goods per role tag',
       '## As written: prose missing the tells of a tag the good holds',

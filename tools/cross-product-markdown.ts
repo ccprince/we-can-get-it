@@ -59,6 +59,7 @@ function sections(crossProduct: CrossProduct): readonly string[] {
   const { asWritten, drawn } = crossProduct;
   return [
     ...motifSlots(crossProduct),
+    ...motifLayouts(crossProduct),
     ...survey('As written', asWritten),
     ...(drawn === null
       ? []
@@ -104,6 +105,27 @@ function motifSlots({ slots, archetypes }: CrossProduct): readonly string[] {
           ({ archetype, locations }) => `- ${archetype}: ${locations.join(', ') || 'none'}`,
         )),
     '',
+  ];
+}
+
+function motifLayouts({ motifLayouts: laidOut }: CrossProduct): readonly string[] {
+  return [
+    '## Motif layouts',
+    '',
+    "Each motif's worst distortion, worst first, and each lane's drawn length against its " +
+      'distance.',
+    '',
+    ...laidOut.flatMap(({ motif, lanes, worstDistortion }) => [
+      `### \`${motif}\`: worst distortion ${worstDistortion.toFixed(2)}`,
+      '',
+      ...(lanes.length === 0
+        ? ['- no lanes']
+        : lanes.map(
+            ({ ends, distance, drawn }) =>
+              `- \`${ends[0]}\` to \`${ends[1]}\`: distance ${distance}, drawn ${drawn.toFixed(2)}`,
+          )),
+      '',
+    ]),
   ];
 }
 
