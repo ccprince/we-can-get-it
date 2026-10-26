@@ -31,6 +31,8 @@ import { judge, type Report } from './verdicts';
 export type CrossProduct = {
   /** Every **slot** of every motif in the reserve, in motif id then slot id order. */
   readonly slots: readonly SlotFilling[];
+  /** Each archetype and the reserve locations of it, in archetype id order. */
+  readonly archetypes: readonly ArchetypeLocations[];
   /** The content set as written: the whole reserve and catalogue. */
   readonly asWritten: Survey;
   /** The same over what the draw kept, or null when no galaxy was drawn. */
@@ -38,17 +40,23 @@ export type CrossProduct = {
 };
 
 /**
- * Which locations of the reserve can fill one slot, so a motif typed too
+ * How many locations of the reserve can fill one slot, so a motif typed too
  * narrowly shows before a draw exhausts its re-rolls. An untyped slot takes any
- * location at all (ADR 0006 decision 4).
+ * location at all (ADR 0006 decision 4). Which locations they are is
+ * `archetypes`' to say, once per archetype rather than once per slot.
  */
 export type SlotFilling = {
   readonly motif: string;
   readonly slot: string;
   /** The archetype the slot is typed to, or null if it is untyped. */
   readonly archetype: string | null;
-  /** The location ids that can fill it, in id order. */
-  readonly fillers: readonly string[];
+  readonly locations: number;
+};
+
+export type ArchetypeLocations = {
+  readonly archetype: string;
+  /** Location ids, in id order. */
+  readonly locations: readonly string[];
 };
 
 /** What a writer reads off one set of goods and buyers: the reserve, or a draw. */
@@ -77,6 +85,12 @@ export type PlacedSlot = {
 export function crossProduct(content: ContentSet, galaxy: DrawnGalaxy | null): CrossProduct {
   return {
     slots: slotFillings(content),
+    archetypes: content.archetypes.map(({ id }) => ({
+      archetype: id,
+      locations: content.locations
+        .filter((location) => location.archetype === id)
+        .map((location) => location.id),
+    })),
     asWritten: survey(content.tags, content),
     drawn: galaxy === null ? null : { ...surveyDrawn(content, galaxy), placed: placed(galaxy) },
   };
@@ -88,9 +102,9 @@ function slotFillings(content: ContentSet): readonly SlotFilling[] {
       motif: motif.id,
       slot: slot.id,
       archetype: slot.archetype,
-      fillers: content.locations
-        .filter((location) => slot.archetype === null || location.archetype === slot.archetype)
-        .map((location) => location.id),
+      locations: content.locations.filter(
+        (location) => slot.archetype === null || location.archetype === slot.archetype,
+      ).length,
     })),
   );
 }

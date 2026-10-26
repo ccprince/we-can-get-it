@@ -34,7 +34,14 @@ export type {
 export { identify } from './identify';
 
 export { crossProduct } from './cross-product';
-export type { CrossProduct, Drawn, PlacedSlot, SlotFilling, Survey } from './cross-product';
+export type {
+  ArchetypeLocations,
+  CrossProduct,
+  Drawn,
+  PlacedSlot,
+  SlotFilling,
+  Survey,
+} from './cross-product';
 export type { Spread } from './content-reports';
 
 export { drawGalaxy } from './draw';
