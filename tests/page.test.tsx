@@ -9,7 +9,7 @@
  * test cannot drift from what the engine actually returns.
  */
 import { cleanup, fireEvent, render, screen, within } from '@testing-library/react';
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, describe, expect, it } from 'vitest';
 import { isRejected, takeCommand, view } from '../src/engine';
 import type { Campaign, Command, ContentSet } from '../src/engine';
 import { CampaignSurfaces } from '../src/page/CampaignSurfaces';
@@ -34,6 +34,7 @@ function surfaces(
   options: {
     readonly onCommand?: (command: Command) => void;
     readonly campaign?: Campaign;
+    readonly refusal?: string;
   } = {},
 ) {
   const campaign = options.campaign ?? started(loadedContentSet(), SEED);
@@ -41,7 +42,7 @@ function surfaces(
     <CampaignSurfaces
       view={view(campaign)}
       seed={campaign.seed}
-      refusal={null}
+      refusal={options.refusal ?? null}
       onCommand={options.onCommand ?? (() => undefined)}
     />,
   );
@@ -88,29 +89,13 @@ describe('the campaign surfaces', () => {
   });
 
   it('shows a refusal in the player’s own terms when the engine gives one', () => {
-    const campaign = started(loadedContentSet(), SEED);
-    render(
-      <CampaignSurfaces
-        view={view(campaign)}
-        seed={SEED}
-        refusal="That is not a command."
-        onCommand={vi.fn()}
-      />,
-    );
+    surfaces({ refusal: 'That is not a command.' });
 
     expect(screen.getByText('That is not a command.')).toBeDefined();
   });
 
   it('keeps a refusal in view on every tab, since a command can come from any of them', () => {
-    const campaign = started(loadedContentSet(), SEED);
-    render(
-      <CampaignSurfaces
-        view={view(campaign)}
-        seed={SEED}
-        refusal="That is not a command."
-        onCommand={vi.fn()}
-      />,
-    );
+    surfaces({ refusal: 'That is not a command.' });
 
     openTab('Chart');
 
@@ -241,7 +226,10 @@ describe('the chart on the page', () => {
     surfaces({ campaign: flying(aGalaxyOfFour(), { kind: 'depart', toId: 'bellwether' }) });
     openTab('Chart');
 
-    expect(screen.getAllByText('Beyond your range')).not.toHaveLength(0);
+    const far = within(screen.getByRole('list', { name: "Lanes from Grieve's Hollow" }))
+      .getAllByRole('listitem')
+      .find((lane) => lane.textContent.includes('Bellwether Yards'));
+    expect(far?.textContent).toContain('Beyond your range');
     expect(screen.queryByRole('button', { name: /Depart/ })).toBeNull();
   });
 
@@ -261,7 +249,6 @@ describe('the chart on the page', () => {
     surfaces({ campaign: flying(aGalaxyOfTwo(), { kind: 'depart', toId: 'bellwether' }) });
 
     expect(screen.getByRole('heading', { name: 'In transit' })).toBeDefined();
-    expect(screen.getByRole('tab', { name: 'Underway' })).toBeDefined();
     expect(screen.getByText(/out of Kestrel Reach/)).toBeDefined();
     expect(screen.getByText(/bound for Bellwether Yards/)).toBeDefined();
     expect(screen.queryByRole('button', { name: /Depart/ })).toBeNull();

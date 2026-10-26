@@ -32,7 +32,7 @@ export function CampaignSurfaces({
 }) {
   const [tab, setTab] = useState<Tab>('here');
   const tabs: readonly (readonly [Tab, string])[] = [
-    ['here', view.here === null ? 'Underway' : 'Here'],
+    ['here', 'Here'],
     ['chart', 'Chart'],
     ['guide', 'Trade guide'],
   ];
@@ -163,9 +163,12 @@ function Chart({ view, onCommand }: SurfaceProps) {
           {from === null ? 'Departures' : `Departures from ${from}`}
         </h2>
         {from === null ? (
-          <p className="mt-2 text-stone-500">There are no departures while underway.</p>
+          <p className="mt-2 text-stone-500">There are no departures in transit.</p>
         ) : (
-          <Departures lanes={lanesAt(view, from)} from={from} onCommand={onCommand} />
+          <Departures
+            lanes={view.chart.lanes.filter((lane) => lane.destination !== null)}
+            onCommand={onCommand}
+          />
         )}
       </section>
 
@@ -206,13 +209,12 @@ function Chart({ view, onCommand }: SurfaceProps) {
   );
 }
 
+/** The lanes that leave from here, which the engine marks by giving each a destination. */
 function Departures({
   lanes,
-  from,
   onCommand,
 }: {
   readonly lanes: readonly LaneView[];
-  readonly from: string;
   readonly onCommand: (command: Command) => void;
 }) {
   if (lanes.length === 0) return <p className="mt-2 text-stone-500">No lane leaves from here.</p>;
@@ -229,7 +231,7 @@ function Departures({
       <tbody>
         {lanes.map((lane) => (
           <tr key={lane.ends.join('–')} className="border-t border-stone-800">
-            <td className="py-1.5 text-stone-300">{otherEnd(lane, from)}</td>
+            <td className="py-1.5 text-stone-300">{lane.destination}</td>
             <td className="py-1.5 text-right text-stone-300">{days(lane.days, '1 day')}</td>
             <td className="py-1.5 text-right text-stone-300">{lane.fare}</td>
             <td className="py-1.5 pl-3">
@@ -261,6 +263,8 @@ function Departure({
 }) {
   if (!lane.withinRange) return <BeyondRange />;
 
+  // Every lane here leaves from where the player stands, so within range the
+  // engine offers a departure; the read model's type still allows none.
   const depart = lane.depart;
   if (depart === null) return null;
 
