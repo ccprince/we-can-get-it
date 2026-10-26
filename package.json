@@ -45,6 +45,7 @@
     "harness": "vite-node harness/run.ts",
     "frontier": "vite-node tools/frontier.ts",
     "seeds": "vite-node tools/seed-finder.ts",
+    "report": "vite-node tools/cross-product.ts",
     "check": "npm run typecheck && npm run lint && npm run format:check && npm run test",
     "prepare": "husky",
     "preview": "vite preview"

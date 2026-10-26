@@ -20,6 +20,37 @@ What is checked here is the content set **as written**. Nearly every bound is al
 **drawn galaxy** — a kind can be usable in the reserve and a singleton in one campaign — and those
 checks are the draw-time pass's (#12, #27). Both are kept.
 
+## The cross-product report
+
+The validator's other half: what you have actually written, laid out to be judged rather than
+failed (ADR 0007 decision 18). It is the loader and the draw in reporting mode, not a second tool,
+so it cannot disagree with the game.
+
+```
+npm run report -- content/walking-skeleton.json                    # the content set as written
+npm run report -- content/walking-skeleton.json --seed 3           # and the galaxy seed 3 draws
+npm run report -- content/walking-skeleton.json --out some/file.md # default: out/cross-product.md
+```
+
+The report is Markdown, written to a file. It is written even when the content set will not load
+(the problems are in it) and the exit is then non-zero. Its sections, in order:
+
+| Section | What it tells you |
+| --- | --- |
+| **Problems** | Mistakes, each **fails**: the load's problems, and the draw's if a seed was asked for and gave no galaxy. |
+| **Reports from the load** | Suspicions, each **judge**, exactly as the loader issues them. The missing-tell ones appear again below, by good. |
+| **Slots** | For every slot of every motif, the reserve locations that can fill it. A short list is an over-narrow motif, visible before a draw exhausts its re-rolls. |
+| **goods per kind** | A distribution, widest group first, never a mean. Foremost: a kind with few goods is a lookup, not a search. |
+| **goods per role tag** | The same, over tags some buyer holds as a bonus or a refusal. |
+| **prose missing the tells of a tag the good holds** | A good whose prose carries none of a held tag's tell words. |
+| **prose carrying the tells of a tag the good does not hold** | A good whose prose reads like a tag it does not carry. |
+| **Drawn: …** | Each of the four above over the goods and people the draw kept, plus **slots placed**: which location filled which slot. Only with `--seed`. |
+
+A tell finding is a **judgement for you** and never a failure: a missing tell is usually a better
+word than the tag table predicted, and failing it would train writers to pad prose with keywords.
+Most bounds are properties of the **drawn** galaxy, which is why the report can be run over one.
+**Overridden pairings** are not listed: overrides are outside the first milestone (#29).
+
 ## The shape of a content set
 
 ```jsonc
