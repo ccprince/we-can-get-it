@@ -12,6 +12,7 @@ import {
 } from '../engine';
 import { CampaignSurfaces } from './CampaignSurfaces';
 import { fetchContent } from './content';
+import { LayoutPrototype } from './LayoutPrototype';
 import { readSave, resume, writeSave, type Found, type Save } from './save';
 import { seedAskedFor, seedFromUrl } from './seed';
 
@@ -133,11 +134,20 @@ export function App() {
           {campaignState.notice !== null && (
             <p className="mb-6 text-sm text-amber-300">{campaignState.notice}</p>
           )}
-          <CampaignSurfaces
+          {/* PROTOTYPE — throwaway layout variants; see LayoutPrototype.tsx */}
+          <LayoutPrototype
             view={view(campaign)}
             seed={campaign.seed}
             refusal={refusal}
             onCommand={take}
+            current={
+              <CampaignSurfaces
+                view={view(campaign)}
+                seed={campaign.seed}
+                refusal={refusal}
+                onCommand={take}
+              />
+            }
           />
           <NewCampaign
             onStart={() => {
