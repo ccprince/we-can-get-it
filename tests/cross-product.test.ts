@@ -77,7 +77,7 @@ describe('the cross-product report', () => {
     expect(missingTells).toEqual([]);
   });
 
-  it('lists which locations of the reserve can fill each slot, typed or not', () => {
+  it('counts the locations that fit each slot, and lists the locations of each archetype', () => {
     const content = loadedContentSet({
       archetypes: [anArchetype({ id: 'market' }), anArchetype({ id: 'yard' })],
       locations: [
@@ -93,9 +93,15 @@ describe('the cross-product report', () => {
       ],
     });
 
-    expect(crossProduct(content, null).slots).toEqual([
-      { motif: 'pair', slot: 'a', archetype: 'yard', fillers: ['bellwether', 'tallow'] },
-      { motif: 'pair', slot: 'b', archetype: null, fillers: ['bellwether', 'kestrel', 'tallow'] },
+    const report = crossProduct(content, null);
+
+    expect(report.slots).toEqual([
+      { motif: 'pair', slot: 'a', archetype: 'yard', locations: 2 },
+      { motif: 'pair', slot: 'b', archetype: null, locations: 3 },
+    ]);
+    expect(report.archetypes).toEqual([
+      { archetype: 'market', locations: ['kestrel'] },
+      { archetype: 'yard', locations: ['bellwether', 'tallow'] },
     ]);
   });
 
