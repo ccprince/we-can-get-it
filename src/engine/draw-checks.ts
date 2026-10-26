@@ -23,7 +23,12 @@ import { fails, type Problem } from './verdicts';
  * that could fix the miss: the substance of the goods is the goods pass's, and
  * a kind dropped that should have stayed is the kinds pass's.
  */
-export type Stage = 'motif selection' | 'kinds pass' | 'goods pass' | 'people pass';
+export type Stage =
+  | 'motif selection'
+  | 'kinds pass'
+  | 'goods pass'
+  | 'people pass'
+  | 'motif arrangement';
 
 /**
  * A galaxy as far as the cascade has built it, and the generator it left

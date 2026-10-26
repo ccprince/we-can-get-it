@@ -8,6 +8,7 @@ import { daysToFly, fareToFly, otherEnd, withinRange } from './map';
 import { matchOf, type Tier } from './match';
 import { mostYouCanSell, openWants, peopleHere, type OpenWant } from './selling';
 import { holdUsed, lotsHere, mostYouCanBuy } from './trade';
+import type { Point } from './layout';
 
 /**
  * Every surface renders a read model handed to it by one engine query, and the
@@ -188,6 +189,13 @@ export type LaneView = {
  */
 export type LocationView = {
   readonly name: string;
+  /**
+   * Where the chart draws it: its **layout coordinates**, in units of
+   * **distance**. Fitting them to a screen is the page's (ADR 0011 decision 2),
+   * and a straight line between two of them means nothing: travel is a lane's
+   * distance alone (decision 7).
+   */
+  readonly layout: Point;
 };
 
 /**
@@ -331,7 +339,10 @@ export function view(campaign: Campaign): View {
 
 function chartFor(campaign: Campaign): ChartView {
   return {
-    locations: campaign.galaxy.locations.map(({ name }) => ({ name })),
+    locations: campaign.galaxy.locations.map(({ id, name }) => ({
+      name,
+      layout: campaign.galaxy.layout.get(id) ?? { x: 0, y: 0 },
+    })),
     lanes: campaign.galaxy.lanes.map((lane) => laneFor(lane, campaign)),
   };
 }

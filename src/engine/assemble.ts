@@ -43,6 +43,7 @@ export function assembleMap(content: ContentSet, rng: Rng): Attempt {
       kinds: [],
       goods: [],
       people: [],
+      layout: new Map(),
     },
     rng: afterJoining,
   };

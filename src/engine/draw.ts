@@ -1,3 +1,4 @@
+import { arrangeMotifs } from './arrange';
 import { assembleMap } from './assemble';
 import { drawGoods, drawKinds, drawPeople } from './fill';
 import type { ContentSet } from './content';
@@ -34,8 +35,9 @@ export type DrawResult = Drawn | { readonly ok: false; readonly problem: Problem
  * modes, which is the part of decision 18 that matters.
  *
  * The map goes first and everything later is conditioned on what it has fixed
- * (decision 2). **Kinds, goods and people** are the stages after it;
- * **patrons** are the sixth and are chunk 6. Each is a step in `laterStages`,
+ * (decision 2). **Kinds, goods and people** are the stages after it, and the
+ * motifs' arrangement into the **layout** comes last (ADR 0011 decision 6);
+ * **patrons** are chunk 6. Each is a step in `laterStages`,
  * rerolled on its own and reading the galaxy the steps above it have built —
  * which is what keeps a downstream failure from discarding anything upstream
  * of it.
@@ -64,6 +66,9 @@ const laterStages: readonly (readonly [
   ['kinds pass', drawKinds],
   ['goods pass', drawGoods],
   ['people pass', drawPeople],
+  // Last, though it reads only the map, so no earlier stage draws differently
+  // for it (ADR 0011 decision 6). It never misses, so nothing re-rolls it.
+  ['motif arrangement', arrangeMotifs],
 ];
 
 /** The draw in reporting mode: the galaxy a seed gives, or why it gives none. */

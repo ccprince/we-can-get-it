@@ -38,6 +38,7 @@ describe('the cross-product report as Markdown', () => {
       '## Drawn: prose missing the tells of a tag the good holds',
       '## Drawn: prose carrying the tells of a tag the good does not hold',
       '## Drawn: slots placed',
+      '## Drawn: inter-motif stretch',
     ]);
     expect(text).toContain('- 3 goods: cloth');
   });

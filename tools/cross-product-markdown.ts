@@ -74,6 +74,17 @@ function sections(crossProduct: CrossProduct): readonly string[] {
                   `- \`${motif}\` / \`${slot}\`: ${location} (${archetype})`,
               )),
           '',
+          '## Drawn: inter-motif stretch',
+          '',
+          'Each lane between motifs, most stretched first: drawn length against distance.',
+          '',
+          ...(drawn.interMotifStretch.length === 0
+            ? ['- none']
+            : drawn.interMotifStretch.map(
+                ({ ends, distance, drawn: length }) =>
+                  `- ${ends[0]} to ${ends[1]}: distance ${distance}, drawn ${length.toFixed(2)}`,
+              )),
+          '',
         ]),
   ];
 }
