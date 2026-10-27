@@ -95,6 +95,12 @@ export type Campaign = {
    */
   readonly delivered: readonly Delivery[];
   /**
+   * The orders the player has accepted, by the id a sale names a want with, in
+   * the order each was accepted. An accepted order stays here once filled or
+   * lapsed; whether it can still be filled is read from the want.
+   */
+  readonly accepted: readonly string[];
+  /**
    * What the player has seen of each place they have been, as last known, in
    * the order each was first seen. The **trade guide** reads it with an as-of
    * date on everything (ADR 0006 decision 17); a place never visited has no
@@ -135,6 +141,7 @@ export function startCampaign(content: ContentSet, seed: number): StartResult {
     lots,
     cargo: [],
     delivered: [],
+    accepted: [],
     known: [],
     digest: null,
   };

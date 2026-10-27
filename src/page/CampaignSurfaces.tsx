@@ -315,5 +315,12 @@ function wordCommand(command: Command): string {
     // A sale is worded under the want it answers, beside the tier and the offer.
     case 'sell':
       return 'Sell';
+
+    // Accepting and filling an order are worded in the orders surface, beside
+    // the order they name.
+    case 'accept':
+      return 'Accept';
+    case 'fill':
+      return 'Fill';
   }
 }

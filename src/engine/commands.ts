@@ -2,6 +2,7 @@ import type { Campaign, DigestEntry, Leg, Whereabouts } from './campaign';
 import { locationNamed, type DrawnGalaxy } from './galaxy';
 import { learningOnDeparture, learningOnLanding } from './knowledge';
 import { daysToFly, fareToFly, laneBetween, withinRange } from './map';
+import { accept, fill, lapsedOrders } from './orders';
 import { sell } from './selling';
 import { buy } from './trade';
 
@@ -20,6 +21,15 @@ export type Command =
   /** Sell units of a good aboard to someone here, against a want of theirs. Not an action. */
   | {
       readonly kind: 'sell';
+      readonly want: string;
+      readonly good: string;
+      readonly quantity: number;
+    }
+  /** Accept an order a buyer here states. Not an action. */
+  | { readonly kind: 'accept'; readonly want: string }
+  /** Fill an accepted order from the hold, at the order's stated price. Not an action. */
+  | {
+      readonly kind: 'fill';
       readonly want: string;
       readonly good: string;
       readonly quantity: number;
@@ -45,7 +55,12 @@ export type Reason = {
     | 'not-in-the-hold'
     | 'refused-by-the-buyer'
     | 'more-than-the-hold-carries'
-    | 'more-than-the-buyer-takes';
+    | 'more-than-the-buyer-takes'
+    | 'is-an-order'
+    | 'not-an-order'
+    | 'not-accepted'
+    | 'already-accepted'
+    | 'declined-below-acceptable';
   readonly message: string;
 };
 
@@ -153,6 +168,13 @@ export function takeCommand(campaign: Campaign, command: Command): CommandResult
     // Nor is a sale (ADR 0005 d6).
     case 'sell':
       return sell(campaign, command.want, command.good, command.quantity);
+
+    // Nor is taking an order on, or filling one (ADR 0005 d6).
+    case 'accept':
+      return accept(campaign, command.want);
+
+    case 'fill':
+      return fill(campaign, command.want, command.good, command.quantity);
   }
 }
 
@@ -170,7 +192,8 @@ function isCommand(command: Command): boolean {
   const kind = (candidate as { kind?: unknown }).kind;
   if (kind === 'wait') return true;
   if (kind === 'depart') return typeof (candidate as { toId?: unknown }).toId === 'string';
-  if (kind === 'sell') {
+  if (kind === 'accept') return typeof (candidate as { want?: unknown }).want === 'string';
+  if (kind === 'sell' || kind === 'fill') {
     const { want, good, quantity } = candidate as Record<string, unknown>;
     return (
       typeof want === 'string' &&
@@ -237,7 +260,10 @@ function endTheDay(campaign: Campaign): Campaign {
     // player is (ADR 0005 decision 8). Beyond a landing and what it corrects
     // nothing reaches them yet: the change budget is out of scope for this
     // milestone.
-    digest: { day: campaign.day, entries: [...ended.entries, ...landed.entries] },
+    digest: {
+      day: campaign.day,
+      entries: [...ended.entries, ...landed.entries, ...lapsedOrders(landed.campaign)],
+    },
   };
 }
 

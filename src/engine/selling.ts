@@ -25,6 +25,11 @@ export type OpenWant = {
   readonly remaining: number;
 };
 
+/** The last day an order is open: the campaign's first day and the order's window. */
+export function lastDayOf(campaign: Campaign, want: Want): number | null {
+  return want.order === undefined ? null : campaign.content.start.day + want.order.days;
+}
+
 /** The people standing where the player is, in id order: none in **transit**. */
 export function peopleHere(campaign: Campaign): readonly Buyer[] {
   const { where } = campaign;
@@ -43,7 +48,13 @@ export function openWants(campaign: Campaign, buyer: Buyer): readonly OpenWant[]
       const sold = campaign.delivered.find((each) => each.want === id)?.units ?? 0;
       return { id, at, buyer, want, remaining: want.quantity - sold };
     })
-    .filter(({ remaining }) => remaining > 0);
+    .filter(({ remaining, want }) => remaining > 0 && !lapsed(campaign, want));
+}
+
+/** Whether an order's date has passed. A want that is no order never lapses. */
+function lapsed(campaign: Campaign, want: Want): boolean {
+  const last = lastDayOf(campaign, want);
+  return last !== null && campaign.day > last;
 }
 
 /**
@@ -83,6 +94,15 @@ export function sell(
   if (open === undefined) {
     return {
       rejected: { code: 'no-such-want', message: 'Nobody here is after that, or not any longer.' },
+    };
+  }
+
+  if (open.want.order !== undefined) {
+    return {
+      rejected: {
+        code: 'is-an-order',
+        message: 'That is an order, and an order is accepted and then filled, not sold to.',
+      },
     };
   }
 
@@ -129,7 +149,11 @@ export function sell(
 }
 
 /** The cargo with units of a good gone, and the entry with it when it was the last. */
-function unloaded(cargo: readonly Cargo[], aboard: Cargo, quantity: number): readonly Cargo[] {
+export function unloaded(
+  cargo: readonly Cargo[],
+  aboard: Cargo,
+  quantity: number,
+): readonly Cargo[] {
   return cargo.flatMap((each) => {
     if (each !== aboard) return [each];
     return aboard.quantity > quantity ? [{ ...aboard, quantity: aboard.quantity - quantity }] : [];
@@ -137,7 +161,7 @@ function unloaded(cargo: readonly Cargo[], aboard: Cargo, quantity: number): rea
 }
 
 /** The deliveries with more units sold against a want, in the order wants were first sold to. */
-function delivered(
+export function delivered(
   all: readonly Delivery[],
   { id }: OpenWant,
   quantity: number,
@@ -146,6 +170,6 @@ function delivered(
   return all.map((each) => (each.want === id ? { ...each, units: each.units + quantity } : each));
 }
 
-function units(quantity: number): string {
+export function units(quantity: number): string {
   return quantity === 1 ? '1 unit' : `${quantity} units`;
 }
