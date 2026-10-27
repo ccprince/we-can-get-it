@@ -66,12 +66,34 @@ income in it (trade is #14 onwards) ends with the tourist grounded wherever its 
 which is the shape to expect rather than a fault.
 
 The CSV is one row per day per seed per setting, every row carrying its seed so that one odd galaxy
-cannot be read as a trend. **Plotting stays outside the instrument.** Its columns are thin because
-little exists yet, and every later ticket in the milestone extends them.
+cannot be read as a trend. **Plotting stays outside the instrument.** Every column is read off the
+view and nothing else, so each is a count of what a player could have seen.
 
-Today: `setting`, `seed`, `day`, `location`, `inTransit`, `credits`. A day in transit is at no
-location, so `location` names where the ship is **bound** and `inTransit` is what says the day was
-not a landing.
+## The columns
+
+`setting`, `seed`, `day`, `location`, `inTransit`, `credits`. A day in transit is at no location,
+so `location` names where the ship is **bound** and `inTransit` is what says the day was not a
+landing.
+
+Beside the day file is a per-campaign file with `.draw` before the extension (`tourist.draw.csv`),
+one row per seed per setting, because a campaign's draw is one fact and not twenty.
+
+| Column | File | What it counts |
+| --- | --- | --- |
+| `placesKnown` | day | Locations the **trade guide** holds something seen of, cumulative. |
+| `oldestKnownDays` | day | Days old the oldest of those is. |
+| `wantsSeen`, `wantsSeenPlain`, `wantsSeenVague` | day | Wants seen so far, cumulative: a want seen once stays seen after a revisit. Split by **register**. |
+| `wantsNew`, `wantsNewPlain`, `wantsNewVague` | day | The same, first seen today. |
+| `ordersOpenPlain`, `ordersOpenVague` | day | Orders among the wants seen whose date has not passed, by register. Seen, not accepted: the tourist accepts nothing. |
+| `ordersFillable` | day | Of those, how many some lot in stock among those seen answers at **acceptable** or better. |
+| `lotsSeen` | day | Lots on sale where the ship landed today; nought in transit. |
+| `lotsMatching` | day | Of those, how many answer a want the player has seen anywhere. |
+| `motifs`, `locations`, `kinds`, `goods` | draw | The shape the **draw** gave the campaign (#11, #33). |
+
+Whether a good answers a want is the engine's to say (`wantsAnswered` and `lotsAnswering` on the
+guide's known lots and wants); the harness only counts. **Not here:** goods per usable kind as a
+distribution, vague wants bucketed by how many goods answer them, and goods wanted by nobody. Those
+are reports over a drawn galaxy (#21), not rows through a run.
 
 ## Why it has no tests
 

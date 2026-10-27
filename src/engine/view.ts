@@ -1,11 +1,11 @@
 import { dateOf, type CalendarDate } from './calendar';
 import type { Campaign, DigestEntry } from './campaign';
 import { departureTo, offeredCommands, type Command } from './commands';
-import type { Archetype, Lane, Want } from './content';
+import type { Archetype, Buyer, Good, Lane, Want } from './content';
 import { goodNamed, locationNamed, personNamed, type DrawnGalaxy } from './galaxy';
 import { sightingHere, wordCorrection, type Sighting } from './knowledge';
 import { daysToFly, fareToFly, otherEnd, withinRange } from './map';
-import { matchOf, type Tier } from './match';
+import { matchOf, tierOf, type Tier } from './match';
 import { isAccepted } from './orders';
 import { lastDayOf, mostYouCanSell, openWants, peopleHere, type OpenWant } from './selling';
 import { holdUsed, lotsHere, mostYouCanBuy } from './trade';
@@ -327,6 +327,11 @@ export type KnownLotView = {
   readonly quantity: number;
   readonly price: number;
   readonly asOf: CalendarDate;
+  /**
+   * How many of the wants the player has seen, anywhere, this good answers at
+   * acceptable or better: nought is a lot no known buyer is after (#36).
+   */
+  readonly wantsAnswered: number;
 };
 
 export type KnownPersonView = {
@@ -336,6 +341,13 @@ export type KnownPersonView = {
     readonly wording: string;
     readonly register: Register;
     readonly wanted: number;
+    /** Days left to fill it, when it is an order; negative once its date has passed. */
+    readonly orderDaysLeft: number | null;
+    /**
+     * How many lots in stock among those the player has seen answer it at
+     * acceptable or better, so whether a want could be met from what is known.
+     */
+    readonly lotsAnswering: number;
   }[];
   readonly asOf: CalendarDate;
 };
@@ -443,18 +455,53 @@ function knownAbout(campaign: Campaign, locationId: string): KnownView | null {
   return knownView(campaign, here ? sightingHere(campaign, held.corrections) : held);
 }
 
+/**
+ * Everything the player has seen of the lots and wants, across every place
+ * held, so a lot can say who would take it and a want what could fill it.
+ */
+function seenEverywhere(campaign: Campaign): {
+  readonly goods: readonly { readonly good: Good; readonly quantity: number }[];
+  readonly wants: readonly { readonly buyer: Buyer; readonly want: Want }[];
+} {
+  const { galaxy } = campaign;
+  return {
+    goods: campaign.known.flatMap(({ lots }) =>
+      lots.map(({ goodId, quantity }) => ({ good: goodNamed(galaxy, goodId), quantity })),
+    ),
+    wants: campaign.known.flatMap(({ people }) =>
+      people.flatMap(({ buyerId, wants }) => {
+        const buyer = personNamed(galaxy, buyerId);
+        return wants.flatMap(({ at }) => {
+          const want = buyer.wants[at];
+          return want === undefined ? [] : [{ buyer, want }];
+        });
+      }),
+    ),
+  };
+}
+
+function answers(want: Want, buyer: Buyer, good: Good): boolean {
+  const { tier } = tierOf(want, buyer, good);
+  return tier === 'acceptable' || tier === 'great';
+}
+
 function knownView(campaign: Campaign, sighting: Sighting): KnownView {
   const { galaxy, content } = campaign;
   const asOf = dateOf(content.calendar, sighting.asOf);
+  const seen = seenEverywhere(campaign);
   return {
     asOf,
     daysAgo: campaign.day - sighting.asOf,
-    lots: sighting.lots.map((lot) => ({
-      ...goodAndKind(galaxy, lot.goodId),
-      quantity: lot.quantity,
-      price: lot.price,
-      asOf,
-    })),
+    lots: sighting.lots.map((lot) => {
+      const good = goodNamed(galaxy, lot.goodId);
+      return {
+        ...goodAndKind(galaxy, lot.goodId),
+        quantity: lot.quantity,
+        price: lot.price,
+        asOf,
+        wantsAnswered: seen.wants.filter((each) => answers(each.want, each.buyer, good)).length,
+      };
+    }),
     people: sighting.people.map(({ buyerId, wants }) => {
       const buyer = personNamed(galaxy, buyerId);
       return {
@@ -462,10 +509,15 @@ function knownView(campaign: Campaign, sighting: Sighting): KnownView {
         wants: wants.map(({ at, remaining }) => {
           const want = buyer.wants[at];
           if (want === undefined) throw new Error(`${buyerId} has no want ${at}`);
+          const last = lastDayOf(campaign, `${buyerId}#${at}`, want);
           return {
             wording: wordingOf(galaxy, want),
             register: registerOf(want),
             wanted: remaining,
+            orderDaysLeft: last === null ? null : last - campaign.day,
+            lotsAnswering: seen.goods.filter(
+              (each) => each.quantity > 0 && answers(want, buyer, each.good),
+            ).length,
           };
         }),
         asOf,
