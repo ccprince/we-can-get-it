@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { view } from '../src/engine';
+import { view, type Command } from '../src/engine';
 import {
   aBuyer,
   aTradingGalaxy,
@@ -9,7 +9,7 @@ import {
   anOrder,
   loadedContentSet,
 } from './support/content';
-import { started } from './support/campaign';
+import { after, started } from './support/campaign';
 
 /**
  * What the guide says of the lots and wants the player has seen, so that
@@ -68,5 +68,22 @@ describe('a want seen', () => {
 
     expect(order.people[0]?.wants[0]?.orderDaysLeft).toBe(3);
     expect(plain.people[0]?.wants[0]?.orderDaysLeft).toBeNull();
+  });
+
+  it('says nothing of an order once its date has passed', () => {
+    const campaign = started(
+      loadedContentSet(
+        aTradingGalaxy({
+          buyers: [aBuyer({ wants: [aWant({ ...anOrder({ days: 1 }) })] }), anElsewhereBuyer()],
+        }),
+      ),
+      SEED,
+    );
+    const wait: Command = { kind: 'wait' };
+
+    const later = view(after(campaign, wait, wait, wait));
+    const known = later.guide.entries.find((each) => each.name === 'Kestrel Reach')?.known;
+
+    expect(known?.people[0]?.wants.every((want) => want.orderDaysLeft === null)).toBe(true);
   });
 });

@@ -341,7 +341,7 @@ export type KnownPersonView = {
     readonly wording: string;
     readonly register: Register;
     readonly wanted: number;
-    /** Days left to fill it, when it is an order; negative once its date has passed. */
+    /** Days left to fill it, when it is an order still open; null for any other want. */
     readonly orderDaysLeft: number | null;
     /**
      * How many lots in stock among those the player has seen answer it at
@@ -514,7 +514,7 @@ function knownView(campaign: Campaign, sighting: Sighting): KnownView {
             wording: wordingOf(galaxy, want),
             register: registerOf(want),
             wanted: remaining,
-            orderDaysLeft: last === null ? null : last - campaign.day,
+            orderDaysLeft: last === null || last < campaign.day ? null : last - campaign.day,
             lotsAnswering: seen.goods.filter(
               (each) => each.quantity > 0 && answers(want, buyer, each.good),
             ).length,

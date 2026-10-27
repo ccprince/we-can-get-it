@@ -45,7 +45,7 @@ export type Row = {
 /**
  * What a campaign has seen, held across its days: a want seen once stays seen
  * after a revisit replaces the sighting that showed it, so "so far" is the
- * harness's to keep. A set of the wants by who wants them and how it is worded.
+ * harness's to keep. Each want by who wants it and how it is worded, with its register.
  */
 export type Seen = Map<string, Register>;
 
@@ -91,8 +91,9 @@ export function rowFor(setting: string, seed: number, read: View, seen: Seen): R
   const registers = [...seen.values()];
   const orders = known
     .flatMap(({ people }) => people.flatMap(({ wants }) => wants))
-    .filter(({ orderDaysLeft }) => orderDaysLeft !== null && orderDaysLeft >= 0);
+    .filter(({ orderDaysLeft }) => orderDaysLeft !== null);
 
+  const orderRegisters = orders.map(({ register }) => register);
   const lots = read.here?.lots ?? [];
   const here = read.guide.entries.find((entry) => entry.name === read.here?.name)?.known;
   return {
@@ -112,11 +113,11 @@ export function rowFor(setting: string, seed: number, read: View, seen: Seen): R
     wantsNew: fresh.length,
     wantsNewPlain: count(fresh, 'plain'),
     wantsNewVague: count(fresh, 'vague'),
-    ordersOpenPlain: orders.filter(({ register }) => register === 'plain').length,
-    ordersOpenVague: orders.filter(({ register }) => register === 'vague').length,
+    ordersOpenPlain: count(orderRegisters, 'plain'),
+    ordersOpenVague: count(orderRegisters, 'vague'),
     ordersFillable: orders.filter(({ lotsAnswering }) => lotsAnswering > 0).length,
     lotsSeen: lots.length,
-    lotsMatching: lotsMatching(lots.length, here),
+    lotsMatching: lotsMatching(here),
   };
 }
 
@@ -129,8 +130,8 @@ function count(registers: readonly Register[], register: Register): number {
  * here: that is where the engine says what each lot answers, and the entry for
  * the place the ship stands in is read afresh, so it is today's shop.
  */
-function lotsMatching(lotsHere: number, here: KnownView | null | undefined): number {
-  if (lotsHere === 0 || here === null || here === undefined) return 0;
+function lotsMatching(here: KnownView | null | undefined): number {
+  if (here === null || here === undefined) return 0;
   return here.lots.filter(({ wantsAnswered }) => wantsAnswered > 0).length;
 }
 
