@@ -16,6 +16,8 @@ import { CampaignSurfaces } from '../src/page/CampaignSurfaces';
 import {
   aBuyer,
   anElsewhereBuyer,
+  anOrder,
+  aWant,
   aGalaxy,
   aMotifLane,
   aLocation,
@@ -352,6 +354,21 @@ describe('the people here', () => {
     screen.getByRole('button', { name: 'Sell Ship blanket' }).click();
 
     expect(taken).toEqual([{ kind: 'sell', want: 'ilse#0', good: 'blanket', quantity: 1 }]);
+  });
+
+  it('shows an order with its price and date, and hands back its acceptance', () => {
+    const taken: Command[] = [];
+    const buyer = aBuyer({ wants: [aWant({ ...anOrder() })] });
+    const campaign = started(
+      loadedContentSet(aTradingGalaxy({ buyers: [buyer, anElsewhereBuyer()] })),
+      SEED,
+    );
+    surfaces({ campaign, onCommand: (command) => taken.push(command) });
+
+    expect(screen.getByText(/order: 90 credits each, open to/)).toBeDefined();
+    screen.getByRole('button', { name: 'Accept' }).click();
+
+    expect(taken).toEqual([{ kind: 'accept', want: 'ilse#0' }]);
   });
 
   it('has nobody to sell to while underway', () => {

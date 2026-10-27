@@ -6,7 +6,8 @@ import { goodNamed, locationNamed, personNamed, type DrawnGalaxy } from './galax
 import { sightingHere, wordCorrection, type Sighting } from './knowledge';
 import { daysToFly, fareToFly, otherEnd, withinRange } from './map';
 import { matchOf, type Tier } from './match';
-import { mostYouCanSell, openWants, peopleHere, type OpenWant } from './selling';
+import { isAccepted } from './orders';
+import { lastDayOf, mostYouCanSell, openWants, peopleHere, type OpenWant } from './selling';
 import { holdUsed, lotsHere, mostYouCanBuy } from './trade';
 import type { Point } from './layout';
 
@@ -53,8 +54,49 @@ export type WantView = {
   readonly wording: string;
   /** Whether the want says what would do, or only the kind to look in. */
   readonly register: Register;
+  /** The terms, when the buyer states a price and a date; null for a speculative want. */
+  readonly order: OrderTermsView | null;
   /** One line a good aboard, in the order each first came aboard. */
   readonly matches: readonly MatchView[];
+};
+
+/**
+ * What an **order** states: the price for each unit, and the last day it stays
+ * open, in the player's calendar. The price is stated and never computed, so a
+ * match against an order quotes it as the offer.
+ */
+export type OrderTermsView = {
+  readonly price: number;
+  /** The last day the order can be filled. */
+  readonly by: CalendarDate;
+  /** Days after today that it stays open: nought on its last day. */
+  readonly daysLeft: number;
+  readonly accepted: boolean;
+  /** The command that takes it on, or null once it is accepted. */
+  readonly accept: Command | null;
+};
+
+/**
+ * The orders the player has accepted and that are still open, wherever their
+ * buyers stand: the dependable floor, read as one list. A filled or lapsed order
+ * is not on it. An order is filled by going to its buyer, so each says where.
+ */
+export type OrdersView = {
+  /** In the order they were accepted. */
+  readonly accepted: readonly AcceptedOrderView[];
+};
+
+export type AcceptedOrderView = {
+  readonly buyer: string;
+  /** The location the buyer stands at. */
+  readonly where: string;
+  readonly wording: string;
+  readonly register: Register;
+  /** Units the buyer will still take. */
+  readonly wanted: number;
+  readonly price: number;
+  readonly by: CalendarDate;
+  readonly daysLeft: number;
 };
 
 /**
@@ -312,6 +354,7 @@ export type View = {
   readonly today: TodayView;
   readonly credits: CreditsView;
   readonly hold: HoldView;
+  readonly orders: OrdersView;
   readonly digest: DigestView | null;
   readonly menu: MenuView;
 };
@@ -337,6 +380,7 @@ export function view(campaign: Campaign): View {
     today: { day: campaign.day, date: dateOf(calendar, campaign.day) },
     credits: { credits: campaign.credits },
     hold: holdFor(campaign),
+    orders: ordersFor(campaign),
     digest:
       campaign.digest === null
         ? null
@@ -484,9 +528,17 @@ function wantFor(campaign: Campaign, open: OpenWant): WantView {
     wanted: remaining,
     wording: wordingOf(galaxy, want),
     register: registerOf(want),
+    order: orderTermsOf(campaign, open),
     matches: campaign.cargo.map(({ goodId, quantity }) => {
       const good = goodNamed(galaxy, goodId);
-      const { tier, failedTerm, offer } = matchOf(want, buyer, good, content.offers);
+      const { tier, failedTerm, offer: computed } = matchOf(want, buyer, good, content.offers);
+      // An order pays what it states, and only at acceptable or better.
+      const offer =
+        want.order === undefined
+          ? computed
+          : tier === 'acceptable' || tier === 'great'
+            ? want.order.price
+            : null;
       return {
         good: good.name,
         tier,
@@ -513,6 +565,45 @@ function wordingOf(galaxy: DrawnGalaxy, want: Want): string {
 
 function registerOf(want: Want): Register {
   return 'kind' in want ? 'vague' : 'plain';
+}
+
+function orderTermsOf(campaign: Campaign, { id, want }: OpenWant): OrderTermsView | null {
+  const last = lastDayOf(campaign, want);
+  if (want.order === undefined || last === null) return null;
+  const accepted = isAccepted(campaign, id);
+  return {
+    price: want.order.price,
+    by: dateOf(campaign.content.calendar, last),
+    daysLeft: last - campaign.day,
+    accepted,
+    accept: accepted ? null : { kind: 'accept', want: id },
+  };
+}
+
+function ordersFor(campaign: Campaign): OrdersView {
+  const open = campaign.galaxy.people.flatMap((buyer) =>
+    openWants(campaign, buyer).map((each) => ({ buyer, each })),
+  );
+  const accepted = campaign.accepted.flatMap((id) => {
+    const found = open.find(({ each }) => each.id === id);
+    if (found === undefined) return [];
+    const { buyer, each } = found;
+    const terms = orderTermsOf(campaign, each);
+    if (terms === null) return [];
+    return [
+      {
+        buyer: buyer.name,
+        where: nameOf(campaign.galaxy, buyer.locationId),
+        wording: wordingOf(campaign.galaxy, each.want),
+        register: registerOf(each.want),
+        wanted: each.remaining,
+        price: terms.price,
+        by: terms.by,
+        daysLeft: terms.daysLeft,
+      },
+    ];
+  });
+  return { accepted };
 }
 
 function holdFor(campaign: Campaign): HoldView {
