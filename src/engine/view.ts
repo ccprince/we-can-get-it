@@ -87,6 +87,8 @@ export type OrdersView = {
 };
 
 export type AcceptedOrderView = {
+  /** What a fill names the order by. */
+  readonly want: string;
   readonly buyer: string;
   /** The location the buyer stands at. */
   readonly where: string;
@@ -129,6 +131,13 @@ export type MatchView = {
    * carries and what the buyer still takes, and none when refused.
    */
   readonly mostYouCanSell: number;
+  /**
+   * What the command is: a speculative want is sold to, an order is filled.
+   * An order not yet accepted cannot be filled, so `available` is false for it
+   * until it is.
+   */
+  readonly verb: 'sell' | 'fill';
+  readonly available: boolean;
 };
 
 /**
@@ -547,6 +556,8 @@ function wantFor(campaign: Campaign, open: OpenWant): WantView {
         reason: tier === 'refused' ? buyer.refusalLine : null,
         sale: { want: id, good: goodId },
         mostYouCanSell: mostYouCanSell(open, quantity, offer),
+        verb: want.order === undefined ? 'sell' : 'fill',
+        available: want.order === undefined || isAccepted(campaign, id),
       };
     }),
   };
@@ -592,6 +603,7 @@ function ordersFor(campaign: Campaign): OrdersView {
     if (terms === null) return [];
     return [
       {
+        want: each.id,
         buyer: buyer.name,
         where: nameOf(campaign.galaxy, buyer.locationId),
         wording: wordingOf(campaign.galaxy, each.want),

@@ -131,14 +131,7 @@ export function People({
                   {want.order !== null && <OrderTerms order={want.order} onCommand={onCommand} />}
                   <ul className="mt-1 ml-4 space-y-1">
                     {want.matches.map((match) => (
-                      <Match
-                        key={match.good}
-                        match={match}
-                        // An order is filled once it is accepted, and is never sold to.
-                        verb={want.order === null ? 'sell' : 'fill'}
-                        held={want.order === null || want.order.accepted}
-                        onCommand={onCommand}
-                      />
+                      <Match key={match.good} match={match} onCommand={onCommand} />
                     ))}
                   </ul>
                 </li>
@@ -158,17 +151,13 @@ export function People({
  */
 function Match({
   match,
-  verb,
-  held,
   onCommand,
 }: {
   readonly match: MatchView;
-  readonly verb: 'sell' | 'fill';
-  /** Whether the command is on offer: an order not yet accepted cannot be filled. */
-  readonly held: boolean;
   readonly onCommand: (command: Command) => void;
 }) {
   const [units, setUnits] = useState('1');
+  const { verb } = match;
 
   return (
     <li className="flex items-center gap-2 text-stone-400">
@@ -189,7 +178,7 @@ function Match({
       <button
         type="button"
         aria-label={`${verb === 'sell' ? 'Sell' : 'Fill with'} ${match.good}`}
-        disabled={!held}
+        disabled={!match.available}
         onClick={() => onCommand({ kind: verb, ...match.sale, quantity: Number(units) })}
         className={`${buttonChrome} px-2 py-0.5 text-xs`}
       >
@@ -236,7 +225,7 @@ export function Orders({ orders }: { readonly orders: OrdersView }) {
       ) : (
         <ul className="mt-2 space-y-1 text-sm text-stone-300">
           {orders.accepted.map((order) => (
-            <li key={`${order.buyer}/${order.wording}`}>
+            <li key={order.want}>
               {order.buyer} at {order.where} {order.wording} ({order.wanted}): {order.price} credits
               each, by {order.by.label}
             </li>
