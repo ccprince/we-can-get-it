@@ -27,16 +27,18 @@ import {
  * today if it was not put before. Called wherever the player comes to be at a
  * place, so a window runs from the first time they could have taken the order.
  */
-export function offering(campaign: Campaign): Campaign {
+export function showingOrders(campaign: Campaign): Campaign {
   const fresh = peopleHere(campaign)
     .flatMap((buyer) => openWants(campaign, buyer))
-    .filter(({ id, want }) => want.order !== undefined && !offeredBefore(campaign, id))
+    .filter(({ id, want }) => want.order !== undefined && !seenBefore(campaign, id))
     .map(({ id }) => ({ want: id, day: campaign.day }));
-  return fresh.length === 0 ? campaign : { ...campaign, offered: [...campaign.offered, ...fresh] };
+  return fresh.length === 0
+    ? campaign
+    : { ...campaign, firstSeen: [...campaign.firstSeen, ...fresh] };
 }
 
-function offeredBefore(campaign: Campaign, wantId: string): boolean {
-  return campaign.offered.some((each) => each.want === wantId);
+function seenBefore(campaign: Campaign, wantId: string): boolean {
+  return campaign.firstSeen.some((each) => each.want === wantId);
 }
 
 /** The open want here that `wantId` names, if the player is somewhere it stands. */

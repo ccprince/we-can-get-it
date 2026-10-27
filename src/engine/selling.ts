@@ -31,8 +31,8 @@ export type OpenWant = {
  * to the player, which has no deadline until it is.
  */
 export function lastDayOf(campaign: Campaign, wantId: string, want: Want): number | null {
-  const offered = campaign.offered.find((each) => each.want === wantId);
-  return want.order === undefined || offered === undefined ? null : offered.day + want.order.days;
+  const seen = campaign.firstSeen.find((each) => each.want === wantId);
+  return want.order === undefined || seen === undefined ? null : seen.day + want.order.days;
 }
 
 /** The people standing where the player is, in id order: none in **transit**. */
