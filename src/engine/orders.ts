@@ -149,8 +149,9 @@ export function fill(
 
 /**
  * The accepted orders whose date has just passed with units still owed, worded
- * for the digest. Read of the campaign as the new day finds it: an order's last
- * day was yesterday.
+ * for the digest, in the galaxy's people order and then want order. Read of
+ * the campaign as the new day finds it: an order's last day was yesterday.
+ * An order never accepted lapses silently: there is nothing the player owed.
  */
 export function lapsedOrders(campaign: Campaign): readonly DigestEntry[] {
   return campaign.galaxy.people.flatMap((buyer) =>

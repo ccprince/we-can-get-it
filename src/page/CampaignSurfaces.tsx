@@ -316,8 +316,8 @@ function wordCommand(command: Command): string {
     case 'sell':
       return 'Sell';
 
-    // Accepting and filling an order are worded in the orders surface, beside
-    // the order they name.
+    // Accepting and filling an order are worded beside the order they name,
+    // once the orders surface exists (#17).
     case 'accept':
       return 'Accept';
     case 'fill':
