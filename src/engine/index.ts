@@ -77,6 +77,7 @@ export type {
   MatchView,
   MenuView,
   PersonView,
+  Register,
   StandingView,
   TodayView,
   TransitView,

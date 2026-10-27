@@ -235,6 +235,7 @@ function termKey({ tag, negated }: Term): string {
 /** What a want asks for, as one string: the good by id, or its terms in tag order. */
 function wantKey(want: Want): string {
   if ('goodId' in want) return `0 ${want.goodId}`;
+  if ('kind' in want) return `2 ${want.kind}`;
   return `1 ${[...want.predicate].sort(byTerm).map(termKey).join(' ')}`;
 }
 
@@ -1229,15 +1230,27 @@ function readWant(
 
   const statesPredicate = raw.predicate !== undefined;
   const namesGood = raw.goodId !== undefined;
-  if (statesPredicate && namesGood) {
+  const namesKind = raw.kind !== undefined;
+  if ([statesPredicate, namesGood, namesKind].filter(Boolean).length > 1) {
     problems.push(
-      fails(where, 'names both a predicate and a good, and a want is one or the other'),
+      fails(where, 'names more than one of a predicate, a good and a kind, and a want is one'),
     );
     return undefined;
   }
-  if (!statesPredicate && !namesGood) {
-    problems.push(fails(where, 'names neither a predicate nor a good'));
+  if (!statesPredicate && !namesGood && !namesKind) {
+    problems.push(fails(where, 'names neither a predicate, a good nor a kind'));
     return undefined;
+  }
+
+  if (namesKind) {
+    // A plain form for a vague want would be the working out the player is
+    // meant to do (ADR 0002).
+    if (raw.plainly !== undefined) {
+      problems.push(fails(`${where}.plainly`, 'is on a vague want, which has no plain form'));
+      return undefined;
+    }
+    const kind = readKind(raw.kind, `${where}.kind`, tags, problems);
+    return kind === undefined ? undefined : { kind, quantity };
   }
 
   if (namesGood) {

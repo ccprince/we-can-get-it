@@ -161,6 +161,29 @@ export const drawChecks: readonly DrawCheck[] = [
     },
   },
   {
+    // A vague want pointed at a kind the draw dropped entire is live and
+    // broken (ADR 0007 decision 5, ADR 0008 decision 11): usable in the
+    // reserve and absent from this galaxy. The goods pass keeps every kind in
+    // circulation at its floor, so a dropped kind is how the drawn count falls
+    // short, and the kinds pass is the narrowest stage that can restore it.
+    stage: 'kinds pass',
+    invariant: 'a vague want points at a kind usable in the drawn galaxy',
+    where: 'buyers',
+    miss: (galaxy, content) => {
+      const { usabilityFloor } = content.bounds;
+      const dropped = buyersAtDrawnLocations(galaxy, content).flatMap((buyer) =>
+        buyer.wants.flatMap((want) =>
+          'kind' in want && !galaxy.kinds.includes(want.kind)
+            ? [`${buyer.id} is after ${want.kind}, which the draw left with 0 goods`]
+            : [],
+        ),
+      );
+      return dropped.length === 0
+        ? null
+        : `${dropped.join('; ')}, against a usability floor of ${usabilityFloor}`;
+    },
+  },
+  {
     // The draw never takes a usable kind below its floor (ADR 0008 decision
     // 11). A kind the reserve holds fewer goods of than the floor was never
     // usable, and hiding is not what left it short.

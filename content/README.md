@@ -219,11 +219,12 @@ that location takes the buyer out with it, and one that does still **hides** the
 `drawParameters.peopleHiddenPercent` declares, per person and independently of the location (ADR
 0008 decision 10).
 
-A **want** is either a `predicate` or one good by identity, never both and never neither:
+A **want** is a `predicate`, one good by identity, or a **vague** gesture at a `kind`, and exactly one of them:
 
 ```jsonc
 { "predicate": [{ "tag": "cloth" }, { "tag": "warm", "negated": true }], "plainly": "wants cloth that stays cool", "quantity": 3 }
 { "goodId": "silk", "quantity": 1 }                                          // this thing, by name
+{ "kind": "cloth", "quantity": 1 }                                           // anything at all of this kind
 ```
 
 Every want carries a `quantity`, a whole number of units of at least one: how many the buyer will take in
@@ -239,6 +240,13 @@ want for "brandy or whisky" is a want for the kind above them, which is what fla
 goods each are for (decision 6). A named good must exist; that it can be **reached** in the drawn
 galaxy is the draw-time pass's check (#27): the good must be drawn, and a drawn location must
 supply its kind.
+
+A **vague** want names a `kind` and nothing else: it carries no `plainly`, and the load refuses one
+that does, since a plain form would be the working out that is the player's (ADR 0002). It is met by
+any good of that kind, at a tier the engine derives like any other (`acceptable`, or `great` with a
+bonus tag). It may only point at a **usable** kind. The load fails a vague want whose kind carries
+fewer goods than `bounds.usabilityFloor`, naming the kind and its count, and the draw is re-rolled
+when it drops the kind entire, because a kind usable in the reserve can be absent from this galaxy.
 
 ## `walking-skeleton.json`
 

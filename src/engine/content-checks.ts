@@ -12,7 +12,12 @@ import { fails, type Problem } from './verdicts';
  * pass's job, and both are kept (#27, ADR 0008 decision 16).
  */
 export function checkContentSet(subject: Subject): readonly Problem[] {
-  return [...unusedTags(subject), ...quirkRation(subject), ...roleTagSpread(subject)];
+  return [
+    ...unusedTags(subject),
+    ...quirkRation(subject),
+    ...roleTagSpread(subject),
+    ...vagueWantsAtUsableKinds(subject),
+  ];
 }
 
 /**
@@ -36,6 +41,8 @@ function unusedTags(subject: Subject): readonly Problem[] {
     for (const want of buyer.wants) {
       if ('predicate' in want) {
         for (const term of want.predicate) used.add(term.tag);
+      } else if ('kind' in want) {
+        used.add(want.kind);
       }
     }
   }
@@ -49,6 +56,31 @@ function unusedTags(subject: Subject): readonly Problem[] {
             `${tag.id} is used by no want and held in no role, which makes it noise`,
           ),
         ],
+  );
+}
+
+/**
+ * A vague want may only point at a **usable** kind: "is there anything at all
+ * that fits?" asked of a kind with one good has one answer (ADR 0007 decision
+ * 5). This reads the reserve; a kind usable there can still fall short in the
+ * drawn galaxy, which the draw-time pass checks (#16).
+ */
+function vagueWantsAtUsableKinds(subject: Subject): readonly Problem[] {
+  const floor = subject.bounds.usabilityFloor;
+  return subject.buyers.flatMap((buyer, at) =>
+    buyer.wants.flatMap((want, index) => {
+      if (!('kind' in want)) return [];
+      const held = goodsCarrying(subject, want.kind);
+      return held >= floor
+        ? []
+        : [
+            fails(
+              `buyers[${at}].wants[${index}].kind`,
+              `is a vague want at ${want.kind}, which carries ${held} ` +
+                `good${held === 1 ? '' : 's'} against a usability floor of ${floor}`,
+            ),
+          ];
+    }),
   );
 }
 

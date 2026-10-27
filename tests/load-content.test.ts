@@ -336,7 +336,7 @@ describe('wants', () => {
     expect(result.problems[0]).toEqual({
       verdict: 'fails',
       where: 'buyers[0].wants[0]',
-      what: 'names neither a predicate nor a good',
+      what: 'names neither a predicate, a good nor a kind',
     });
   });
 
@@ -350,7 +350,7 @@ describe('wants', () => {
     expect(result.problems[0]).toEqual({
       verdict: 'fails',
       where: 'buyers[0].wants[0]',
-      what: 'names both a predicate and a good, and a want is one or the other',
+      what: 'names more than one of a predicate, a good and a kind, and a want is one',
     });
   });
 

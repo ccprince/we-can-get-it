@@ -21,7 +21,9 @@ function carries(good: Good, tag: string): boolean {
  *   positive term can reach
  * - none → `refused`
  *
- * A want naming one good is that good or nothing: it is `acceptable` for it,
+ * A vague want, being a single tag, stays binary: a good of the kind is
+ * `acceptable`, `great` with a bonus tag, and any other is `refused`. A want
+ * naming one good is that good or nothing: it is `acceptable` for it,
  * `great` with a bonus tag, and `refused` for any other.
  *
  * `failedTerm` is the tag of the first positive term the good does not carry,
@@ -41,6 +43,10 @@ export function tierOf(
   if ('goodId' in want) {
     if (good.id !== want.goodId) return earns('refused');
     return earns(bonus ? 'great' : 'acceptable');
+  }
+
+  if ('kind' in want) {
+    return good.kind === want.kind ? earns(bonus ? 'great' : 'acceptable') : earns('refused');
   }
 
   if (want.predicate.some((term) => term.negated && carries(good, term.tag)))

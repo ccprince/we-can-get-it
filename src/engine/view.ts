@@ -51,9 +51,17 @@ export type WantView = {
   /** Units the buyer will still take. */
   readonly wanted: number;
   readonly wording: string;
+  /** Whether the want says what would do, or only the kind to look in. */
+  readonly register: Register;
   /** One line a good aboard, in the order each first came aboard. */
   readonly matches: readonly MatchView[];
 };
+
+/**
+ * The two registers a want is said in: **plain** names what would satisfy it,
+ * **vague** names only a kind and leaves the finding to the player.
+ */
+export type Register = 'plain' | 'vague';
 
 export type MatchView = {
   readonly good: string;
@@ -273,7 +281,11 @@ export type KnownLotView = {
 export type KnownPersonView = {
   readonly name: string;
   /** Each want still open when seen, in want order, worded as it is where they stand. */
-  readonly wants: readonly { readonly wording: string; readonly wanted: number }[];
+  readonly wants: readonly {
+    readonly wording: string;
+    readonly register: Register;
+    readonly wanted: number;
+  }[];
   readonly asOf: CalendarDate;
 };
 
@@ -397,7 +409,11 @@ function knownView(campaign: Campaign, sighting: Sighting): KnownView {
         wants: wants.map(({ at, remaining }) => {
           const want = buyer.wants[at];
           if (want === undefined) throw new Error(`${buyerId} has no want ${at}`);
-          return { wording: wordingOf(galaxy, want), wanted: remaining };
+          return {
+            wording: wordingOf(galaxy, want),
+            register: registerOf(want),
+            wanted: remaining,
+          };
         }),
         asOf,
       };
@@ -467,6 +483,7 @@ function wantFor(campaign: Campaign, open: OpenWant): WantView {
     want: id,
     wanted: remaining,
     wording: wordingOf(galaxy, want),
+    register: registerOf(want),
     matches: campaign.cargo.map(({ goodId, quantity }) => {
       const good = goodNamed(galaxy, goodId);
       const { tier, failedTerm, offer } = matchOf(want, buyer, good, content.offers);
@@ -483,9 +500,19 @@ function wantFor(campaign: Campaign, open: OpenWant): WantView {
   };
 }
 
-/** A want as it is said: a good by its name, a predicate in the buyer's own words. */
+/**
+ * A want as it is said: a good by its name, a predicate in the buyer's own
+ * words, a vague want as a gesture at its kind. A kind is public vocabulary, so
+ * naming it gives nothing away (ADR 0007 decision 3).
+ */
 function wordingOf(galaxy: DrawnGalaxy, want: Want): string {
-  return 'goodId' in want ? `wants ${goodNamed(galaxy, want.goodId).name}` : want.plainly;
+  if ('goodId' in want) return `wants ${goodNamed(galaxy, want.goodId).name}`;
+  if ('kind' in want) return `is after anything at all in ${want.kind}`;
+  return want.plainly;
+}
+
+function registerOf(want: Want): Register {
+  return 'kind' in want ? 'vague' : 'plain';
 }
 
 function holdFor(campaign: Campaign): HoldView {
