@@ -371,6 +371,15 @@ export function aWant(overrides: RawObject = {}): RawObject {
   };
 }
 
+/**
+ * What makes a want an **order**: a stated price for each unit and a window in
+ * days, from the campaign's first day. Spread into a want, so either register
+ * can be one.
+ */
+export function anOrder(overrides: RawObject = {}): RawObject {
+  return { order: { price: 90, days: 3, ...overrides } };
+}
+
 /** A vague want: anything of a kind, with no predicate and no plain form. */
 export function aVagueWant(kind: string, overrides: RawObject = {}): RawObject {
   return { kind, quantity: 1, ...overrides };

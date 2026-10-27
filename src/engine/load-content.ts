@@ -29,6 +29,7 @@ import {
   type Topology,
   type TagClass,
   type Term,
+  type Order,
   type Want,
 } from './content';
 import {
@@ -1227,6 +1228,8 @@ function readWant(
 
   const quantity = readInteger(raw.quantity, `${where}.quantity`, 1, problems);
   if (quantity === undefined) return undefined;
+  const order = readOrder(raw.order, `${where}.order`, problems);
+  if (order === null) return undefined;
 
   const statesPredicate = raw.predicate !== undefined;
   const namesGood = raw.goodId !== undefined;
@@ -1250,7 +1253,7 @@ function readWant(
       return undefined;
     }
     const kind = readKind(raw.kind, `${where}.kind`, tags, problems);
-    return kind === undefined ? undefined : { kind, quantity };
+    return kind === undefined ? undefined : { kind, quantity, ...order };
   }
 
   if (namesGood) {
@@ -1260,7 +1263,7 @@ function readWant(
       problems.push(fails(`${where}.goodId`, `names a good that does not exist: ${goodId}`));
       return undefined;
     }
-    return { goodId, quantity };
+    return { goodId, quantity, ...order };
   }
 
   const predicate = readPredicate(raw.predicate, `${where}.predicate`, tags, problems);
@@ -1272,7 +1275,26 @@ function readWant(
   const plainly = readText(raw.plainly, `${where}.plainly`, problems);
   return predicate === undefined || plainly === undefined
     ? undefined
-    : { predicate, plainly, quantity };
+    : { predicate, plainly, quantity, ...order };
+}
+
+/**
+ * A want's order, as `{ order }` to spread into it, `{}` when it states none,
+ * or null when what it states is a mistake already reported.
+ */
+function readOrder(
+  raw: unknown,
+  where: string,
+  problems: Problem[],
+): { readonly order?: Order } | null {
+  if (raw === undefined) return {};
+  if (!isObject(raw)) {
+    problems.push(fails(where, 'is not an object'));
+    return null;
+  }
+  const price = readInteger(raw.price, `${where}.price`, 1, problems);
+  const days = readInteger(raw.days, `${where}.days`, 1, problems);
+  return price === undefined || days === undefined ? null : { order: { price, days } };
 }
 
 function readPredicate(

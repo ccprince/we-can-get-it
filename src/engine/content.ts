@@ -222,6 +222,22 @@ export type Term = {
 };
 
 /**
+ * What makes a want an **order**: the buyer states the price they will pay, per
+ * unit, and the window the order stays open for. An order is stated plainly with
+ * its price, so no premium rides on one and it can be in either desire register
+ * (findings §2.1, ADR 0007 decision 11).
+ */
+export type Order = {
+  /** Credits for each unit, whatever the good's **worth**. */
+  readonly price: number;
+  /**
+   * Days the order stays open, counted from the campaign's first day: it is
+   * open until `start.day + days` has passed, and closes after.
+   */
+  readonly days: number;
+};
+
+/**
  * Something a buyer is after: a conjunction of terms, one good by identity, or
  * anything of a kind.
  * There is no disjunction — a want for "brandy or whisky" is a want for the
@@ -235,6 +251,8 @@ export type Want = {
    * (ADR 0007 decision 11).
    */
   readonly quantity: number;
+  /** Present when the buyer states a price and a date: an order, not a speculative want. */
+  readonly order?: Order;
 } & (
   | {
       readonly predicate: readonly Term[];
