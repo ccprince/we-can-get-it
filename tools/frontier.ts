@@ -8,7 +8,8 @@ import { execFileSync } from 'node:child_process';
  *
  *   npm run frontier -- 6            — the frontier of #6
  *   npm run frontier -- 6 --graph    — and a Mermaid diagram of its dependency edges
- *   npm run frontier -- 6 --graph-only — the diagram alone, unfenced, for piping to a viewer
+ *   npm run -s frontier -- 6 --graph-only — the fenced diagram alone, for piping to a viewer
+ *                                            (-s drops npm's own two-line banner)
  *
  * Everything comes from one GraphQL call to the native sub-issue and dependency
  * edges, through `gh` so that `gh` owns auth and the repository. The output is
@@ -156,6 +157,7 @@ function graphLines(parent: Parent, frontier: readonly Child[]): string[] {
     child.state === 'CLOSED' ? 'closed' : free.has(child.number) ? 'frontier' : 'open';
 
   return [
+    '%%{init:{"flowchart": { "defaultRenderer": "elk" }}}%%',
     'graph TD',
     '  classDef closed fill:#f6f8fa,stroke:#afb8c1,color:#57606a',
     '  classDef frontier fill:#0969da,stroke:#033d8b,color:#ffffff,' +
@@ -174,14 +176,14 @@ function graphLines(parent: Parent, frontier: readonly Child[]): string[] {
   ];
 }
 
-/** Fenced, so it pastes into a GitHub comment and renders. */
+/** Fenced, so it pastes into a GitHub comment or a Markdown preview and renders. */
 function fenced(lines: readonly string[]): string[] {
   return ['```mermaid', ...lines, '```'];
 }
 
 /**
  * `list` is the frontier alone; `graph` adds the fenced diagram; `graph-only`
- * prints the diagram unfenced and nothing else, so it can be piped to a viewer.
+ * prints the fenced diagram and nothing else, so it can be piped to a viewer.
  */
 type Mode = 'list' | 'graph' | 'graph-only';
 
@@ -213,7 +215,7 @@ function main(): void {
 
   const frontier = parent.subIssues.nodes.filter(isFree);
   if (mode === 'graph-only') {
-    console.log(graphLines(parent, frontier).join('\n'));
+    console.log(fenced(graphLines(parent, frontier)).join('\n'));
     return;
   }
   const lines =
