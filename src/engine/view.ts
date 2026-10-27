@@ -579,7 +579,7 @@ function registerOf(want: Want): Register {
 }
 
 function orderTermsOf(campaign: Campaign, { id, want }: OpenWant): OrderTermsView | null {
-  const last = lastDayOf(campaign, want);
+  const last = lastDayOf(campaign, id, want);
   if (want.order === undefined || last === null) return null;
   const accepted = isAccepted(campaign, id);
   return {

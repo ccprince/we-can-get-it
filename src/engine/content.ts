@@ -231,8 +231,10 @@ export type Order = {
   /** Credits for each unit, whatever the good's **worth**. */
   readonly price: number;
   /**
-   * Days the order stays open, counted from the campaign's first day: it is
-   * open until `start.day + days` has passed, and closes after.
+   * Days the order stays open, counted from the day the player is first shown
+   * it, which is the day they are first where the buyer stands: it is open
+   * until that day plus `days` has passed, and closes after. "I need this in a
+   * week" is true whenever the offer comes up.
    */
   readonly days: number;
 };

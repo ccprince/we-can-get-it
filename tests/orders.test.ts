@@ -13,6 +13,8 @@ import {
   anElsewhereBuyer,
   anOffers,
   anOrder,
+  aShip,
+  aStart,
   aTradingGalaxy,
   aVagueWant,
   aWant,
@@ -210,6 +212,48 @@ describe('reading orders', () => {
     const lapsed = after(accepted(holding()), ...Array<Command>(4).fill({ kind: 'wait' }));
 
     expect(view(lapsed).orders.accepted).toEqual([]);
+  });
+});
+
+describe('the window of an order', () => {
+  /** Osk at Bellwether states an order good for two days, whenever it comes up. */
+  function distant(): Campaign {
+    const osk = anElsewhereBuyer({
+      wants: [aWant({ predicate: [{ tag: 'tools' }], ...anOrder({ days: 2 }) })],
+    });
+    return started(
+      loadedContentSet(
+        aTradingGalaxy({
+          buyers: [aBuyer(), osk],
+          start: aStart({ credits: 500, ship: aShip({ speed: 1 }) }),
+        }),
+      ),
+      SEED,
+    );
+  }
+
+  it('runs from the day the player first reaches the buyer, however long they took', () => {
+    const departed = after(distant(), { kind: 'depart', toId: 'bellwether' });
+    let underway = departed;
+    while (view(underway).transit !== null) underway = after(underway, { kind: 'wait' });
+
+    const wants = view(underway).here?.people[0]?.wants;
+    expect(view(underway).today.day).toBeGreaterThan(3);
+    expect(wants?.[0]?.order).toMatchObject({ daysLeft: 2 });
+  });
+
+  it('runs from the first sighting and not again on a second visit', () => {
+    const arrived = (campaign: Campaign) => {
+      let underway = campaign;
+      while (view(underway).transit !== null) underway = after(underway, { kind: 'wait' });
+      return underway;
+    };
+    const first = arrived(after(distant(), { kind: 'depart', toId: 'bellwether' }));
+    const waited = after(first, { kind: 'wait' });
+    const back = arrived(after(waited, { kind: 'depart', toId: 'kestrel' }));
+    const again = arrived(after(back, { kind: 'depart', toId: 'bellwether' }));
+
+    expect(view(again).here?.people[0]?.wants).toEqual([]);
   });
 });
 

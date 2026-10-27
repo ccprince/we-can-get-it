@@ -1,6 +1,7 @@
 import type { ContentSet, Ship } from './content';
 import { draw } from './draw';
 import type { DrawnGalaxy } from './galaxy';
+import { offering } from './orders';
 import { learning, sightingHere, type Sighting } from './knowledge';
 import { rngFromSeed, type Rng } from './rng';
 import { stockShops, type Lot } from './stock';
@@ -45,6 +46,12 @@ export type Whereabouts =
 export type Delivery = {
   readonly want: string;
   readonly units: number;
+};
+
+/** The day an order was first put to the player. */
+export type OfferedOn = {
+  readonly want: string;
+  readonly day: number;
 };
 
 /** Units of one good aboard, in the **hold**. */
@@ -101,6 +108,12 @@ export type Campaign = {
    */
   readonly accepted: readonly string[];
   /**
+   * The day each order was first put to the player, by the id a sale names a
+   * want with, in the order each was. An order's window runs from here; one
+   * not yet put to the player has no entry, and so no deadline.
+   */
+  readonly offered: readonly OfferedOn[];
+  /**
    * What the player has seen of each place they have been, as last known, in
    * the order each was first seen. The **trade guide** reads it with an as-of
    * date on everything (ADR 0006 decision 17); a place never visited has no
@@ -142,10 +155,11 @@ export function startCampaign(content: ContentSet, seed: number): StartResult {
     cargo: [],
     delivered: [],
     accepted: [],
+    offered: [],
     known: [],
     digest: null,
   };
 
   // The player opens somewhere, and sees it.
-  return { ok: true, campaign: learning(opening, sightingHere(opening, [])) };
+  return { ok: true, campaign: learning(offering(opening), sightingHere(offering(opening), [])) };
 }

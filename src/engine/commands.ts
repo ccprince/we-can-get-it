@@ -2,7 +2,7 @@ import type { Campaign, DigestEntry, Leg, Whereabouts } from './campaign';
 import { locationNamed, type DrawnGalaxy } from './galaxy';
 import { learningOnDeparture, learningOnLanding } from './knowledge';
 import { daysToFly, fareToFly, laneBetween, withinRange } from './map';
-import { accept, fill, lapsedOrders } from './orders';
+import { accept, fill, lapsedOrders, offering } from './orders';
 import { sell } from './selling';
 import { buy } from './trade';
 
@@ -252,7 +252,7 @@ function endTheDay(campaign: Campaign): Campaign {
   // held of it is corrected (ADR 0006 decision 17).
   const landed =
     campaign.where.kind === 'in-transit' && ended.where.kind === 'at'
-      ? learningOnLanding(next)
+      ? learningOnLanding(offering(next))
       : { campaign: next, entries: [] };
   return {
     ...landed.campaign,
