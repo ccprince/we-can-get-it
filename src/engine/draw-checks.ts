@@ -184,6 +184,29 @@ export const drawChecks: readonly DrawCheck[] = [
     },
   },
   {
+    // The same invariant read off the goods drawn, so a kind left short rather
+    // than dropped is named with the count it was left with. The goods pass
+    // keeps a kind at its floor, so this is the net under that guarantee.
+    stage: 'goods pass',
+    invariant: 'a vague want points at a kind usable in the drawn galaxy',
+    where: 'buyers',
+    miss: (galaxy, content) => {
+      const { usabilityFloor } = content.bounds;
+      const short = buyersAtDrawnLocations(galaxy, content).flatMap((buyer) =>
+        buyer.wants.flatMap((want) => {
+          if (!('kind' in want)) return [];
+          const drawn = goodsCarrying(galaxy, want.kind);
+          return drawn < usabilityFloor
+            ? [`${buyer.id} is after ${want.kind}, which the draw left with ${drawn}`]
+            : [];
+        }),
+      );
+      return short.length === 0
+        ? null
+        : `${short.join('; ')}, against a usability floor of ${usabilityFloor}`;
+    },
+  },
+  {
     // The draw never takes a usable kind below its floor (ADR 0008 decision
     // 11). A kind the reserve holds fewer goods of than the floor was never
     // usable, and hiding is not what left it short.
