@@ -539,6 +539,11 @@ export type ContentSet = {
    * there, so there is exactly one of these in a galaxy.
    */
   readonly fareRate: number;
+  /**
+   * What **mail** pays in advance for each unit of **distance** of the lane it
+   * travels, galaxy-wide like the fare it must cover (ADR 0006 decision 12).
+   */
+  readonly mailRate: number;
   readonly calendar: Calendar;
   /** The short enumerated list a location is authored with. */
   readonly archetypes: readonly Archetype[];

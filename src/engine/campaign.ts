@@ -54,6 +54,15 @@ export type FirstSeen = {
   readonly day: number;
 };
 
+/**
+ * Mail the player has taken and not yet delivered: the obligation its advance
+ * bought. One consignment at a time, and it takes no room in the hold.
+ */
+export type Mail = {
+  readonly fromId: string;
+  readonly toId: string;
+};
+
 /** Units of one good aboard, in the **hold**. */
 export type Cargo = {
   readonly goodId: string;
@@ -120,6 +129,8 @@ export type Campaign = {
    * entry, and nothing is ever removed.
    */
   readonly known: readonly Sighting[];
+  /** The mail aboard, if any, which is delivered on landing at its destination. */
+  readonly mail: Mail | null;
   /** The day that has just ended. Null until one has. */
   readonly digest: Digest | null;
 };
@@ -157,6 +168,7 @@ export function startCampaign(content: ContentSet, seed: number): StartResult {
     accepted: [],
     firstSeen: [],
     known: [],
+    mail: null,
     digest: null,
   };
 

@@ -2,6 +2,7 @@ import type { Campaign, DigestEntry, Leg, Whereabouts } from './campaign';
 import { locationNamed, type DrawnGalaxy } from './galaxy';
 import { learningOnDeparture, learningOnLanding } from './knowledge';
 import { daysToFly, fareToFly, laneBetween, withinRange } from './map';
+import { deliveringMail, takeMail } from './mail';
 import { accept, fill, lapsedOrders, showingOrders } from './orders';
 import { sell } from './selling';
 import { buy } from './trade';
@@ -27,6 +28,8 @@ export type Command =
     }
   /** Accept an order a buyer here states. Not an action. */
   | { readonly kind: 'accept'; readonly want: string }
+  /** Take the mail for the lane to a location, and be paid its advance. Not an action. */
+  | { readonly kind: 'take-mail'; readonly toId: string }
   /** Fill an accepted order from the hold, at the order's stated price. Not an action. */
   | {
       readonly kind: 'fill';
@@ -60,7 +63,9 @@ export type Reason = {
     | 'not-an-order'
     | 'not-accepted'
     | 'already-accepted'
-    | 'declined-below-acceptable';
+    | 'declined-below-acceptable'
+    | 'already-carrying-mail'
+    | 'no-such-mail';
   readonly message: string;
 };
 
@@ -173,6 +178,10 @@ export function takeCommand(campaign: Campaign, command: Command): CommandResult
     case 'accept':
       return accept(campaign, command.want);
 
+    // Nor is taking mail (ADR 0005 decision 6).
+    case 'take-mail':
+      return takeMail(campaign, command.toId);
+
     case 'fill':
       return fill(campaign, command.want, command.good, command.quantity);
   }
@@ -191,7 +200,8 @@ function isCommand(command: Command): boolean {
   if (typeof candidate !== 'object' || candidate === null) return false;
   const kind = (candidate as { kind?: unknown }).kind;
   if (kind === 'wait') return true;
-  if (kind === 'depart') return typeof (candidate as { toId?: unknown }).toId === 'string';
+  if (kind === 'depart' || kind === 'take-mail')
+    return typeof (candidate as { toId?: unknown }).toId === 'string';
   if (kind === 'accept') return typeof (candidate as { want?: unknown }).want === 'string';
   if (kind === 'sell' || kind === 'fill') {
     const { want, good, quantity } = candidate as Record<string, unknown>;
@@ -250,10 +260,17 @@ function endTheDay(campaign: Campaign): Campaign {
   const next = { ...campaign, day: campaign.day + 1, where: ended.where };
   // A landing is where the player sees a place again, and so where what they
   // held of it is corrected (ADR 0006 decision 17).
-  const landed =
-    campaign.where.kind === 'in-transit' && ended.where.kind === 'at'
-      ? learningOnLanding(showingOrders(next))
-      : { campaign: next, entries: [] };
+  const landing = campaign.where.kind === 'in-transit' && ended.where.kind === 'at';
+  const learned = landing
+    ? learningOnLanding(showingOrders(next))
+    : { campaign: next, entries: [] };
+  const mailed = landing
+    ? deliveringMail(learned.campaign)
+    : { campaign: learned.campaign, entries: [] };
+  const landed = {
+    campaign: mailed.campaign,
+    entries: [...learned.entries, ...mailed.entries],
+  };
   return {
     ...landed.campaign,
     // One digest, at every day boundary, whose content varies by where the

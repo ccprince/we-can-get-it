@@ -59,6 +59,7 @@ Most bounds are properties of the **drawn** galaxy, which is why the report can 
 {
   "bounds": { ... },      // what this content set declares about its own shape
   "fareRate": 10,         // credits per unit of distance, galaxy-wide (ADR 0006)
+  "mailRate": 10,         // mail's advance per unit of distance; must cover fareRate
   "calendar": { ... },    // one galaxy-wide reckoning (ADR 0005)
   "locations": [ ... ],   // places on the chart
   "lanes": [ ... ],       // what joins them, and the only way between them
@@ -152,6 +153,13 @@ load.
 The one galaxy-wide rate a **fare** is the **distance** times (ADR 0006 decision 10). There is
 exactly one, because authored per-lane tariffs and regional rates were rejected there: a surcharge on
 a particular gate is an **event**, not geography (decision 13).
+
+### `mailRate`
+
+What **mail** pays in advance for each **distance** of the lane it travels. Mail is on offer at every
+location, one consignment a lane within range, and takes no room in the hold. It is the floor under
+being broke, so at every location some mail offer's advance must cover the fare of its lane
+(ADR 0006 decision 12): the draw checks it, and a location where it does not is named.
 
 ### `start`
 

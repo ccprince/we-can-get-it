@@ -5,6 +5,7 @@ import type { Archetype, Buyer, Good, Lane, Want } from './content';
 import { goodNamed, locationNamed, personNamed, type DrawnGalaxy } from './galaxy';
 import { sightingHere, wordCorrection, type Sighting } from './knowledge';
 import { daysToFly, fareToFly, otherEnd, withinRange } from './map';
+import { mailOffersHere } from './mail';
 import { matchOf, tierOf, type Tier } from './match';
 import { isAccepted } from './orders';
 import { lastDayOf, mostYouCanSell, openWants, peopleHere, type OpenWant } from './selling';
@@ -32,6 +33,16 @@ export type HereView = {
    * 0009 decision 3). The draw may have hidden any of them.
    */
   readonly people: readonly PersonView[];
+  /** The mail on offer here: a consignment a lane in range, none while carrying mail. */
+  readonly mail: readonly MailOfferView[];
+};
+
+/** Mail for one lane, with what it pays now and the days the journey takes. */
+export type MailOfferView = {
+  readonly to: string;
+  readonly advance: number;
+  readonly days: number;
+  readonly take: Command;
 };
 
 /** Someone standing here, and what they are after. */
@@ -84,6 +95,8 @@ export type OrderTermsView = {
 export type OrdersView = {
   /** In the order they were accepted. */
   readonly accepted: readonly AcceptedOrderView[];
+  /** The place the mail aboard is bound for, or null when carrying none. */
+  readonly mailFor: string | null;
 };
 
 export type AcceptedOrderView = {
@@ -571,7 +584,15 @@ function hereAt(campaign: Campaign, locationId: string): HereView {
       mostYouCanBuy: mostYouCanBuy(campaign, lot),
     }),
   );
-  return { name, prose, lots, people: peopleAt(campaign) };
+  const mail = mailOffersHere(campaign).map(
+    (offer): MailOfferView => ({
+      to: nameOf(campaign.galaxy, offer.toId),
+      advance: offer.advance,
+      days: offer.days,
+      take: { kind: 'take-mail', toId: offer.toId },
+    }),
+  );
+  return { name, prose, lots, people: peopleAt(campaign), mail };
 }
 
 function peopleAt(campaign: Campaign): readonly PersonView[] {
@@ -667,7 +688,8 @@ function ordersFor(campaign: Campaign): OrdersView {
       },
     ];
   });
-  return { accepted };
+  const { mail } = campaign;
+  return { accepted, mailFor: mail === null ? null : nameOf(campaign.galaxy, mail.toId) };
 }
 
 function holdFor(campaign: Campaign): HoldView {

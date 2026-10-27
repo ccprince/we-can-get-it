@@ -218,6 +218,8 @@ export function aContentSet(overrides: RawObject = {}): RawObject {
     // Credits per unit of distance, galaxy-wide (ADR 0006 decision 10). A
     // placeholder, like every number in a fixture.
     fareRate: 10,
+    // Mail's advance per unit of distance: enough to cover the fare above.
+    mailRate: 10,
     calendar: aCalendar(),
     // The short enumerated list a location is authored with and a slot types
     // against (ADR 0007 decision 17, ADR 0008 decision 1).

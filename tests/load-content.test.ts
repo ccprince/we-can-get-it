@@ -107,6 +107,7 @@ describe('loadContent', () => {
     expect(result.problems.map((problem) => problem.where)).toEqual([
       'bounds',
       'fareRate',
+      'mailRate',
       'calendar',
       'drawParameters',
       'topology',

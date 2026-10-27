@@ -4,7 +4,7 @@ import { ChartGraph } from './ChartGraph';
 import { buttonChrome } from './chrome';
 import { days, otherEnd } from './wording';
 import { Guide } from './Guide';
-import { Hold, Orders, People, Shop } from './Trade';
+import { Hold, Mail, Orders, People, Shop } from './Trade';
 
 /**
  * The campaign's reading surfaces. Everything shown here comes out of one
@@ -113,6 +113,9 @@ function Here({ view, onCommand }: SurfaceProps) {
       )}
 
       {view.here !== null && <Shop lots={view.here.lots} onCommand={onCommand} />}
+      {view.here !== null && (
+        <Mail offers={view.here.mail} aboard={view.orders.mailFor} onCommand={onCommand} />
+      )}
       {view.here !== null && <People people={view.here.people} onCommand={onCommand} />}
       <Orders orders={view.orders} />
       <Hold hold={view.hold} />
@@ -322,5 +325,9 @@ function wordCommand(command: Command): string {
       return 'Accept';
     case 'fill':
       return 'Fill';
+
+    // Mail is worded beside the lane it travels, in its own section.
+    case 'take-mail':
+      return 'Take the mail';
   }
 }

@@ -73,6 +73,7 @@ export function loadContent(raw: unknown): LoadResult {
   // One galaxy-wide rate, declared by the content set because the engine holds
   // no number of its own (ADR 0006 decision 10, ADR 0007 decision 15).
   const fareRate = readInteger(raw.fareRate, 'fareRate', 1, problems);
+  const mailRate = readInteger(raw.mailRate, 'mailRate', 1, problems);
   const calendar = readCalendar(raw.calendar, problems, reports);
   const drawParameters = readDrawParameters(raw.drawParameters, problems);
   const topology = readTopology(raw.topology, problems);
@@ -157,6 +158,7 @@ export function loadContent(raw: unknown): LoadResult {
     shops === undefined ||
     offers === undefined ||
     fareRate === undefined ||
+    mailRate === undefined ||
     calendar === undefined ||
     archetypes === undefined ||
     laidOut === undefined ||
@@ -179,6 +181,7 @@ export function loadContent(raw: unknown): LoadResult {
       shops,
       offers,
       fareRate,
+      mailRate,
       calendar,
       archetypes,
       motifs: laidOut,

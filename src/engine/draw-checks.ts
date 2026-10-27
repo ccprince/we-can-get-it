@@ -10,6 +10,7 @@ import {
 import { kindsTradedIn } from './fill';
 import type { DrawnGalaxy } from './galaxy';
 import { reachableFrom } from './map';
+import { locationsWhereMailFallsShort } from './mail';
 import { holdsStartHub, readAsStart } from './start-hub';
 import type { Rng } from './rng';
 import { fails, type Problem } from './verdicts';
@@ -124,6 +125,26 @@ export const drawChecks: readonly DrawCheck[] = [
         ? null
         : `it left ${cutOff.map((location) => location.id).join(', ')} unreachable from ` +
             `${galaxy.startId} on lanes within the range of ${range}`;
+    },
+  },
+  {
+    // Mail is the floor under being broke, so it must pay the fare of a lane at
+    // every place it is offered (ADR 0006 decision 12).
+    stage: 'motif selection',
+    invariant: 'mail pays its own fare',
+    where: 'mailRate',
+    miss: (galaxy, content) => {
+      const short = locationsWhereMailFallsShort(
+        galaxy,
+        content.start.ship.range,
+        content.fareRate,
+        content.mailRate,
+      );
+      return short.length === 0
+        ? null
+        : `at ${short.join(', ')} no mail offer's advance covered the fare of its lane, ` +
+            `with mail paying ${content.mailRate} a unit of distance against a fare rate of ` +
+            `${content.fareRate}`;
     },
   },
   {

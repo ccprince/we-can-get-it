@@ -12,6 +12,7 @@
     "quirkRation": 2
   },
   "fareRate": 10,
+  "mailRate": 10,
   "calendar": {
     "daysPerWeek": 6,
     "weekdayNames": ["Firstday", "Seconday", "Thirdday", "Fourthday", "Fifthday", "Marketday"],

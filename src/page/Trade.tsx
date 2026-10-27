@@ -3,6 +3,7 @@ import type {
   Command,
   HoldView,
   LotView,
+  MailOfferView,
   MatchView,
   OrdersView,
   OrderTermsView,
@@ -187,6 +188,45 @@ function Match({
       <span className="text-xs text-stone-500">up to {match.mostYouCanSell}</span>
     </li>
   );
+}
+
+/** The mail on offer, one consignment a lane, or the mail already aboard. */
+export function Mail({
+  offers,
+  aboard,
+  onCommand,
+}: {
+  readonly offers: readonly MailOfferView[];
+  readonly aboard: string | null;
+  readonly onCommand: (command: Command) => void;
+}) {
+  return (
+    <section className="mt-8">
+      <h2 className="text-xs tracking-widest text-stone-500 uppercase">Mail</h2>
+      {aboard !== null ? (
+        <p className="mt-2 text-sm text-stone-400">You are carrying mail for {aboard}.</p>
+      ) : (
+        <ul className="mt-2 space-y-1 text-sm text-stone-300">
+          {offers.map((offer) => (
+            <li key={offer.to}>
+              To {offer.to}, {days(offer.days)}: {offer.advance} credits in advance
+              <button
+                type="button"
+                onClick={() => onCommand(offer.take)}
+                className={`${buttonChrome} ml-2 px-2 py-0.5 text-xs`}
+              >
+                Take
+              </button>
+            </li>
+          ))}
+        </ul>
+      )}
+    </section>
+  );
+}
+
+function days(count: number): string {
+  return count === 1 ? '1 day' : `${count} days`;
 }
 
 /** An order's stated terms, and the way to take it on. */

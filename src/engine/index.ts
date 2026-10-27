@@ -52,7 +52,7 @@ export type { DrawnGalaxy } from './galaxy';
 export type { Point } from './layout';
 
 export { startCampaign } from './campaign';
-export type { Campaign, Digest, DigestEntry, StartResult } from './campaign';
+export type { Campaign, Digest, DigestEntry, Mail, StartResult } from './campaign';
 
 export { isRejected, takeCommand } from './commands';
 export type { Command, CommandResult, Reason } from './commands';
@@ -75,6 +75,7 @@ export type {
   LaneView,
   LocationView,
   LotView,
+  MailOfferView,
   MatchView,
   MenuView,
   OrderTermsView,
