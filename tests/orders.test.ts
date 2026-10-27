@@ -163,22 +163,16 @@ describe('orders', () => {
 });
 
 describe('loading an order', () => {
-  it.each([{ price: 0 }, { days: 0 }, { price: 1.5 }])('refuses an order with %o', (bad) => {
-    const buyer = aBuyer({ wants: [aWant({ ...anOrder(bad) })] });
-
-    const result = loadContent(
-      aContentSet(aTradingGalaxy({ buyers: [buyer, anElsewhereBuyer()] })),
+  const loading = (want: Record<string, unknown>) =>
+    loadContent(
+      aContentSet(aTradingGalaxy({ buyers: [aBuyer({ wants: [want] }), anElsewhereBuyer()] })),
     );
 
-    expect(result.ok).toBe(false);
-    expect(
-      loadContent(
-        aContentSet(
-          aTradingGalaxy({
-            buyers: [aBuyer({ wants: [aWant({ ...anOrder() })] }), anElsewhereBuyer()],
-          }),
-        ),
-      ).ok,
-    ).toBe(true);
+  it('takes a whole price and a whole window', () => {
+    expect(loading(aWant({ ...anOrder() })).ok).toBe(true);
+  });
+
+  it.each([{ price: 0 }, { days: 0 }, { price: 1.5 }])('refuses an order with %o', (bad) => {
+    expect(loading(aWant({ ...anOrder(bad) })).ok).toBe(false);
   });
 });
