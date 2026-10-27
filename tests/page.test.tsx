@@ -17,6 +17,7 @@ import {
   aBuyer,
   anElsewhereBuyer,
   anOrder,
+  aVagueWant,
   aWant,
   aGalaxy,
   aMotifLane,
@@ -369,6 +370,33 @@ describe('the people here', () => {
     screen.getByRole('button', { name: 'Accept' }).click();
 
     expect(taken).toEqual([{ kind: 'accept', want: 'ilse#0' }]);
+  });
+
+  it('shows a vague order too, and fills only once it is accepted', () => {
+    const taken: Command[] = [];
+    const buyer = aBuyer({ wants: [aVagueWant('cloth', { ...anOrder() })] });
+    const campaign = after(
+      started(loadedContentSet(aTradingGalaxy({ buyers: [buyer, anElsewhereBuyer()] })), SEED),
+      { kind: 'buy', lot: 'kestrel/silk', quantity: 1 },
+    );
+    const { rerender } = surfaces({ campaign, onCommand: (command) => taken.push(command) });
+    const fillButton = () => screen.getByRole('button', { name: 'Fill with Bolt of silk' });
+
+    expect(screen.getByText(/order: 90 credits each/)).toBeDefined();
+    expect((fillButton() as HTMLButtonElement).disabled).toBe(true);
+
+    const accepted = after(campaign, { kind: 'accept', want: 'ilse#0' });
+    rerender(
+      <CampaignSurfaces
+        view={view(accepted)}
+        seed={accepted.seed}
+        refusal={null}
+        onCommand={(command) => taken.push(command)}
+      />,
+    );
+    fillButton().click();
+
+    expect(taken).toEqual([{ kind: 'fill', want: 'ilse#0', good: 'silk', quantity: 1 }]);
   });
 
   it('has nobody to sell to while underway', () => {
