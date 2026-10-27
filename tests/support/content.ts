@@ -371,6 +371,11 @@ export function aWant(overrides: RawObject = {}): RawObject {
   };
 }
 
+/** A vague want: anything of a kind, with no predicate and no plain form. */
+export function aVagueWant(kind: string, overrides: RawObject = {}): RawObject {
+  return { kind, quantity: 1, ...overrides };
+}
+
 /** A want naming one good by identity, rather than stating a predicate. */
 export function aWantForGood(goodId: string, overrides: RawObject = {}): RawObject {
   return { goodId, quantity: 1, ...overrides };

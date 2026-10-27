@@ -1,5 +1,13 @@
 import { describe, expect, it } from 'vitest';
-import { loadContent, startCampaign, view, type ContentSet, type Tier } from '../src/engine';
+import {
+  drawGalaxy,
+  loadContent,
+  startCampaign,
+  view,
+  type ContentSet,
+  type Tier,
+} from '../src/engine';
+import { drawChecks } from '../src/engine/draw-checks';
 import {
   aBuyer,
   aContentSet,
@@ -11,17 +19,13 @@ import {
   aSlot,
   aTag,
   aTradingGalaxy,
+  aVagueWant,
   aWant,
   anElsewhereBuyer,
   loadedContentSet,
   type RawObject,
 } from './support/content';
 import { after, started } from './support/campaign';
-
-/** A vague want: anything of a kind, with no predicate and no plain form. */
-function aVagueWant(kind: string, overrides: RawObject = {}): RawObject {
-  return { kind, quantity: 1, ...overrides };
-}
 
 describe('a vague want', () => {
   /** Ilse is vaguely after cloth; the player holds the silk, a blanket and a spanner. */
@@ -212,5 +216,30 @@ describe('a kind usable in the reserve and absent from the draw', () => {
 
   it('loads on a seed that keeps it', () => {
     expect(startCampaign(aReserveWhereClothMayDrop(), KEEPS).ok).toBe(true);
+  });
+});
+
+describe('a kind left short in the drawn galaxy', () => {
+  it('is named with the count it was left with', () => {
+    const content = loadedContentSet(
+      aTradingGalaxy({ buyers: [aBuyer({ wants: [aVagueWant('cloth')] }), anElsewhereBuyer()] }),
+    );
+    const drawn = drawGalaxy(content, 1);
+    if (!drawn.ok) throw new Error('the fixture did not draw');
+    const check = drawChecks.find(
+      ({ stage, invariant }) =>
+        stage === 'goods pass' &&
+        invariant === 'a vague want points at a kind usable in the drawn galaxy',
+    );
+
+    const thinned = {
+      ...drawn.galaxy,
+      goods: drawn.galaxy.goods.filter((good) => good.id !== 'blanket' && good.id !== 'quilt'),
+    };
+
+    expect(check?.miss(drawn.galaxy, content)).toBeNull();
+    expect(check?.miss(thinned, content)).toBe(
+      'ilse is after cloth, which the draw left with 1, against a usability floor of 2',
+    );
   });
 });

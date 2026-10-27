@@ -62,8 +62,8 @@ function unusedTags(subject: Subject): readonly Problem[] {
 /**
  * A vague want may only point at a **usable** kind: "is there anything at all
  * that fits?" asked of a kind with one good has one answer (ADR 0007 decision
- * 5). This reads the reserve; a kind usable there can still fall short in the
- * drawn galaxy, which the draw-time pass checks (#16).
+ * 5). This reads the reserve; a kind usable there can still be dropped from the
+ * drawn galaxy, or left short in it, which the draw-time pass checks (#16).
  */
 function vagueWantsAtUsableKinds(subject: Subject): readonly Problem[] {
   const floor = subject.bounds.usabilityFloor;
