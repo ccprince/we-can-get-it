@@ -136,7 +136,7 @@ export const drawChecks: readonly DrawCheck[] = [
     miss: (galaxy, content) => {
       const short = locationsWhereMailFallsShort(
         galaxy,
-        content.start.ship.range,
+        content.start.ship,
         content.fareRate,
         content.mailRate,
       );

@@ -10,6 +10,7 @@ import type {
   PersonView,
 } from '../engine';
 import { buttonChrome } from './chrome';
+import { days } from './wording';
 
 /**
  * What is on sale where the player is. The lots, their prices and the most the
@@ -209,7 +210,7 @@ export function Mail({
         <ul className="mt-2 space-y-1 text-sm text-stone-300">
           {offers.map((offer) => (
             <li key={offer.to}>
-              To {offer.to}, {days(offer.days)}: {offer.advance} credits in advance
+              To {offer.to}, {days(offer.days, '1 day')}: {offer.advance} credits in advance
               <button
                 type="button"
                 onClick={() => onCommand(offer.take)}
@@ -223,10 +224,6 @@ export function Mail({
       )}
     </section>
   );
-}
-
-function days(count: number): string {
-  return count === 1 ? '1 day' : `${count} days`;
 }
 
 /** An order's stated terms, and the way to take it on. */

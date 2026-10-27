@@ -110,6 +110,35 @@ describe('being broke', () => {
   });
 });
 
+describe('mail flown elsewhere', () => {
+  it('lapses on landing short of its destination, so a broke player can take mail again', () => {
+    const content = aGalaxyOfTwo({
+      locations: [
+        aLocation(),
+        aLocation({ id: 'bellwether', name: 'Bellwether Yards', prose: 'A repair yard.' }),
+        aLocation({ id: 'cinder', name: 'Cinder Gate', prose: 'A gate.' }),
+      ],
+      lanes: [
+        aMotifLane({ ends: ['kestrel', 'bellwether'], distance: 12 }),
+        aMotifLane({ ends: ['kestrel', 'cinder'], distance: 4 }),
+      ],
+      start: aStart({ credits: 0 }),
+    });
+
+    const landed = after(
+      started(content, SEED),
+      { kind: 'take-mail', toId: 'bellwether' },
+      { kind: 'depart', toId: 'cinder' },
+    );
+
+    expect(view(landed).orders.mailFor).toBeNull();
+    expect(view(landed).digest?.entries.map((entry) => entry.text)).toContain(
+      'The mail bound for Bellwether Yards lapses, undelivered.',
+    );
+    expect(view(landed).here?.mail.length).toBeGreaterThan(0);
+  });
+});
+
 describe('the invariant that mail pays its own fare', () => {
   it('rejects a content set whose mail pays less than the fare, naming the location', () => {
     const result = startCampaign(aGalaxyOfTwo({ mailRate: 9 }), SEED);

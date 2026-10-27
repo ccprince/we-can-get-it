@@ -1,8 +1,9 @@
 import type { Campaign, DigestEntry } from './campaign';
 import type { CommandResult } from './commands';
+import type { Ship } from './content';
 import type { DrawnGalaxy } from './galaxy';
 import { locationNamed } from './galaxy';
-import { daysToFly, otherEnd, withinRange } from './map';
+import { daysToFly, fareToFly, otherEnd, withinRange } from './map';
 
 /**
  * **Mail**: the worst-paid **passage work**, on offer at every location and
@@ -24,7 +25,7 @@ export type MailOffer = {
 };
 
 /** What mail pays on a lane of this distance. */
-export function advanceFor(distance: number, mailRate: number): number {
+function advanceFor(distance: number, mailRate: number): number {
   return distance * mailRate;
 }
 
@@ -32,7 +33,7 @@ export function advanceFor(distance: number, mailRate: number): number {
  * The offers at a location, one a lane within the baseline ship's range, in
  * lane order. The same reading `takeMail` is refused by.
  */
-export function mailOffersAt(campaign: Campaign, locationId: string): readonly MailOffer[] {
+function mailOffersAt(campaign: Campaign, locationId: string): readonly MailOffer[] {
   return campaign.galaxy.lanes.flatMap((lane) => {
     const toId = otherEnd(lane, locationId);
     if (toId === null || !withinRange(lane, campaign.ship)) return [];
@@ -87,40 +88,40 @@ export function takeMail(campaign: Campaign, toId: string): CommandResult {
 }
 
 /**
- * The campaign with mail handed over if the player has just landed where it was
- * bound, and what the digest says of it. Called on a landing only.
+ * The campaign with mail handed over, or lapsed if the player has set down
+ * somewhere else, and what the digest says of it. Called on a landing only.
  */
 export function deliveringMail(campaign: Campaign): {
   readonly campaign: Campaign;
   readonly entries: readonly DigestEntry[];
 } {
   const { mail, where } = campaign;
-  if (mail === null || where.kind !== 'at' || where.locationId !== mail.toId) {
-    return { campaign, entries: [] };
-  }
-  return {
-    campaign: { ...campaign, mail: null },
-    entries: [
-      { text: `You hand over the mail at ${locationNamed(campaign.galaxy, mail.toId).name}.` },
-    ],
-  };
+  if (mail === null || where.kind !== 'at') return { campaign, entries: [] };
+  const bound = locationNamed(campaign.galaxy, mail.toId).name;
+  // Mail not delivered where the player sets down lapses and its advance is
+  // kept: a broke player must never be left holding mail they cannot shed.
+  const text =
+    where.locationId === mail.toId
+      ? `You hand over the mail at ${bound}.`
+      : `The mail bound for ${bound} lapses, undelivered.`;
+  return { campaign: { ...campaign, mail: null }, entries: [{ text }] };
 }
 
-/** The locations whose mail cannot pay its own fare: the invariant's misses, in id order. */
+/** The locations whose mail cannot pay its own fare: the invariant's misses, in galaxy order. */
 export function locationsWhereMailFallsShort(
   galaxy: Pick<DrawnGalaxy, 'locations' | 'lanes'>,
-  range: number,
+  ship: Ship,
   fareRate: number,
   mailRate: number,
 ): readonly string[] {
   return galaxy.locations.flatMap(({ id }) => {
     const flyable = galaxy.lanes.filter(
-      (lane) => otherEnd(lane, id) !== null && lane.distance <= range,
+      (lane) => otherEnd(lane, id) !== null && withinRange(lane, ship),
     );
     // A place with no lane in range has nowhere for mail to go; connectivity is
     // the check that names it.
     const covered = flyable.some(
-      (lane) => advanceFor(lane.distance, mailRate) >= lane.distance * fareRate,
+      (lane) => advanceFor(lane.distance, mailRate) >= fareToFly(lane, fareRate),
     );
     return flyable.length === 0 || covered ? [] : [id];
   });

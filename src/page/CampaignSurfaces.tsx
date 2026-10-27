@@ -328,6 +328,6 @@ function wordCommand(command: Command): string {
 
     // Mail is worded beside the lane it travels, in its own section.
     case 'take-mail':
-      return 'Take the mail';
+      return 'Take';
   }
 }
