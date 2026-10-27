@@ -61,6 +61,7 @@ export { view } from './view';
 export type {
   CargoView,
   ChartView,
+  AcceptedOrderView,
   CorrectionView,
   CreditsView,
   DigestView,
@@ -76,6 +77,8 @@ export type {
   LotView,
   MatchView,
   MenuView,
+  OrderTermsView,
+  OrdersView,
   PersonView,
   Register,
   StandingView,

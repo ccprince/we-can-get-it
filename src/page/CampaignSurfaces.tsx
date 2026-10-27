@@ -4,7 +4,7 @@ import { ChartGraph } from './ChartGraph';
 import { buttonChrome } from './chrome';
 import { days, otherEnd } from './wording';
 import { Guide } from './Guide';
-import { Hold, People, Shop } from './Trade';
+import { Hold, Orders, People, Shop } from './Trade';
 
 /**
  * The campaign's reading surfaces. Everything shown here comes out of one
@@ -114,6 +114,7 @@ function Here({ view, onCommand }: SurfaceProps) {
 
       {view.here !== null && <Shop lots={view.here.lots} onCommand={onCommand} />}
       {view.here !== null && <People people={view.here.people} onCommand={onCommand} />}
+      <Orders orders={view.orders} />
       <Hold hold={view.hold} />
 
       <section className="mt-8">
@@ -316,8 +317,7 @@ function wordCommand(command: Command): string {
     case 'sell':
       return 'Sell';
 
-    // Accepting and filling an order are worded beside the order they name,
-    // once the orders surface exists (#17).
+    // Accepting and filling an order are worded beside the order they name.
     case 'accept':
       return 'Accept';
     case 'fill':

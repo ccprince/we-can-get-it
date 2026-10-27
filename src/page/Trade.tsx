@@ -1,5 +1,13 @@
 import { useState } from 'react';
-import type { Command, HoldView, LotView, MatchView, PersonView } from '../engine';
+import type {
+  Command,
+  HoldView,
+  LotView,
+  MatchView,
+  OrdersView,
+  OrderTermsView,
+  PersonView,
+} from '../engine';
 import { buttonChrome } from './chrome';
 
 /**
@@ -120,9 +128,17 @@ export function People({
                     {want.wording}
                   </span>{' '}
                   ({want.wanted})
+                  {want.order !== null && <OrderTerms order={want.order} onCommand={onCommand} />}
                   <ul className="mt-1 ml-4 space-y-1">
                     {want.matches.map((match) => (
-                      <Match key={match.good} match={match} onCommand={onCommand} />
+                      <Match
+                        key={match.good}
+                        match={match}
+                        // An order is filled once it is accepted, and is never sold to.
+                        verb={want.order === null ? 'sell' : 'fill'}
+                        held={want.order === null || want.order.accepted}
+                        onCommand={onCommand}
+                      />
                     ))}
                   </ul>
                 </li>
@@ -142,9 +158,14 @@ export function People({
  */
 function Match({
   match,
+  verb,
+  held,
   onCommand,
 }: {
   readonly match: MatchView;
+  readonly verb: 'sell' | 'fill';
+  /** Whether the command is on offer: an order not yet accepted cannot be filled. */
+  readonly held: boolean;
   readonly onCommand: (command: Command) => void;
 }) {
   const [units, setUnits] = useState('1');
@@ -162,19 +183,67 @@ function Match({
         min={1}
         value={units}
         onChange={(event) => setUnits(event.target.value)}
-        aria-label={`Units of ${match.good} to sell`}
+        aria-label={`Units of ${match.good} to ${verb}`}
         className="w-14 rounded border border-stone-700 bg-stone-900 px-1 py-0.5 text-stone-200"
       />
       <button
         type="button"
-        aria-label={`Sell ${match.good}`}
-        onClick={() => onCommand({ kind: 'sell', ...match.sale, quantity: Number(units) })}
+        aria-label={`${verb === 'sell' ? 'Sell' : 'Fill with'} ${match.good}`}
+        disabled={!held}
+        onClick={() => onCommand({ kind: verb, ...match.sale, quantity: Number(units) })}
         className={`${buttonChrome} px-2 py-0.5 text-xs`}
       >
-        Sell
+        {verb === 'sell' ? 'Sell' : 'Fill'}
       </button>
       <span className="text-xs text-stone-500">up to {match.mostYouCanSell}</span>
     </li>
+  );
+}
+
+/** An order's stated terms, and the way to take it on. */
+function OrderTerms({
+  order,
+  onCommand,
+}: {
+  readonly order: OrderTermsView;
+  readonly onCommand: (command: Command) => void;
+}) {
+  const { accept } = order;
+  return (
+    <span className="ml-2 text-amber-300">
+      order: {order.price} credits each, open to {order.by.label}
+      {order.daysLeft === 0 ? ' (last day)' : ` (${order.daysLeft} more days)`}
+      {accept !== null && (
+        <button
+          type="button"
+          onClick={() => onCommand(accept)}
+          className={`${buttonChrome} ml-2 px-2 py-0.5 text-xs`}
+        >
+          Accept
+        </button>
+      )}
+    </span>
+  );
+}
+
+/** The orders the player has taken on, wherever they are to be filled. */
+export function Orders({ orders }: { readonly orders: OrdersView }) {
+  return (
+    <section className="mt-8">
+      <h2 className="text-xs tracking-widest text-stone-500 uppercase">Orders</h2>
+      {orders.accepted.length === 0 ? (
+        <p className="mt-2 text-stone-500">You have taken on no orders.</p>
+      ) : (
+        <ul className="mt-2 space-y-1 text-sm text-stone-300">
+          {orders.accepted.map((order) => (
+            <li key={`${order.buyer}/${order.wording}`}>
+              {order.buyer} at {order.where} {order.wording} ({order.wanted}): {order.price} credits
+              each, by {order.by.label}
+            </li>
+          ))}
+        </ul>
+      )}
+    </section>
   );
 }
 

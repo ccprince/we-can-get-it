@@ -1,5 +1,12 @@
 import { describe, expect, it } from 'vitest';
-import { isRejected, loadContent, takeCommand, view, type Campaign } from '../src/engine';
+import {
+  isRejected,
+  loadContent,
+  takeCommand,
+  view,
+  type Campaign,
+  type Command,
+} from '../src/engine';
 import {
   aBuyer,
   aContentSet,
@@ -159,6 +166,50 @@ describe('orders', () => {
     );
 
     expect(view(later).digest?.entries).toEqual([]);
+  });
+});
+
+describe('reading orders', () => {
+  it('states the price and the last day on the want, in either register', () => {
+    for (const want of [aWant({ ...anOrder() }), aVagueWant('cloth', { ...anOrder() })]) {
+      const stated = view(holding(want)).here?.people[0]?.wants[0];
+
+      expect(stated?.order).toMatchObject({ price: 90, daysLeft: 3, accepted: false });
+      expect(stated?.order?.accept).toEqual({ kind: 'accept', want: 'ilse#0' });
+    }
+  });
+
+  it('quotes the stated price as the offer, and no offer for a near-miss', () => {
+    const matches = view(holding()).here?.people[0]?.wants[0]?.matches;
+
+    expect(matches?.map(({ good, offer }) => [good, offer])).toEqual([
+      ['Bolt of silk', null],
+      ['Ship blanket', 90],
+    ]);
+  });
+
+  it('lists an accepted order on its own, with where and by when, until it is filled', () => {
+    const campaign = accepted(holding());
+
+    expect(view(holding()).orders.accepted).toEqual([]);
+    expect(view(campaign).orders.accepted).toMatchObject([
+      { buyer: 'Ilse Vantry', where: 'Kestrel Reach', price: 90, wanted: 1, daysLeft: 3 },
+    ]);
+    expect(view(campaign).here?.people[0]?.wants[0]?.order?.accept).toBeNull();
+
+    const filled = after(campaign, {
+      kind: 'fill',
+      want: orderId(campaign),
+      good: 'blanket',
+      quantity: 1,
+    });
+    expect(view(filled).orders.accepted).toEqual([]);
+  });
+
+  it('drops an accepted order from the list once its date has passed', () => {
+    const lapsed = after(accepted(holding()), ...Array<Command>(4).fill({ kind: 'wait' }));
+
+    expect(view(lapsed).orders.accepted).toEqual([]);
   });
 });
 
