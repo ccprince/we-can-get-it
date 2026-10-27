@@ -242,6 +242,20 @@ describe('the window of an order', () => {
     expect(wants?.[0]?.order).toMatchObject({ daysLeft: 2 });
   });
 
+  it('says in the digest when an order accepted after a journey lapses', () => {
+    let underway = after(distant(), { kind: 'depart', toId: 'bellwether' });
+    while (view(underway).transit !== null) underway = after(underway, { kind: 'wait' });
+    const want = view(underway).here?.people[0]?.wants[0]?.want ?? '';
+
+    const taken = after(underway, { kind: 'accept', want }, { kind: 'wait' }, { kind: 'wait' });
+    expect(view(taken).digest?.entries).toEqual([]);
+
+    const lapsed = after(taken, { kind: 'wait' });
+    expect(view(lapsed).digest?.entries).toEqual([
+      { text: "Osk's order has lapsed, with 1 unit unfilled." },
+    ]);
+  });
+
   it('runs from the first sighting and not again on a second visit', () => {
     const arrived = (campaign: Campaign) => {
       let underway = campaign;

@@ -373,7 +373,7 @@ export function aWant(overrides: RawObject = {}): RawObject {
 
 /**
  * What makes a want an **order**: a stated price for each unit and a window in
- * days, from the campaign's first day. Spread into a want, so either register
+ * days, from the day the player is first shown it. Spread into a want, so either register
  * can be one.
  */
 export function anOrder(overrides: RawObject = {}): RawObject {
