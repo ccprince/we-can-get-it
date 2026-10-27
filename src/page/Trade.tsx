@@ -116,7 +116,10 @@ export function People({
             <ul className="space-y-2">
               {person.wants.map((want) => (
                 <li key={want.want} className="text-sm text-stone-300">
-                  {want.wording} ({want.wanted})
+                  <span className={want.register === 'vague' ? 'italic' : undefined}>
+                    {want.wording}
+                  </span>{' '}
+                  ({want.wanted})
                   <ul className="mt-1 ml-4 space-y-1">
                     {want.matches.map((match) => (
                       <Match key={match.good} match={match} onCommand={onCommand} />

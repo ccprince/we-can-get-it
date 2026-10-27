@@ -45,8 +45,8 @@ function goodsPerRoleTag(subject: Subject): readonly Report[] {
 /**
  * A kind carrying fewer goods than the declared floor is **legal** — it stays
  * available as a location's character or a plain want's subject. What is
- * refused is a **vague** want pointed at one, which is checked against the
- * drawn galaxy rather than here (ADR 0007 decision 5, #16).
+ * refused is a **vague** want pointed at one, which the validator fails at
+ * load and the draw checks against the drawn galaxy (ADR 0007 decision 5, #16).
  */
 function usability(subject: Subject): readonly Report[] {
   const floor = subject.bounds.usabilityFloor;

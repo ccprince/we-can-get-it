@@ -222,7 +222,8 @@ export type Term = {
 };
 
 /**
- * Something a buyer is after: a conjunction of terms, or one good by identity.
+ * Something a buyer is after: a conjunction of terms, one good by identity, or
+ * anything of a kind.
  * There is no disjunction — a want for "brandy or whisky" is a want for the
  * kind above them, which is what flat kinds with many goods each are for
  * (ADR 0007 decision 6).
@@ -247,6 +248,16 @@ export type Want = {
       readonly plainly: string;
     }
   | { readonly goodId: string }
+  | {
+      /**
+       * A **vague** want: whether there is anything at all that fits this
+       * kind. It states no predicate and has no plain form — any plain
+       * statement of what would do is the working out that is the player's
+       * (ADR 0002) — and it may only point at a **usable** kind (ADR 0007
+       * decision 5).
+       */
+      readonly kind: string;
+    }
 );
 
 /**
