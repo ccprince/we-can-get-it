@@ -22,6 +22,23 @@ import {
  * Like a sale, accepting and filling are not actions (ADR 0005 decision 6).
  */
 
+/**
+ * The campaign with every order stated where the player stands put to them, on
+ * today if it was not put before. Called wherever the player comes to be at a
+ * place, so a window runs from the first time they could have taken the order.
+ */
+export function offering(campaign: Campaign): Campaign {
+  const fresh = peopleHere(campaign)
+    .flatMap((buyer) => openWants(campaign, buyer))
+    .filter(({ id, want }) => want.order !== undefined && !offeredBefore(campaign, id))
+    .map(({ id }) => ({ want: id, day: campaign.day }));
+  return fresh.length === 0 ? campaign : { ...campaign, offered: [...campaign.offered, ...fresh] };
+}
+
+function offeredBefore(campaign: Campaign, wantId: string): boolean {
+  return campaign.offered.some((each) => each.want === wantId);
+}
+
 /** The open want here that `wantId` names, if the player is somewhere it stands. */
 function openHere(campaign: Campaign, wantId: string): OpenWant | undefined {
   return peopleHere(campaign)
@@ -159,7 +176,7 @@ export function lapsedOrders(campaign: Campaign): readonly DigestEntry[] {
       const id = `${buyer.id}#${at}`;
       const owed =
         want.quantity - (campaign.delivered.find((each) => each.want === id)?.units ?? 0);
-      const lapsedToday = lastDayOf(campaign, want) === campaign.day - 1;
+      const lapsedToday = lastDayOf(campaign, id, want) === campaign.day - 1;
       if (!lapsedToday || owed <= 0 || !isAccepted(campaign, id)) return [];
       return [{ text: `${buyer.name}'s order has lapsed, with ${units(owed)} unfilled.` }];
     }),

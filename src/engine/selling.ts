@@ -25,9 +25,14 @@ export type OpenWant = {
   readonly remaining: number;
 };
 
-/** The last day an order is open: the campaign's first day and the order's window. */
-export function lastDayOf(campaign: Campaign, want: Want): number | null {
-  return want.order === undefined ? null : campaign.content.start.day + want.order.days;
+/**
+ * The last day an order is open: the day it was put to the player and the
+ * order's window. Null for a want that is no order, and for an order not yet put
+ * to the player, which has no deadline until it is.
+ */
+export function lastDayOf(campaign: Campaign, wantId: string, want: Want): number | null {
+  const offered = campaign.offered.find((each) => each.want === wantId);
+  return want.order === undefined || offered === undefined ? null : offered.day + want.order.days;
 }
 
 /** The people standing where the player is, in id order: none in **transit**. */
@@ -48,12 +53,12 @@ export function openWants(campaign: Campaign, buyer: Buyer): readonly OpenWant[]
       const sold = campaign.delivered.find((each) => each.want === id)?.units ?? 0;
       return { id, at, buyer, want, remaining: want.quantity - sold };
     })
-    .filter(({ remaining, want }) => remaining > 0 && !lapsed(campaign, want));
+    .filter(({ id, remaining, want }) => remaining > 0 && !lapsed(campaign, id, want));
 }
 
 /** Whether an order's date has passed. A want that is no order never lapses. */
-function lapsed(campaign: Campaign, want: Want): boolean {
-  const last = lastDayOf(campaign, want);
+function lapsed(campaign: Campaign, wantId: string, want: Want): boolean {
+  const last = lastDayOf(campaign, wantId, want);
   return last !== null && campaign.day > last;
 }
 
