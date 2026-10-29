@@ -81,6 +81,17 @@ export function App() {
     });
   };
 
+  /** What every failure offers: a new campaign on any listed set, so no failure is a dead end. */
+  const anyOffer = (
+    <NewCampaign
+      sets={sets}
+      current={null}
+      seed={null}
+      asked={seedAskedFor(location.search)}
+      onStart={(set, seed) => startOn(set, seed, null)}
+    />
+  );
+
   switch (campaignState.state) {
     case 'opening':
       return <Frame>Opening the campaign…</Frame>;
@@ -96,13 +107,7 @@ export function App() {
       return (
         <Frame>
           <Failure title="The content set could not be fetched." lines={[campaignState.why]} />
-          <NewCampaign
-            sets={sets}
-            current={null}
-            seed={null}
-            asked={seedAskedFor(location.search)}
-            onStart={(set, seed) => startOn(set, seed, null)}
-          />
+          {anyOffer}
         </Frame>
       );
 
@@ -116,13 +121,7 @@ export function App() {
                 `${problem.where === '' ? 'the content set' : problem.where} — ${problem.what}`,
             )}
           />
-          <NewCampaign
-            sets={sets}
-            current={null}
-            seed={null}
-            asked={seedAskedFor(location.search)}
-            onStart={(set, seed) => startOn(set, seed, null)}
-          />
+          {anyOffer}
         </Frame>
       );
 
@@ -138,13 +137,7 @@ export function App() {
               </pre>
             </>
           )}
-          <NewCampaign
-            sets={sets}
-            current={null}
-            seed={null}
-            asked={seedAskedFor(location.search)}
-            onStart={(set, seed) => startOn(set, seed, null)}
-          />
+          {anyOffer}
         </Frame>
       );
 
@@ -322,7 +315,7 @@ function resuming(
   };
 }
 
-/** A save that will not replay, shown and kept as it was stored. */
+/** What cannot be played as asked: a save shown and kept as stored, or a URL's set. */
 function refused(stored: string | null, title: string, why: string): CampaignState {
   return { state: 'refused', title, why, stored };
 }
