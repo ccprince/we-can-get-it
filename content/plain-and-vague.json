@@ -10,14 +10,16 @@
     "daysPerWeek": 6,
     "weekdayNames": ["Firstday", "Seconday", "Thirdday", "Fourthday", "Fifthday", "Marketday"],
     "months": [
-      { "name": "Thessaly", "days": 36 },
-      { "name": "Ambit", "days": 36 },
-      { "name": "Lowtide", "days": 36 },
-      { "name": "Carrick", "days": 36 },
-      { "name": "Hollow", "days": 36 },
-      { "name": "Verity", "days": 36 },
-      { "name": "Spindle", "days": 36 },
-      { "name": "Hightide", "days": 36 }
+      { "name": "Unem", "days": 36 },
+      { "name": "Duon", "days": 36 },
+      { "name": "Trest", "days": 36 },
+      { "name": "Quarn", "days": 36 },
+      { "name": "Quint", "days": 36 },
+      { "name": "Sext", "days": 36 },
+      { "name": "Septem", "days": 36 },
+      { "name": "Octem", "days": 36 },
+      { "name": "Novem", "days": 36 },
+      { "name": "Decem", "days": 36 }
     ],
     "firstYear": 1
   },
