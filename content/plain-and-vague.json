@@ -45,10 +45,26 @@
   },
   "offers": { "grudgingPercent": 50, "acceptablePercent": 100, "greatPercent": 130 },
   "archetypes": [
-    { "id": "extractor", "supplies": [], "demands": [] },
-    { "id": "processor", "supplies": [], "demands": [] },
-    { "id": "agricultural", "supplies": [], "demands": [] },
-    { "id": "market", "supplies": [], "demands": [] }
+    {
+      "id": "extractor",
+      "supplies": ["ore"],
+      "demands": ["mechanical", "provisions", "spirits", "remedies"]
+    },
+    {
+      "id": "processor",
+      "supplies": ["mechanical", "cloth"],
+      "demands": ["ore", "botanicals", "provisions"]
+    },
+    {
+      "id": "agricultural",
+      "supplies": ["provisions", "botanicals", "spirits"],
+      "demands": ["mechanical", "cloth"]
+    },
+    {
+      "id": "market",
+      "supplies": ["curios", "remedies"],
+      "demands": ["spirits", "curios", "cloth", "provisions"]
+    }
   ],
   "motifs": [
     {
@@ -285,8 +301,347 @@
     }
   ],
   "lanes": [],
-  "tags": [],
-  "goods": [],
-  "buyers": [],
+  "tags": [
+    { "id": "spirits", "class": "kind", "tells": ["distilled", "proof", "bottle"] },
+    { "id": "provisions", "class": "kind", "tells": ["tinned", "preserved", "ration"] },
+    { "id": "cloth", "class": "kind", "tells": ["woven", "bolt", "cloth"] },
+    { "id": "remedies", "class": "kind", "tells": ["tincture", "salve", "dose"] },
+    { "id": "curios", "class": "kind", "tells": ["carved", "antique", "keepsake"] },
+    { "id": "mechanical", "class": "kind", "tells": ["gear", "motor", "machined"] },
+    { "id": "ore", "class": "kind", "tells": ["ore", "seam", "assay"] },
+    { "id": "botanicals", "class": "kind", "tells": ["seed", "cutting", "leaf"] }
+  ],
+  "goods": [
+    {
+      "id": "stub-spirits-1",
+      "name": "Stub spirits 1",
+      "prose": "A stub, standing in until the goods are written.",
+      "kind": "spirits",
+      "tags": [],
+      "worth": 15
+    },
+    {
+      "id": "stub-spirits-2",
+      "name": "Stub spirits 2",
+      "prose": "A stub, standing in until the goods are written.",
+      "kind": "spirits",
+      "tags": [],
+      "worth": 20
+    },
+    {
+      "id": "stub-spirits-3",
+      "name": "Stub spirits 3",
+      "prose": "A stub, standing in until the goods are written.",
+      "kind": "spirits",
+      "tags": [],
+      "worth": 25
+    },
+    {
+      "id": "stub-spirits-4",
+      "name": "Stub spirits 4",
+      "prose": "A stub, standing in until the goods are written.",
+      "kind": "spirits",
+      "tags": [],
+      "worth": 30
+    },
+    {
+      "id": "stub-provisions-1",
+      "name": "Stub provisions 1",
+      "prose": "A stub, standing in until the goods are written.",
+      "kind": "provisions",
+      "tags": [],
+      "worth": 15
+    },
+    {
+      "id": "stub-provisions-2",
+      "name": "Stub provisions 2",
+      "prose": "A stub, standing in until the goods are written.",
+      "kind": "provisions",
+      "tags": [],
+      "worth": 20
+    },
+    {
+      "id": "stub-provisions-3",
+      "name": "Stub provisions 3",
+      "prose": "A stub, standing in until the goods are written.",
+      "kind": "provisions",
+      "tags": [],
+      "worth": 25
+    },
+    {
+      "id": "stub-provisions-4",
+      "name": "Stub provisions 4",
+      "prose": "A stub, standing in until the goods are written.",
+      "kind": "provisions",
+      "tags": [],
+      "worth": 30
+    },
+    {
+      "id": "stub-cloth-1",
+      "name": "Stub cloth 1",
+      "prose": "A stub, standing in until the goods are written.",
+      "kind": "cloth",
+      "tags": [],
+      "worth": 15
+    },
+    {
+      "id": "stub-cloth-2",
+      "name": "Stub cloth 2",
+      "prose": "A stub, standing in until the goods are written.",
+      "kind": "cloth",
+      "tags": [],
+      "worth": 20
+    },
+    {
+      "id": "stub-cloth-3",
+      "name": "Stub cloth 3",
+      "prose": "A stub, standing in until the goods are written.",
+      "kind": "cloth",
+      "tags": [],
+      "worth": 25
+    },
+    {
+      "id": "stub-cloth-4",
+      "name": "Stub cloth 4",
+      "prose": "A stub, standing in until the goods are written.",
+      "kind": "cloth",
+      "tags": [],
+      "worth": 30
+    },
+    {
+      "id": "stub-remedies-1",
+      "name": "Stub remedies 1",
+      "prose": "A stub, standing in until the goods are written.",
+      "kind": "remedies",
+      "tags": [],
+      "worth": 15
+    },
+    {
+      "id": "stub-remedies-2",
+      "name": "Stub remedies 2",
+      "prose": "A stub, standing in until the goods are written.",
+      "kind": "remedies",
+      "tags": [],
+      "worth": 20
+    },
+    {
+      "id": "stub-remedies-3",
+      "name": "Stub remedies 3",
+      "prose": "A stub, standing in until the goods are written.",
+      "kind": "remedies",
+      "tags": [],
+      "worth": 25
+    },
+    {
+      "id": "stub-remedies-4",
+      "name": "Stub remedies 4",
+      "prose": "A stub, standing in until the goods are written.",
+      "kind": "remedies",
+      "tags": [],
+      "worth": 30
+    },
+    {
+      "id": "stub-curios-1",
+      "name": "Stub curios 1",
+      "prose": "A stub, standing in until the goods are written.",
+      "kind": "curios",
+      "tags": [],
+      "worth": 15
+    },
+    {
+      "id": "stub-curios-2",
+      "name": "Stub curios 2",
+      "prose": "A stub, standing in until the goods are written.",
+      "kind": "curios",
+      "tags": [],
+      "worth": 20
+    },
+    {
+      "id": "stub-curios-3",
+      "name": "Stub curios 3",
+      "prose": "A stub, standing in until the goods are written.",
+      "kind": "curios",
+      "tags": [],
+      "worth": 25
+    },
+    {
+      "id": "stub-curios-4",
+      "name": "Stub curios 4",
+      "prose": "A stub, standing in until the goods are written.",
+      "kind": "curios",
+      "tags": [],
+      "worth": 30
+    },
+    {
+      "id": "stub-mechanical-1",
+      "name": "Stub mechanical 1",
+      "prose": "A stub, standing in until the goods are written.",
+      "kind": "mechanical",
+      "tags": [],
+      "worth": 15
+    },
+    {
+      "id": "stub-mechanical-2",
+      "name": "Stub mechanical 2",
+      "prose": "A stub, standing in until the goods are written.",
+      "kind": "mechanical",
+      "tags": [],
+      "worth": 20
+    },
+    {
+      "id": "stub-mechanical-3",
+      "name": "Stub mechanical 3",
+      "prose": "A stub, standing in until the goods are written.",
+      "kind": "mechanical",
+      "tags": [],
+      "worth": 25
+    },
+    {
+      "id": "stub-mechanical-4",
+      "name": "Stub mechanical 4",
+      "prose": "A stub, standing in until the goods are written.",
+      "kind": "mechanical",
+      "tags": [],
+      "worth": 30
+    },
+    {
+      "id": "stub-ore-1",
+      "name": "Stub ore 1",
+      "prose": "A stub, standing in until the goods are written.",
+      "kind": "ore",
+      "tags": [],
+      "worth": 15
+    },
+    {
+      "id": "stub-ore-2",
+      "name": "Stub ore 2",
+      "prose": "A stub, standing in until the goods are written.",
+      "kind": "ore",
+      "tags": [],
+      "worth": 20
+    },
+    {
+      "id": "stub-ore-3",
+      "name": "Stub ore 3",
+      "prose": "A stub, standing in until the goods are written.",
+      "kind": "ore",
+      "tags": [],
+      "worth": 25
+    },
+    {
+      "id": "stub-ore-4",
+      "name": "Stub ore 4",
+      "prose": "A stub, standing in until the goods are written.",
+      "kind": "ore",
+      "tags": [],
+      "worth": 30
+    },
+    {
+      "id": "stub-botanicals-1",
+      "name": "Stub botanicals 1",
+      "prose": "A stub, standing in until the goods are written.",
+      "kind": "botanicals",
+      "tags": [],
+      "worth": 15
+    },
+    {
+      "id": "stub-botanicals-2",
+      "name": "Stub botanicals 2",
+      "prose": "A stub, standing in until the goods are written.",
+      "kind": "botanicals",
+      "tags": [],
+      "worth": 20
+    },
+    {
+      "id": "stub-botanicals-3",
+      "name": "Stub botanicals 3",
+      "prose": "A stub, standing in until the goods are written.",
+      "kind": "botanicals",
+      "tags": [],
+      "worth": 25
+    },
+    {
+      "id": "stub-botanicals-4",
+      "name": "Stub botanicals 4",
+      "prose": "A stub, standing in until the goods are written.",
+      "kind": "botanicals",
+      "tags": [],
+      "worth": 30
+    }
+  ],
+  "buyers": [
+    {
+      "id": "stub-buyer-spirits",
+      "name": "Stub buyer (spirits)",
+      "locationId": "corrow",
+      "wants": [{ "kind": "spirits", "quantity": 2 }],
+      "bonusTags": [],
+      "refusalTags": [],
+      "refusalLine": "A stub, standing in until the people are written."
+    },
+    {
+      "id": "stub-buyer-provisions",
+      "name": "Stub buyer (provisions)",
+      "locationId": "anvil",
+      "wants": [{ "kind": "provisions", "quantity": 2 }],
+      "bonusTags": [],
+      "refusalTags": [],
+      "refusalLine": "A stub, standing in until the people are written."
+    },
+    {
+      "id": "stub-buyer-cloth",
+      "name": "Stub buyer (cloth)",
+      "locationId": "longacre",
+      "wants": [{ "kind": "cloth", "quantity": 2 }],
+      "bonusTags": [],
+      "refusalTags": [],
+      "refusalLine": "A stub, standing in until the people are written."
+    },
+    {
+      "id": "stub-buyer-remedies",
+      "name": "Stub buyer (remedies)",
+      "locationId": "scoria",
+      "wants": [{ "kind": "remedies", "quantity": 2 }],
+      "bonusTags": [],
+      "refusalTags": [],
+      "refusalLine": "A stub, standing in until the people are written."
+    },
+    {
+      "id": "stub-buyer-curios",
+      "name": "Stub buyer (curios)",
+      "locationId": "vesper",
+      "wants": [{ "kind": "curios", "quantity": 2 }],
+      "bonusTags": [],
+      "refusalTags": [],
+      "refusalLine": "A stub, standing in until the people are written."
+    },
+    {
+      "id": "stub-buyer-mechanical",
+      "name": "Stub buyer (mechanical)",
+      "locationId": "fallow",
+      "wants": [{ "kind": "mechanical", "quantity": 2 }],
+      "bonusTags": [],
+      "refusalTags": [],
+      "refusalLine": "A stub, standing in until the people are written."
+    },
+    {
+      "id": "stub-buyer-ore",
+      "name": "Stub buyer (ore)",
+      "locationId": "brisance",
+      "wants": [{ "kind": "ore", "quantity": 2 }],
+      "bonusTags": [],
+      "refusalTags": [],
+      "refusalLine": "A stub, standing in until the people are written."
+    },
+    {
+      "id": "stub-buyer-botanicals",
+      "name": "Stub buyer (botanicals)",
+      "locationId": "weft",
+      "wants": [{ "kind": "botanicals", "quantity": 2 }],
+      "bonusTags": [],
+      "refusalTags": [],
+      "refusalLine": "A stub, standing in until the people are written."
+    }
+  ],
   "start": { "credits": 400, "day": 1, "ship": { "speed": 4, "range": 20, "hold": 12 } }
 }
