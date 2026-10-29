@@ -88,12 +88,18 @@ one row per seed per setting, because a campaign's draw is one fact and not twen
 | `ordersFillable` | day | Of those, how many some lot in stock among those seen answers at **acceptable** or better. |
 | `lotsSeen` | day | Lots on sale where the ship landed today; nought in transit. |
 | `lotsMatching` | day | Of those, how many answer a want the player has seen anywhere. |
+| `goodsUnwanted` | day | Distinct goods on sale in any shop the guide holds that no want seen is after: **thin demand** as a measurement. |
 | `motifs`, `locations`, `kinds`, `goods` | draw | The shape the **draw** gave the campaign (#11, #33). |
+| `usableKinds`, `goodsPerUsableKind` | draw | Kinds at or above the usability floor, and goods per kind as a distribution: `goods:kinds` pairs, `3:1 4:2` being one kind of three goods and two of four. |
+| `vagueZero`, `vagueOne`, `vagueFew`, `vagueMany` | draw | Vague wants held by anyone the draw placed, bucketed by how many drawn goods answer each at acceptable or better: none, one, two to four, five or more. Counts of wants, never an average. |
 
 Whether a good answers a want is the engine's to say (`wantsAnswered` and `lotsAnswering` on the
-guide's known lots and wants); the harness only counts. **Not here:** goods per usable kind as a
-distribution, vague wants bucketed by how many goods answer them, and goods wanted by nobody. Those
-are reports over a drawn galaxy (#21), not rows through a run.
+guide's known lots and wants); the harness only counts. The draw columns read the drawn galaxy through
+`drawShape` on the engine's seam, not the view: a want's answers across the whole galaxy are not
+something a player sees. The bounds of "few" (`FEW_ANSWERS` in `csv.ts`) are a knob, not a finding.
+
+Run one seed at two settings and `diff` the day files; a single pass over many seeds writes one file
+of rows, each carrying its seed.
 
 ## Why it has no tests
 
