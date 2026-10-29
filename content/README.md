@@ -4,6 +4,24 @@ Content is data the engine receives and never imports (ADR 0003 decision 2). The
 files; the harness reads them off disk; both hand the parsed data to the same validator before the
 same engine (ADR 0009 decision 6).
 
+## The manifest
+
+`sets.json` is an ordered list of the content sets the page offers, by name, where a name is a set's
+file name without its extension. It is not a content set and no loader reads it.
+
+```json
+["plain-and-vague", "walking-skeleton"]
+```
+
+- **Listing a set** is one line, and no code. The first entry is the set a new campaign opens on
+  when nothing else is asked for. A save records its set's name, so a set renamed or taken off the
+  list cannot resume it.
+- **Leaving a set unlisted** keeps it in the folder without offering it: the harness and the
+  cross-product report still read it by path. List a set once it loads.
+- The page offers a picker in **Start a new campaign** when two or more sets are listed, and none at
+  one. `?content=<name>` names the set a new campaign starts on, as `?seed=` names its seed.
+- Every listed name must exist and load with no problems; a test checks it.
+
 ## What the validator does with it
 
 The **validator** issues two verdicts and never conflates them (ADR 0007 decision 18):

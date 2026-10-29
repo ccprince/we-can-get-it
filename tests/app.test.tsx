@@ -13,6 +13,7 @@ import { readFileSync } from 'node:fs';
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { App } from '../src/page/App';
+import { serveSets } from './support/serve';
 
 afterEach(() => {
   cleanup();
@@ -22,8 +23,8 @@ afterEach(() => {
   vi.unstubAllGlobals();
 });
 
-function serve(body: string, ok = true) {
-  vi.stubGlobal('fetch', () => Promise.resolve(new Response(body, { status: ok ? 200 : 404 })));
+function serve(body: string) {
+  serveSets({ 'walking-skeleton': body });
 }
 
 const walkingSkeleton = readFileSync('content/walking-skeleton.json', 'utf8');
@@ -76,7 +77,7 @@ describe('the page', () => {
   });
 
   it('says so when the content set cannot be fetched at all', async () => {
-    serve('', false);
+    serveSets({}, ['walking-skeleton']);
     render(<App />);
 
     expect(await screen.findByText('The content set could not be fetched.')).toBeDefined();
