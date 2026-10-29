@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Stop hook: a slice branch with commits must be pushed and have an open PR
-# before the session stops (docs/agents/workflow.md, steps 3-4). Exit 2 sends
+# (or a merged one) before the session stops (docs/agents/workflow.md, steps 3-4). Exit 2 sends
 # the message back to the agent; exit 0 lets it stop.
 set -u
 
@@ -24,7 +24,9 @@ if [ "$(git rev-list --count "origin/$branch..HEAD" 2>/dev/null || echo 1)" != "
   exit 2
 fi
 
-if [ -z "$(gh pr list --head "$branch" --state open --json number --jq '.[].number' 2>/dev/null)" ]; then
+# A merged PR is a slice that is done, so only a branch with neither an open nor
+# a merged PR is missing one.
+if [ -z "$(gh pr list --head "$branch" --state all --json number,state --jq '.[] | select(.state != "CLOSED") | .number' 2>/dev/null)" ]; then
   echo "Slice branch '$branch' is pushed but has no open PR. Open it against its parent (docs/agents/workflow.md, step 4)." >&2
   exit 2
 fi
