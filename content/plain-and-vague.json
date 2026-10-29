@@ -1,0 +1,292 @@
+{
+  "bounds": {
+    "tagsPerGood": { "least": 1, "most": 5 },
+    "goodsPerRoleTag": { "least": 3, "most": 8 },
+    "usabilityFloor": 4,
+    "quirkRation": 3
+  },
+  "fareRate": 10,
+  "calendar": {
+    "daysPerWeek": 6,
+    "weekdayNames": ["Firstday", "Seconday", "Thirdday", "Fourthday", "Fifthday", "Marketday"],
+    "months": [
+      { "name": "Thessaly", "days": 36 },
+      { "name": "Ambit", "days": 36 },
+      { "name": "Lowtide", "days": 36 },
+      { "name": "Carrick", "days": 36 },
+      { "name": "Hollow", "days": 36 },
+      { "name": "Verity", "days": 36 },
+      { "name": "Spindle", "days": 36 },
+      { "name": "Hightide", "days": 36 }
+    ],
+    "firstYear": 1
+  },
+  "drawParameters": {
+    "motifsPerCampaign": 4,
+    "interMotifDistance": { "least": 12, "most": 20 },
+    "locationCount": { "least": 12, "most": 16 },
+    "rerolls": 24,
+    "goodsHiddenPercent": 33,
+    "peopleHiddenPercent": 33,
+    "peopleFloor": 0,
+    "reserveSurplus": 2
+  },
+  "topology": {
+    "leastPlaced": { "spur": 1, "chokepoint": 1, "ring": 0 },
+    "farHaul": 16,
+    "minimumGapPercent": 25,
+    "startHub": { "archetype": "market", "neighbours": 3, "spurs": 1 }
+  },
+  "shops": {
+    "lotsPerShop": { "least": 1, "most": 3 },
+    "lotQuantity": { "least": 2, "most": 8 },
+    "markupPercent": { "least": 0, "most": 40 },
+    "scarcityPercent": 30
+  },
+  "offers": { "grudgingPercent": 50, "acceptablePercent": 100, "greatPercent": 130 },
+  "archetypes": [
+    { "id": "extractor", "supplies": [], "demands": [] },
+    { "id": "processor", "supplies": [], "demands": [] },
+    { "id": "agricultural", "supplies": [], "demands": [] },
+    { "id": "market", "supplies": [], "demands": [] }
+  ],
+  "motifs": [
+    {
+      "id": "mine-spur",
+      "shape": "spur",
+      "slots": [
+        { "id": "junction", "archetype": "market" },
+        { "id": "approach", "archetype": "processor" },
+        { "id": "dead-end", "archetype": "extractor" },
+        { "id": "roads", "archetype": null }
+      ],
+      "lanes": [
+        { "ends": ["junction", "approach"], "distance": 5 },
+        { "ends": ["junction", "dead-end"], "distance": 16 },
+        { "ends": ["junction", "roads"], "distance": 3 }
+      ]
+    },
+    {
+      "id": "field-spur",
+      "shape": "spur",
+      "slots": [
+        { "id": "junction", "archetype": "market" },
+        { "id": "approach", "archetype": "extractor" },
+        { "id": "dead-end", "archetype": "agricultural" },
+        { "id": "roads", "archetype": null }
+      ],
+      "lanes": [
+        { "ends": ["junction", "approach"], "distance": 7 },
+        { "ends": ["junction", "dead-end"], "distance": 14 },
+        { "ends": ["junction", "roads"], "distance": 4 }
+      ]
+    },
+    {
+      "id": "narrows",
+      "shape": "chokepoint",
+      "slots": [
+        { "id": "gate", "archetype": "market" },
+        { "id": "east", "archetype": "processor" },
+        { "id": "west", "archetype": null }
+      ],
+      "lanes": [
+        { "ends": ["gate", "east"], "distance": 9 },
+        { "ends": ["gate", "west"], "distance": 4 }
+      ]
+    },
+    {
+      "id": "toll",
+      "shape": "chokepoint",
+      "slots": [
+        { "id": "gate", "archetype": "processor" },
+        { "id": "north", "archetype": "agricultural" },
+        { "id": "south", "archetype": "extractor" }
+      ],
+      "lanes": [
+        { "ends": ["gate", "north"], "distance": 8 },
+        { "ends": ["gate", "south"], "distance": 6 }
+      ]
+    },
+    {
+      "id": "circuit",
+      "shape": "ring",
+      "slots": [
+        { "id": "landing", "archetype": "market" },
+        { "id": "pits", "archetype": "extractor" },
+        { "id": "yard", "archetype": null }
+      ],
+      "lanes": [
+        { "ends": ["landing", "pits"], "distance": 10 },
+        { "ends": ["landing", "yard"], "distance": 6 },
+        { "ends": ["pits", "yard"], "distance": 7 }
+      ]
+    },
+    {
+      "id": "round",
+      "shape": "ring",
+      "slots": [
+        { "id": "mills", "archetype": "processor" },
+        { "id": "acres", "archetype": "agricultural" },
+        { "id": "near", "archetype": null },
+        { "id": "far", "archetype": null }
+      ],
+      "lanes": [
+        { "ends": ["mills", "acres"], "distance": 7 },
+        { "ends": ["acres", "far"], "distance": 6 },
+        { "ends": ["far", "near"], "distance": 7 },
+        { "ends": ["near", "mills"], "distance": 6 }
+      ]
+    }
+  ],
+  "locations": [
+    {
+      "id": "halloran",
+      "name": "Halloran's Rest",
+      "prose": "A crowded world that buys more than it makes, and argues about the price of all of it.",
+      "archetype": "market"
+    },
+    {
+      "id": "vesper",
+      "name": "Vesper Exchange",
+      "prose": "A trading station anchored over a dead world, open every hour the docks are.",
+      "archetype": "market"
+    },
+    {
+      "id": "corrow",
+      "name": "Corrow",
+      "prose": "Old cities stacked on older ones, and a bazaar in every gap between them.",
+      "archetype": "market"
+    },
+    {
+      "id": "ambry",
+      "name": "Saint Ambry",
+      "prose": "A pilgrim world grown rich on visitors, with a shrine for every trade.",
+      "archetype": "market"
+    },
+    {
+      "id": "lantern",
+      "name": "Lantern Quay",
+      "prose": "A ring station where every berth keeps a light burning for the ship it is owed.",
+      "archetype": "market"
+    },
+    {
+      "id": "quillon",
+      "name": "Quillon",
+      "prose": "A garden-city world with no gardens left, only the names of them.",
+      "archetype": "market"
+    },
+    {
+      "id": "gannet",
+      "name": "Gannet Shelf",
+      "prose": "An asteroid colony dug into a shelf of nickel, its tunnels named for the families who cut them.",
+      "archetype": "extractor"
+    },
+    {
+      "id": "coldwater",
+      "name": "Coldwater",
+      "prose": "An ice world where the haulers sleep in shifts and the drills never do.",
+      "archetype": "extractor"
+    },
+    {
+      "id": "scoria",
+      "name": "Scoria",
+      "prose": "A black volcanic world, mined from the craters inward.",
+      "archetype": "extractor"
+    },
+    {
+      "id": "pell",
+      "name": "Pell's Drift",
+      "prose": "A loose string of claimed rocks, each with its own flag and its own grudge.",
+      "archetype": "extractor"
+    },
+    {
+      "id": "hob",
+      "name": "Hob Deep",
+      "prose": "A world of pit towns, each one a little deeper than the last.",
+      "archetype": "extractor"
+    },
+    {
+      "id": "tamsin",
+      "name": "Tamsin Reef",
+      "prose": "A reef of carbon rock worked by crews who have not seen a sky in years.",
+      "archetype": "extractor"
+    },
+    {
+      "id": "anvil",
+      "name": "Anvil",
+      "prose": "A world of foundries under a sky the colour of their smoke. Its food all comes in by ship.",
+      "archetype": "processor"
+    },
+    {
+      "id": "brisance",
+      "name": "Brisance",
+      "prose": "Machine shops from pole to pole, and a fair price for any engine brought in broken.",
+      "archetype": "processor"
+    },
+    {
+      "id": "cinderhall",
+      "name": "Cinderhall",
+      "prose": "A refinery world, roofed against its own weather.",
+      "archetype": "processor"
+    },
+    {
+      "id": "weft",
+      "name": "Weft",
+      "prose": "A mill world, where the looms run all night and the shifts change by bell.",
+      "archetype": "processor"
+    },
+    {
+      "id": "orrery",
+      "name": "Orrery Works",
+      "prose": "A station of workshops turning slowly about a gas giant, building to order.",
+      "archetype": "processor"
+    },
+    {
+      "id": "grist",
+      "name": "Grist",
+      "prose": "A tired industrial world that makes a little of everything and boasts of none of it.",
+      "archetype": "processor"
+    },
+    {
+      "id": "longacre",
+      "name": "Long Acre",
+      "prose": "Fields to every horizon, tended by machines and a handful of people who mind them.",
+      "archetype": "agricultural"
+    },
+    {
+      "id": "fallow",
+      "name": "Fallow",
+      "prose": "A farm world resting half its land each year, and its families with it.",
+      "archetype": "agricultural"
+    },
+    {
+      "id": "sheaf",
+      "name": "Sheaf",
+      "prose": "Grain from pole to pole, cut by harvesters older than the colony charter.",
+      "archetype": "agricultural"
+    },
+    {
+      "id": "verdance",
+      "name": "Verdance",
+      "prose": "A wet green world of orchards and greenhouses, and stills behind most of them.",
+      "archetype": "agricultural"
+    },
+    {
+      "id": "harrow",
+      "name": "Harrow Green",
+      "prose": "Terraced hill farms, worked by hand where the machines cannot climb.",
+      "archetype": "agricultural"
+    },
+    {
+      "id": "mallory",
+      "name": "Mallory's Field",
+      "prose": "One family's farm grown into a world, and still run from the same kitchen table.",
+      "archetype": "agricultural"
+    }
+  ],
+  "lanes": [],
+  "tags": [],
+  "goods": [],
+  "buyers": [],
+  "start": { "credits": 400, "day": 1, "ship": { "speed": 4, "range": 20, "hold": 12 } }
+}
