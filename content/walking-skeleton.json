@@ -1,13 +1,7 @@
 {
   "bounds": {
-    "tagsPerGood": {
-      "least": 1,
-      "most": 5
-    },
-    "goodsPerRoleTag": {
-      "least": 2,
-      "most": 8
-    },
+    "tagsPerGood": { "least": 1, "most": 5 },
+    "goodsPerRoleTag": { "least": 2, "most": 8 },
     "usabilityFloor": 2,
     "quirkRation": 2
   },
@@ -16,51 +10,21 @@
     "daysPerWeek": 6,
     "weekdayNames": ["Firstday", "Seconday", "Thirdday", "Fourthday", "Fifthday", "Marketday"],
     "months": [
-      {
-        "name": "Thessaly",
-        "days": 36
-      },
-      {
-        "name": "Ambit",
-        "days": 36
-      },
-      {
-        "name": "Lowtide",
-        "days": 36
-      },
-      {
-        "name": "Carrick",
-        "days": 36
-      },
-      {
-        "name": "Hollow",
-        "days": 36
-      },
-      {
-        "name": "Verity",
-        "days": 36
-      },
-      {
-        "name": "Spindle",
-        "days": 36
-      },
-      {
-        "name": "Hightide",
-        "days": 36
-      }
+      { "name": "Thessaly", "days": 36 },
+      { "name": "Ambit", "days": 36 },
+      { "name": "Lowtide", "days": 36 },
+      { "name": "Carrick", "days": 36 },
+      { "name": "Hollow", "days": 36 },
+      { "name": "Verity", "days": 36 },
+      { "name": "Spindle", "days": 36 },
+      { "name": "Hightide", "days": 36 }
     ],
     "firstYear": 1
   },
   "drawParameters": {
     "motifsPerCampaign": 3,
-    "interMotifDistance": {
-      "least": 12,
-      "most": 20
-    },
-    "locationCount": {
-      "least": 9,
-      "most": 12
-    },
+    "interMotifDistance": { "least": 12, "most": 20 },
+    "locationCount": { "least": 9, "most": 12 },
     "rerolls": 24,
     "goodsHiddenPercent": 33,
     "peopleHiddenPercent": 33,
@@ -68,146 +32,63 @@
     "reserveSurplus": 1
   },
   "topology": {
-    "leastPlaced": {
-      "spur": 1,
-      "chokepoint": 1,
-      "ring": 0
-    },
+    "leastPlaced": { "spur": 1, "chokepoint": 1, "ring": 0 },
     "farHaul": 16,
     "minimumGapPercent": 25,
-    "startHub": {
-      "archetype": "market",
-      "neighbours": 3,
-      "spurs": 1
-    }
+    "startHub": { "archetype": "market", "neighbours": 3, "spurs": 1 }
   },
   "shops": {
-    "lotsPerShop": {
-      "least": 1,
-      "most": 3
-    },
-    "lotQuantity": {
-      "least": 2,
-      "most": 8
-    },
-    "markupPercent": {
-      "least": 0,
-      "most": 40
-    },
+    "lotsPerShop": { "least": 1, "most": 3 },
+    "lotQuantity": { "least": 2, "most": 8 },
+    "markupPercent": { "least": 0, "most": 40 },
     "scarcityPercent": 30
   },
   "archetypes": [
-    {
-      "id": "extractor",
-      "supplies": ["ore"],
-      "demands": []
-    },
-    {
-      "id": "processor",
-      "supplies": ["tools"],
-      "demands": []
-    },
-    {
-      "id": "market",
-      "supplies": ["cloth"],
-      "demands": []
-    }
+    { "id": "extractor", "supplies": ["ore"], "demands": [] },
+    { "id": "processor", "supplies": ["tools"], "demands": [] },
+    { "id": "market", "supplies": ["cloth"], "demands": [] }
   ],
   "motifs": [
     {
       "id": "crossing",
       "shape": "chokepoint",
       "slots": [
-        {
-          "id": "gate",
-          "archetype": "market"
-        },
-        {
-          "id": "east",
-          "archetype": "processor"
-        },
-        {
-          "id": "west",
-          "archetype": null
-        }
+        { "id": "gate", "archetype": "market" },
+        { "id": "east", "archetype": "processor" },
+        { "id": "west", "archetype": null }
       ],
       "lanes": [
-        {
-          "ends": ["gate", "east"],
-          "distance": 9
-        },
-        {
-          "ends": ["gate", "west"],
-          "distance": 4
-        }
+        { "ends": ["gate", "east"], "distance": 9 },
+        { "ends": ["gate", "west"], "distance": 4 }
       ]
     },
     {
       "id": "loop",
       "shape": "ring",
       "slots": [
-        {
-          "id": "landing",
-          "archetype": "market"
-        },
-        {
-          "id": "pits",
-          "archetype": "extractor"
-        },
-        {
-          "id": "yard",
-          "archetype": null
-        }
+        { "id": "landing", "archetype": "market" },
+        { "id": "pits", "archetype": "extractor" },
+        { "id": "yard", "archetype": null }
       ],
       "lanes": [
-        {
-          "ends": ["landing", "pits"],
-          "distance": 10
-        },
-        {
-          "ends": ["landing", "yard"],
-          "distance": 6
-        },
-        {
-          "ends": ["pits", "yard"],
-          "distance": 7
-        }
+        { "ends": ["landing", "pits"], "distance": 10 },
+        { "ends": ["landing", "yard"], "distance": 6 },
+        { "ends": ["pits", "yard"], "distance": 7 }
       ]
     },
     {
       "id": "spur",
       "shape": "spur",
       "slots": [
-        {
-          "id": "junction",
-          "archetype": "market"
-        },
-        {
-          "id": "approach",
-          "archetype": "processor"
-        },
-        {
-          "id": "dead-end",
-          "archetype": "extractor"
-        },
-        {
-          "id": "roads",
-          "archetype": null
-        }
+        { "id": "junction", "archetype": "market" },
+        { "id": "approach", "archetype": "processor" },
+        { "id": "dead-end", "archetype": "extractor" },
+        { "id": "roads", "archetype": null }
       ],
       "lanes": [
-        {
-          "ends": ["junction", "approach"],
-          "distance": 5
-        },
-        {
-          "ends": ["junction", "dead-end"],
-          "distance": 16
-        },
-        {
-          "ends": ["junction", "roads"],
-          "distance": 3
-        }
+        { "ends": ["junction", "approach"], "distance": 5 },
+        { "ends": ["junction", "dead-end"], "distance": 16 },
+        { "ends": ["junction", "roads"], "distance": 3 }
       ]
     }
   ],
@@ -286,21 +167,9 @@
     }
   ],
   "tags": [
-    {
-      "id": "cloth",
-      "class": "kind",
-      "tells": ["woven", "bolt", "cloth"]
-    },
-    {
-      "id": "ore",
-      "class": "kind",
-      "tells": ["ore", "seam", "assay"]
-    },
-    {
-      "id": "tools",
-      "class": "kind",
-      "tells": ["forged", "tool", "tempered"]
-    }
+    { "id": "cloth", "class": "kind", "tells": ["woven", "bolt", "cloth"] },
+    { "id": "ore", "class": "kind", "tells": ["ore", "seam", "assay"] },
+    { "id": "tools", "class": "kind", "tells": ["forged", "tool", "tempered"] }
   ],
   "goods": [
     {
@@ -381,17 +250,7 @@
       "id": "ilse",
       "name": "Ilse Vantry",
       "locationId": "bellwether",
-      "wants": [
-        {
-          "predicate": [
-            {
-              "tag": "tools"
-            }
-          ],
-          "plainly": "wants tools",
-          "quantity": 3
-        }
-      ],
+      "wants": [{ "predicate": [{ "tag": "tools" }], "plainly": "wants tools", "quantity": 3 }],
       "bonusTags": [],
       "refusalTags": [],
       "refusalLine": "That's not what I'm after."
@@ -400,17 +259,7 @@
       "id": "marrow",
       "name": "Dace Marrow",
       "locationId": "kestrel",
-      "wants": [
-        {
-          "predicate": [
-            {
-              "tag": "ore"
-            }
-          ],
-          "plainly": "wants ore",
-          "quantity": 3
-        }
-      ],
+      "wants": [{ "predicate": [{ "tag": "ore" }], "plainly": "wants ore", "quantity": 3 }],
       "bonusTags": [],
       "refusalTags": [],
       "refusalLine": "That's not what I'm after."
@@ -419,34 +268,12 @@
       "id": "osk",
       "name": "Osk Telling",
       "locationId": "hollow",
-      "wants": [
-        {
-          "predicate": [
-            {
-              "tag": "cloth"
-            }
-          ],
-          "plainly": "wants cloth",
-          "quantity": 3
-        }
-      ],
+      "wants": [{ "predicate": [{ "tag": "cloth" }], "plainly": "wants cloth", "quantity": 3 }],
       "bonusTags": [],
       "refusalTags": [],
       "refusalLine": "That's not what I'm after."
     }
   ],
-  "start": {
-    "credits": 400,
-    "day": 1,
-    "ship": {
-      "speed": 4,
-      "range": 20,
-      "hold": 12
-    }
-  },
-  "offers": {
-    "grudgingPercent": 50,
-    "acceptablePercent": 100,
-    "greatPercent": 130
-  }
+  "start": { "credits": 400, "day": 1, "ship": { "speed": 4, "range": 20, "hold": 12 } },
+  "offers": { "grudgingPercent": 50, "acceptablePercent": 100, "greatPercent": 130 }
 }
