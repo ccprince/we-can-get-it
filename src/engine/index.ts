@@ -8,6 +8,7 @@
  *   startCampaign(content, seed) -> { ok: true, campaign } | { ok: false, problems }
  *   takeCommand(campaign, cmd)   -> { campaign } | { rejected: Reason }
  *   drawGalaxy(content, seed)    -> { ok: true, galaxy } | { ok: false, problems }
+ *   drawShape(content, galaxy)   -> DrawShape
  *   view(campaign)               -> View
  *   identify(content)            -> string
  *   crossProduct(content, galaxy | null) -> CrossProduct
@@ -49,6 +50,8 @@ export type { Spread } from './content-reports';
 export { drawGalaxy } from './draw';
 export type { DrawReport } from './draw';
 export type { DrawnGalaxy } from './galaxy';
+export { drawShape } from './draw-shape';
+export type { DrawShape } from './draw-shape';
 export type { Point } from './layout';
 
 export { startCampaign } from './campaign';

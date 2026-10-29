@@ -2,6 +2,7 @@ import { mkdirSync, writeFileSync } from 'node:fs';
 import { dirname } from 'node:path';
 import {
   drawGalaxy,
+  drawShape,
   isRejected,
   loadContent,
   startCampaign,
@@ -130,7 +131,7 @@ function drawRowOf({ setting, content }: LoadedSetting, seed: number): DrawRow {
         drawn.problems.map((problem) => `${problem.where} ${problem.what}`).join('; '),
     );
   }
-  return drawRowFor(setting.name, seed, drawn.galaxy);
+  return drawRowFor(setting.name, seed, drawn.galaxy, drawShape(content, drawn.galaxy));
 }
 
 /**
