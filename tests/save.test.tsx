@@ -12,6 +12,7 @@ import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { identify, loadContent } from '../src/engine';
 import { App } from '../src/page/App';
+import { serveSets } from './support/serve';
 
 /** Where the page keeps its save. Stated here, not imported: it is the save's address. */
 const KEY = 'we-can-get-it/campaign';
@@ -25,7 +26,7 @@ const identity = identify(loaded.content);
 
 beforeEach(() => {
   localStorage.clear();
-  vi.stubGlobal('fetch', () => Promise.resolve(new Response(walkingSkeleton)));
+  serveSets({ 'walking-skeleton': walkingSkeleton });
 });
 
 afterEach(() => {
@@ -50,7 +51,7 @@ async function reload(page: ReturnType<typeof render>) {
 /** Close the tab, change the content file the page fetches, and open it again. */
 function reopenOn(page: ReturnType<typeof render>, content: unknown) {
   page.unmount();
-  vi.stubGlobal('fetch', () => Promise.resolve(new Response(JSON.stringify(content))));
+  serveSets({ 'walking-skeleton': JSON.stringify(content) });
   return render(<App />);
 }
 
@@ -86,7 +87,8 @@ describe('saving and resuming a campaign', () => {
 
   it('says plainly when the engine refuses a stored command, and keeps the save', async () => {
     const stored = JSON.stringify({
-      content: identity,
+      set: 'walking-skeleton',
+      identity,
       seed: 20261022,
       commands: [{ kind: 'wait' }, { kind: 'depart', toId: 'nowhere-at-all' }],
     });
@@ -186,14 +188,18 @@ describe('saving and resuming a campaign', () => {
 
     expect(await screen.findByText('seed 1073741824')).toBeDefined();
     expect(JSON.parse(localStorage.getItem(KEY) ?? '')).toEqual({
-      content: identity,
+      set: 'walking-skeleton',
+      identity,
       seed: 1073741824,
       commands: [],
     });
   });
 
   it('offers the URL seed when it is not the one in play, and starts on it', async () => {
-    localStorage.setItem(KEY, JSON.stringify({ content: identity, seed: 20261022, commands: [] }));
+    localStorage.setItem(
+      KEY,
+      JSON.stringify({ set: 'walking-skeleton', identity, seed: 20261022, commands: [] }),
+    );
     history.replaceState(null, '', '/?seed=7');
     try {
       await open();
@@ -232,7 +238,8 @@ describe('saving and resuming a campaign', () => {
 
     expect(await screen.findByRole('button', { name: 'End the day' })).toBeDefined();
     expect(JSON.parse(localStorage.getItem(KEY) ?? '')).toEqual({
-      content: identity,
+      set: 'walking-skeleton',
+      identity,
       seed: 1073741824,
       commands: [],
     });
@@ -241,7 +248,12 @@ describe('saving and resuming a campaign', () => {
   it('resumes the save rather than the seed a URL asks for, and says so', async () => {
     localStorage.setItem(
       KEY,
-      JSON.stringify({ content: identity, seed: 20261022, commands: [{ kind: 'wait' }] }),
+      JSON.stringify({
+        set: 'walking-skeleton',
+        identity,
+        seed: 20261022,
+        commands: [{ kind: 'wait' }],
+      }),
     );
     history.replaceState(null, '', '/?seed=7');
     try {
