@@ -307,6 +307,34 @@ What follows from them is arithmetic, recorded as such:
 | Motif reserve | 6 | Two spurs, two chokepoints, two rings. |
 | Usability floor | 4 | ADR 0008 decision 20: a floor below the target, not the target. |
 
+### The economy
+
+Eight kinds, each one a **tag** of class kind with its tells, and four archetypes, each supplying
+some kinds and demanding others. Every kind has an archetype that supplies it and one that demands
+it.
+
+| Archetype | Supplies | Demands |
+| --- | --- | --- |
+| `extractor` | ore | mechanical, provisions, spirits, remedies |
+| `processor` | mechanical, cloth | ore, botanicals, provisions |
+| `agricultural` | provisions, botanicals, spirits | mechanical, cloth |
+| `market` | curios, remedies | spirits, curios, cloth, provisions |
+
+`ore` is the one bulk kind. `cloth` covers the raw material and what is made of it, and
+`mechanical` covers things usable as they are and the parts they are made of: within a kind, that
+difference is for tags to carry, not a second kind.
+
+### Stubs
+
+**Every good and buyer in this file is a stub**, there only so the set loads, and later stages
+replace all of them. A stub's id begins `stub-`, its name says so, and so does its prose. There are
+four goods per kind, the usability floor, and one buyer per kind with a vague want at it, standing
+at a location whose archetype demands it.
+
+Two consequences, to read past rather than act on. Every stub good is reported for missing its
+kind's tells, because stub prose is not prose. And with each kind at exactly its floor, the draw
+hides no goods at all yet.
+
 ### The map
 
 A location is shown as one world: a planet by default, with stations and asteroid colonies among
