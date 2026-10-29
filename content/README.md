@@ -307,7 +307,7 @@ What follows from them is arithmetic, recorded as such:
 | Motif reserve | 6 | Two spurs, two chokepoints, two rings. |
 | Usability floor | 4 | ADR 0008 decision 20: a floor below the target, not the target. |
 
-### The economy
+### Supply and demand
 
 Eight kinds, each one a **tag** of class kind with its tells, and four archetypes, each supplying
 some kinds and demanding others. Every kind has an archetype that supplies it and one that demands
@@ -320,14 +320,16 @@ it.
 | `agricultural` | provisions, botanicals, spirits | mechanical, cloth |
 | `market` | curios, remedies | spirits, curios, cloth, provisions |
 
-`ore` is the one bulk kind. `cloth` covers the raw material and what is made of it, and
+`ore` stands for heavy cargo, in the fiction only: the game does not model bulk, and a unit of ore
+takes one unit of hold like any other good. `curios` travel only from one market to another, since
+the market is both their supplier and their buyer. `cloth` covers the raw material and what is made of it, and
 `mechanical` covers things usable as they are and the parts they are made of: within a kind, that
 difference is for tags to carry, not a second kind.
 
 ### Stubs
 
 **Every good and buyer in this file is a stub**, there only so the set loads, and later stages
-replace all of them. A stub's id begins `stub-`, its name says so, and so does its prose. There are
+replace all of them. A stub's id begins `stub-`, its name says so, and so does a good's prose or a buyer's refusal line. There are
 four goods per kind, the usability floor, and one buyer per kind with a vague want at it, standing
 at a location whose archetype demands it.
 
