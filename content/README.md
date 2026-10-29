@@ -346,4 +346,5 @@ and a chokepoint, and opens at a `market` hub with three neighbours, one of them
 **Every number in this file is a placeholder, and evidence of nothing**, beyond the estimates
 above: the bounds, the fare rate, the calendar, every lane's distance, and everything in
 `topology`, `drawParameters`, `shops`, `offers` and `start`. The calendar, fare rate, shops,
-offers and start are the walking skeleton's own placeholders, carried over unmeasured.
+offers and start are the walking skeleton's own placeholders, carried over unmeasured, except the
+months: ten of 36 days, named as old ordinals worn down (`Unem` to `Decem`), a year of 360 days.
