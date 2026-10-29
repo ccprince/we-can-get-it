@@ -13,6 +13,11 @@
       "name": "farthest",
       "contentPath": "content/walking-skeleton.json",
       "route": "farthest"
+    },
+    {
+      "name": "plain-and-vague",
+      "contentPath": "content/plain-and-vague.json",
+      "route": "nearest"
     }
   ]
 }

@@ -271,3 +271,46 @@ lengths, the starting credits, the starting day and every declared bound are all
 project has not taken yet (CLAUDE.md); no prototype number is a starting point. They are declared by
 the content set rather than held in the engine precisely so that measurement can move them without
 touching code.
+
+## `plain-and-vague.json`
+
+The content set the first milestone measures (#22), named for its question: how do plain and vague
+wants divide the game? `walking-skeleton.json` stays as it is. This set is revised all through #22,
+in stages: frame, cast, goods three times, measure, prose.
+
+### Scope: fewer kinds, not fewer goods per kind
+
+The question turns on **goods per usable kind** in the drawn galaxy, not on how many kinds there
+are. So ADR 0007's 6–8 goods per usable kind holds, and its 20–30 kinds are cut. People, locations
+and motifs scale down with the kinds. What is given up is **regional grain**, the economic texture
+of many kinds disagreeing along lanes, and this milestone does not measure it.
+
+### The sizing estimates
+
+**Estimates, void on first measurement, and evidence of nothing.** No prototype number is a
+starting point. Each takes the low end, to reach play sooner.
+
+| Seed | Estimate | Why |
+| --- | --- | --- |
+| Goods per usable kind | **6**, drawn | The low end of ADR 0007's 6–8. |
+| Number of kinds | **8** | The cut above. |
+| Motifs per campaign | **4** | The low end of ADR 0008's 4–6, with fewer kinds and so fewer archetypes. |
+
+What follows from them is arithmetic, recorded as such:
+
+| Quantity | Estimate | Derivation |
+| --- | --- | --- |
+| Goods reserve | about 70 | 8 kinds × 6, divided by ⅔ for the third the draw hides. |
+| Drawn locations | 12–16 | 4 motifs of 3–4 locations each. |
+| Archetypes | 4 | `extractor`, `processor`, `agricultural`, `market`. |
+| Location reserve | 24 | 6 per archetype: no motif has two slots of one archetype, so 4 motifs demand at most 4, plus a `reserveSurplus` of 2. |
+| Motif reserve | 6 | Two spurs, two chokepoints, two rings. |
+| Usability floor | 4 | ADR 0008 decision 20: a floor below the target, not the target. |
+
+### The map
+
+A location is a **system**, shown as one world: a planet by default, with stations and asteroid
+colonies among them. The `market` archetype is the populated, non-farming world. A campaign always
+places a spur and a chokepoint, and opens at a `market` junction with three neighbours, one of them
+a spur's dead end. Every number in `topology`, `drawParameters`, `shops`, `offers` and `start` is a
+placeholder to be measured.
