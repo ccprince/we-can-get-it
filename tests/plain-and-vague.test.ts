@@ -23,6 +23,7 @@ describe('the plain-and-vague content set', () => {
     // held for (ADR 0008 decision 9).
     const result = loadContent(raw);
     if (!result.ok) throw new Error('the content set did not load');
+    // A sample of seeds, not a measured number: enough to meet most assemblies.
     const seeds = Array.from({ length: 200 }, (_, at) => at + 1);
 
     expect(seeds.filter((seed) => !drawGalaxy(result.content, seed).ok)).toEqual([]);
