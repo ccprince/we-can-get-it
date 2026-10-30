@@ -1216,7 +1216,7 @@
       "name": "Lena Wirth",
       "locationId": "pell",
       "wants": [
-        { "goodId": "lamp-blind-drops", "quantity": 2, "order": { "price": 50, "days": 30 } }
+        { "goodId": "lamp-blind-drops", "quantity": 2, "order": { "price": 40, "days": 30 } }
       ],
       "bonusTags": [],
       "refusalTags": [],
