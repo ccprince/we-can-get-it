@@ -100,21 +100,23 @@ describe('the role-tag spread, in the drawn galaxy', () => {
     }
   });
 
-  it('draws the goods it spares back by the generator, not by id', () => {
-    // Every good is hidden and the floor draws one back, so the tag is short on
-    // every seed and the pass has to choose which warm goods to keep.
+  it('draws goods back for a short tag by the generator, not by id', () => {
+    // Every good is hidden and the floor draws one back. Where that one is not
+    // warm, every warm good kept was drawn back for the tag, and by id they
+    // would be the same two on every such seed.
     const content = aWarmReserve({ bonusTags: ['warm'] });
 
     const kept = new Set<string>();
     for (const seed of SEEDS) {
-      const warm = galaxyOf(content, seed).goods.filter((good) => good.tags.includes('warm'));
+      const goods = galaxyOf(content, seed).goods;
+      const warm = goods.filter((good) => good.tags.includes('warm'));
       expect(warm.length).toBeGreaterThanOrEqual(2);
-      kept.add(warm.map((good) => good.id).join(' '));
+      if (warm.length < goods.length) kept.add(warm.map((good) => good.id).join(' '));
     }
     expect(kept.size).toBeGreaterThan(1);
   });
 
-  it('spares no tag held only by someone at a location the draw did not place', () => {
+  it('draws nothing back for a tag held only at a location the draw did not place', () => {
     // One slot, two markets: Osk at Hollow holds warm, and Ilse at Kestrel
     // holds nothing. Where Kestrel is placed, only the floor draws goods back.
     const content = aWarmReserve({ bonusTags: [] });
@@ -129,13 +131,38 @@ describe('the role-tag spread, in the drawn galaxy', () => {
       expect(goodsCarryingIn(galaxy, 'warm')).toBeGreaterThanOrEqual(2);
   });
 
-  it('misses a galaxy that left a role tag on one good', () => {
-    const content = aClothReserve();
-    const galaxy = galaxyOf(content, 1);
-    const thin = { ...galaxy, goods: galaxy.goods.filter((good) => good.id !== 'linen') };
+  it('draws goods back for a kind held in a role, as for any other tag', () => {
+    // Ilse pays more for anything that is cloth, and the floor of one would
+    // leave her pattern on a single good.
+    const content = aWarmReserve({ bonusTags: ['cloth'] });
 
-    expect(checkNamed('the role-tag spread').miss(thin, content)).toBe(
-      'warm held in a role but sat on fewer than 2 drawn goods',
+    for (const seed of SEEDS) {
+      const galaxy = galaxyOf(content, seed);
+      if (galaxy.startId === 'kestrel') expect(galaxy.goods.length).toBeGreaterThanOrEqual(2);
+    }
+  });
+
+  it('fails loudly where the kinds in circulation carry too few goods for a tag', () => {
+    // Warm is on silk and on galena, and nothing drawn trades in ore, so the
+    // kinds pass drops it whole: no drawing back can reach the least, and no
+    // re-roll of the goods pass can bring ore back.
+    const content = aClothReserve({
+      tags: [
+        aTag(),
+        aTag({ id: 'ore', tells: ['seam'] }),
+        aTag({ id: 'warm', class: 'quality', tells: ['fleece'] }),
+      ],
+      goods: [
+        aGood({ id: 'silk', tags: ['warm'] }),
+        aGood({ id: 'linen', name: 'Linen' }),
+        aGood({ id: 'galena', name: 'Galena', kind: 'ore', tags: ['warm'] }),
+      ],
+      buyers: [aBuyer(), aBobWhoWants(['ore'])],
+      drawParameters: aDrawParameters({ goodsHiddenPercent: 100 }),
+    });
+
+    expect(failures(content)[0]).toContain(
+      'the role-tag spread: warm held in a role but sat on fewer than 2 drawn goods',
     );
   });
 });
