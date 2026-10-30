@@ -104,7 +104,7 @@ export type Drawn = Survey & {
    * together (ADR 0011 decisions 5 and 6). Ties keep the order the draw laid them in.
    */
   readonly interMotifStretch: readonly LaneDrawn[];
-  readonly hiding: Hiding;
+  readonly goodsHidden: GoodsHidden;
 };
 
 /**
@@ -113,12 +113,14 @@ export type Drawn = Survey & {
  * one drawn back is a good the declared rate would have hidden, so a writer
  * tuning the rate reads this rather than the rate (ADR 0008 decision 11).
  */
-export type Hiding = {
+export type GoodsHidden = {
   readonly declaredPercent: number;
   /** The goods of the kinds in circulation, in the reserve. */
   readonly inCirculation: number;
   /** How many of those the draw hid. */
   readonly hidden: number;
+  /** The same as a whole percentage of those in circulation, rounded. */
+  readonly hiddenPercent: number;
   readonly drawnBack: readonly DrawnBack[];
 };
 
@@ -149,17 +151,22 @@ export function crossProduct(content: ContentSet, galaxy: DrawnGalaxy | null): C
             ...surveyDrawn(content, galaxy),
             placed: placed(galaxy),
             interMotifStretch: interMotifStretch(galaxy),
-            hiding: hiding(content, galaxy),
+            goodsHidden: goodsHidden(content, galaxy),
           },
   };
 }
 
-function hiding(content: ContentSet, galaxy: DrawnGalaxy): Hiding {
+function goodsHidden(content: ContentSet, galaxy: DrawnGalaxy): GoodsHidden {
   const inCirculation = content.goods.filter((good) => galaxy.kinds.includes(good.kind)).length;
   return {
     declaredPercent: content.drawParameters.goodsHiddenPercent,
     inCirculation,
     hidden: inCirculation - galaxy.goods.length,
+    // A content set may have no goods at all, and then nothing was hidden.
+    hiddenPercent:
+      inCirculation === 0
+        ? 0
+        : Math.round((100 * (inCirculation - galaxy.goods.length)) / inCirculation),
     drawnBack: galaxy.drawnBack,
   };
 }
