@@ -1,6 +1,6 @@
 import { roleTags, type Buyer, type ContentSet, type Good } from './content';
 import type { Attempt } from './draw-checks';
-import type { DrawnGalaxy } from './galaxy';
+import type { DrawnBack, DrawnGalaxy } from './galaxy';
 import { drawFrom, drawHidden, type Rng } from './rng';
 
 /**
@@ -58,6 +58,7 @@ export function drawKinds(galaxy: DrawnGalaxy, content: ContentSet, rng: Rng): A
  */
 export function drawGoods(galaxy: DrawnGalaxy, content: ContentSet, rng: Rng): Attempt {
   const kept = new Set<string>();
+  const drawnBack: DrawnBack[] = [];
   let next = rng;
 
   for (const kind of galaxy.kinds) {
@@ -74,17 +75,20 @@ export function drawGoods(galaxy: DrawnGalaxy, content: ContentSet, rng: Rng): A
     );
     next = afterFloor;
     for (const good of goods) if (!hidden.includes(good)) kept.add(good.id);
+    for (const good of rolled) {
+      if (!hidden.includes(good)) drawnBack.push({ good: good.id, keeping: 'floor', of: kind });
+    }
   }
 
-  next = keepingTheRoleTags(galaxy, content, kept, next);
+  next = keepingTheRoleTags(galaxy, content, { kept, drawnBack }, next);
   const goods = content.goods.filter((good) => kept.has(good.id));
-  return { ok: true, galaxy: { ...galaxy, goods }, rng: next };
+  return { ok: true, galaxy: { ...galaxy, goods, drawnBack }, rng: next };
 }
 
 /**
- * Draws hidden goods back, into `kept`, until every **role tag** held by a
- * buyer at a drawn location sits on its least (ADR 0008 decision 11, as
- * amended). The goods pass runs before the people pass, so it reads the
+ * Draws hidden goods back, into `kept` and recorded in `drawnBack`, until
+ * every **role tag** held by a buyer at a drawn location sits on its least
+ * (ADR 0008 decision 11, as amended). The goods pass runs before the people pass, so it reads the
  * buyers who could be drawn. Tags are walked in id order and the goods drawn
  * back by the generator, as the floor's are. A tag its kinds in circulation
  * carry too few goods for is left alone: no drawing back can reach its least,
@@ -93,7 +97,7 @@ export function drawGoods(galaxy: DrawnGalaxy, content: ContentSet, rng: Rng): A
 function keepingTheRoleTags(
   galaxy: DrawnGalaxy,
   content: ContentSet,
-  kept: Set<string>,
+  { kept, drawnBack }: { kept: Set<string>; drawnBack: DrawnBack[] },
   rng: Rng,
 ): Rng {
   const { least } = content.bounds.goodsPerRoleTag;
@@ -111,7 +115,11 @@ function keepingTheRoleTags(
     const hidden = carrying.filter((good) => !kept.has(good.id));
     const [stillHidden, after] = keepingTheFloor(hidden, carrying.length - least, next);
     next = after;
-    for (const good of hidden) if (!stillHidden.includes(good)) kept.add(good.id);
+    for (const good of hidden) {
+      if (stillHidden.includes(good)) continue;
+      kept.add(good.id);
+      drawnBack.push({ good: good.id, keeping: 'role tag', of: tag.id });
+    }
   }
   return next;
 }

@@ -64,7 +64,7 @@ The report is Markdown, written to a file. It is written even when the content s
 | **goods per role tag** | The same, over tags some buyer holds as a bonus or a refusal. |
 | **prose missing the tells of a tag the good holds** | A good whose prose carries none of a held tag's tell words. |
 | **prose carrying the tells of a tag the good does not hold** | A good whose prose reads like a tag it does not carry. |
-| **Drawn: …** | Each of the four above over the goods and people the draw kept, plus **slots placed**: which location filled which slot, and **inter-motif stretch**: each lane between motifs, most stretched first, drawn on the chart against its distance. The draw lengthens only these lanes, and only to fit a motif without a crossing (ADR 0011 decision 6). Only with `--seed`. |
+| **Drawn: …** | Each of the four above over the goods and people the draw kept, plus **goods hidden**: how many of the goods of the kinds in circulation the draw hid against the declared rate, and each good it drew back to keep a kind's floor or a role tag's least, which is why the two differ; **slots placed**: which location filled which slot, and **inter-motif stretch**: each lane between motifs, most stretched first, drawn on the chart against its distance. The draw lengthens only these lanes, and only to fit a motif without a crossing (ADR 0011 decision 6). Only with `--seed`. |
 
 A tell finding is a **judgement for you** and never a failure: a missing tell is usually a better
 word than the tag table predicted, and failing it would train writers to pad prose with keywords.
