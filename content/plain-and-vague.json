@@ -30,7 +30,7 @@
     "rerolls": 24,
     "goodsHiddenPercent": 33,
     "peopleHiddenPercent": 33,
-    "peopleFloor": 0,
+    "peopleFloor": 1,
     "reserveSurplus": 2
   },
   "topology": {
@@ -573,51 +573,6 @@
   ],
   "buyers": [
     {
-      "id": "stub-buyer-provisions",
-      "name": "Stub buyer (provisions)",
-      "locationId": "anvil",
-      "wants": [{ "kind": "provisions", "quantity": 2 }],
-      "bonusTags": [],
-      "refusalTags": [],
-      "refusalLine": "A stub, standing in until the people are written."
-    },
-    {
-      "id": "stub-buyer-cloth",
-      "name": "Stub buyer (cloth)",
-      "locationId": "longacre",
-      "wants": [{ "kind": "cloth", "quantity": 2 }],
-      "bonusTags": [],
-      "refusalTags": [],
-      "refusalLine": "A stub, standing in until the people are written."
-    },
-    {
-      "id": "stub-buyer-mechanical",
-      "name": "Stub buyer (mechanical)",
-      "locationId": "fallow",
-      "wants": [{ "kind": "mechanical", "quantity": 2 }],
-      "bonusTags": [],
-      "refusalTags": [],
-      "refusalLine": "A stub, standing in until the people are written."
-    },
-    {
-      "id": "stub-buyer-ore",
-      "name": "Stub buyer (ore)",
-      "locationId": "brisance",
-      "wants": [{ "kind": "ore", "quantity": 2 }],
-      "bonusTags": [],
-      "refusalTags": [],
-      "refusalLine": "A stub, standing in until the people are written."
-    },
-    {
-      "id": "stub-buyer-botanicals",
-      "name": "Stub buyer (botanicals)",
-      "locationId": "weft",
-      "wants": [{ "kind": "botanicals", "quantity": 2 }],
-      "bonusTags": [],
-      "refusalTags": [],
-      "refusalLine": "A stub, standing in until the people are written."
-    },
-    {
       "id": "hester-barrow",
       "name": "Hester Barrow",
       "locationId": "halloran",
@@ -937,6 +892,330 @@
       "name": "Rosa Tennant",
       "locationId": "tamsin",
       "wants": [{ "kind": "provisions", "quantity": 4 }],
+      "bonusTags": [],
+      "refusalTags": [],
+      "refusalLine": "No, that isn't it."
+    },
+    {
+      "id": "gideon-ferrous",
+      "name": "Gideon Ferrous",
+      "locationId": "anvil",
+      "wants": [{ "kind": "provisions", "quantity": 3 }],
+      "bonusTags": [],
+      "refusalTags": [],
+      "refusalLine": "My foundries eat better than I do, and even they would send that back."
+    },
+    {
+      "id": "abel-crane",
+      "name": "Abel Crane",
+      "locationId": "anvil",
+      "wants": [{ "kind": "ore", "quantity": 3 }],
+      "bonusTags": [],
+      "refusalTags": [],
+      "refusalLine": "That isn't what I asked for."
+    },
+    {
+      "id": "yusuf-brandt",
+      "name": "Yusuf Brandt",
+      "locationId": "anvil",
+      "wants": [{ "kind": "botanicals", "quantity": 4 }],
+      "bonusTags": [],
+      "refusalTags": [],
+      "refusalLine": "Not that one."
+    },
+    {
+      "id": "corvin-trask",
+      "name": "Corvin Trask",
+      "locationId": "brisance",
+      "wants": [{ "kind": "ore", "quantity": 2 }],
+      "bonusTags": [],
+      "refusalTags": [],
+      "refusalLine": "The furnace wouldn't have it, and I've never won an argument with the furnace."
+    },
+    {
+      "id": "marta-ibsen",
+      "name": "Marta Ibsen",
+      "locationId": "brisance",
+      "wants": [{ "kind": "botanicals", "quantity": 3 }],
+      "bonusTags": [],
+      "refusalTags": [],
+      "refusalLine": "Wrong goods. I need the other kind."
+    },
+    {
+      "id": "ned-fairweather",
+      "name": "Ned Fairweather",
+      "locationId": "brisance",
+      "wants": [{ "kind": "provisions", "quantity": 4 }],
+      "bonusTags": [],
+      "refusalTags": [],
+      "refusalLine": "That won't fill the order."
+    },
+    {
+      "id": "petra-soot",
+      "name": "Petra Soot",
+      "locationId": "cinderhall",
+      "wants": [{ "kind": "botanicals", "quantity": 2 }],
+      "bonusTags": [],
+      "refusalTags": [],
+      "refusalLine": "No. The roof keeps out the weather, not bad judgment."
+    },
+    {
+      "id": "clio-rask",
+      "name": "Clio Rask",
+      "locationId": "cinderhall",
+      "wants": [{ "kind": "provisions", "quantity": 3 }],
+      "bonusTags": [],
+      "refusalTags": [],
+      "refusalLine": "No. It has to be what I said."
+    },
+    {
+      "id": "tomas-orwell",
+      "name": "Tomas Orwell",
+      "locationId": "cinderhall",
+      "wants": [{ "kind": "ore", "quantity": 4 }],
+      "bonusTags": [],
+      "refusalTags": [],
+      "refusalLine": "I can't use that."
+    },
+    {
+      "id": "nell-shuttleworth",
+      "name": "Nell Shuttleworth",
+      "locationId": "weft",
+      "wants": [{ "kind": "botanicals", "quantity": 2 }],
+      "bonusTags": [],
+      "refusalTags": [],
+      "refusalLine": "The bell rang for something better than that."
+    },
+    {
+      "id": "hilde-voss",
+      "name": "Hilde Voss",
+      "locationId": "weft",
+      "wants": [{ "kind": "provisions", "quantity": 3 }],
+      "bonusTags": [],
+      "refusalTags": [],
+      "refusalLine": "Not what I'm buying."
+    },
+    {
+      "id": "alder-finch",
+      "name": "Alder Finch",
+      "locationId": "weft",
+      "wants": [{ "kind": "ore", "quantity": 4 }],
+      "bonusTags": [],
+      "refusalTags": [],
+      "refusalLine": "No, that isn't it."
+    },
+    {
+      "id": "anselm-quadrant",
+      "name": "Anselm Quadrant",
+      "locationId": "orrery",
+      "wants": [{ "kind": "ore", "quantity": 3 }],
+      "bonusTags": [],
+      "refusalTags": [],
+      "refusalLine": "Built to order, and that is not what I ordered. It isn't even in the right orbit."
+    },
+    {
+      "id": "june-castellan",
+      "name": "June Castellan",
+      "locationId": "orrery",
+      "wants": [{ "kind": "botanicals", "quantity": 3 }],
+      "bonusTags": [],
+      "refusalTags": [],
+      "refusalLine": "That isn't what I asked for."
+    },
+    {
+      "id": "rafe-moody",
+      "name": "Rafe Moody",
+      "locationId": "orrery",
+      "wants": [{ "kind": "provisions", "quantity": 4 }],
+      "bonusTags": [],
+      "refusalTags": [],
+      "refusalLine": "Not that one."
+    },
+    {
+      "id": "odalys-pike",
+      "name": "Odalys Pike",
+      "locationId": "grist",
+      "wants": [{ "kind": "provisions", "quantity": 2 }],
+      "bonusTags": [],
+      "refusalTags": [],
+      "refusalLine": "It'll do for someone. Not here."
+    },
+    {
+      "id": "selma-quint",
+      "name": "Selma Quint",
+      "locationId": "grist",
+      "wants": [{ "kind": "ore", "quantity": 3 }],
+      "bonusTags": [],
+      "refusalTags": [],
+      "refusalLine": "Wrong goods. I need the other kind."
+    },
+    {
+      "id": "odo-pengelly",
+      "name": "Odo Pengelly",
+      "locationId": "grist",
+      "wants": [{ "kind": "botanicals", "quantity": 4 }],
+      "bonusTags": [],
+      "refusalTags": [],
+      "refusalLine": "That won't fill the order."
+    },
+    {
+      "id": "teague-harlan",
+      "name": "Teague Harlan",
+      "locationId": "longacre",
+      "wants": [{ "kind": "cloth", "quantity": 2 }],
+      "bonusTags": [],
+      "refusalTags": [],
+      "refusalLine": "The machines wouldn't wear that, and I'm told they aren't fussy."
+    },
+    {
+      "id": "thea-lowry",
+      "name": "Thea Lowry",
+      "locationId": "longacre",
+      "wants": [{ "kind": "mechanical", "quantity": 3 }],
+      "bonusTags": [],
+      "refusalTags": [],
+      "refusalLine": "No. It has to be what I said."
+    },
+    {
+      "id": "cormac-hale",
+      "name": "Cormac Hale",
+      "locationId": "longacre",
+      "wants": [{ "kind": "cloth", "quantity": 4 }],
+      "bonusTags": [],
+      "refusalTags": [],
+      "refusalLine": "I can't use that."
+    },
+    {
+      "id": "marguerite-lye",
+      "name": "Marguerite Lye",
+      "locationId": "fallow",
+      "wants": [{ "kind": "mechanical", "quantity": 2 }],
+      "bonusTags": [],
+      "refusalTags": [],
+      "refusalLine": "We rest half the land. We don't rest our standards."
+    },
+    {
+      "id": "bea-ashgrove",
+      "name": "Bea Ashgrove",
+      "locationId": "fallow",
+      "wants": [{ "kind": "cloth", "quantity": 3 }],
+      "bonusTags": [],
+      "refusalTags": [],
+      "refusalLine": "Not what I'm buying."
+    },
+    {
+      "id": "lucan-frost",
+      "name": "Lucan Frost",
+      "locationId": "fallow",
+      "wants": [{ "kind": "mechanical", "quantity": 4 }],
+      "bonusTags": [],
+      "refusalTags": [],
+      "refusalLine": "No, that isn't it."
+    },
+    {
+      "id": "bertil-strawe",
+      "name": "Bertil Strawe",
+      "locationId": "sheaf",
+      "wants": [{ "kind": "mechanical", "quantity": 2 }],
+      "bonusTags": [],
+      "refusalTags": [],
+      "refusalLine": "My harvester is older than the charter and has better taste than that."
+    },
+    {
+      "id": "agnes-thorne",
+      "name": "Agnes Thorne",
+      "locationId": "sheaf",
+      "wants": [{ "kind": "cloth", "quantity": 3 }],
+      "bonusTags": [],
+      "refusalTags": [],
+      "refusalLine": "That isn't what I asked for."
+    },
+    {
+      "id": "perrin-keel",
+      "name": "Perrin Keel",
+      "locationId": "sheaf",
+      "wants": [{ "kind": "mechanical", "quantity": 4 }],
+      "bonusTags": [],
+      "refusalTags": [],
+      "refusalLine": "Not that one."
+    },
+    {
+      "id": "calla-mistral",
+      "name": "Calla Mistral",
+      "locationId": "verdance",
+      "wants": [{ "kind": "cloth", "quantity": 1 }],
+      "bonusTags": [],
+      "refusalTags": [],
+      "refusalLine": "Damp does terrible things to the wrong cloth, and that is the wrong cloth."
+    },
+    {
+      "id": "isolde-marsh",
+      "name": "Isolde Marsh",
+      "locationId": "verdance",
+      "wants": [{ "kind": "mechanical", "quantity": 3 }],
+      "bonusTags": [],
+      "refusalTags": [],
+      "refusalLine": "Wrong goods. I need the other kind."
+    },
+    {
+      "id": "gus-pettibone",
+      "name": "Gus Pettibone",
+      "locationId": "verdance",
+      "wants": [{ "kind": "cloth", "quantity": 4 }],
+      "bonusTags": [],
+      "refusalTags": [],
+      "refusalLine": "That won't fill the order."
+    },
+    {
+      "id": "hamish-corrie",
+      "name": "Hamish Corrie",
+      "locationId": "harrow",
+      "wants": [{ "kind": "mechanical", "quantity": 1 }],
+      "bonusTags": [],
+      "refusalTags": [],
+      "refusalLine": "The hills won't take it. Neither will I."
+    },
+    {
+      "id": "wilhelmina-dray",
+      "name": "Wilhelmina Dray",
+      "locationId": "harrow",
+      "wants": [{ "kind": "cloth", "quantity": 3 }],
+      "bonusTags": [],
+      "refusalTags": [],
+      "refusalLine": "No. It has to be what I said."
+    },
+    {
+      "id": "anders-kell",
+      "name": "Anders Kell",
+      "locationId": "harrow",
+      "wants": [{ "kind": "mechanical", "quantity": 4 }],
+      "bonusTags": [],
+      "refusalTags": [],
+      "refusalLine": "I can't use that."
+    },
+    {
+      "id": "ada-mallory",
+      "name": "Ada Mallory",
+      "locationId": "mallory",
+      "wants": [{ "kind": "cloth", "quantity": 3 }],
+      "bonusTags": [],
+      "refusalTags": [],
+      "refusalLine": "Put it on the kitchen table and I'll tell you what I think. I think no."
+    },
+    {
+      "id": "mara-fitch",
+      "name": "Mara Fitch",
+      "locationId": "mallory",
+      "wants": [{ "kind": "mechanical", "quantity": 3 }],
+      "bonusTags": [],
+      "refusalTags": [],
+      "refusalLine": "Not what I'm buying."
+    },
+    {
+      "id": "joachim-sparrow",
+      "name": "Joachim Sparrow",
+      "locationId": "mallory",
+      "wants": [{ "kind": "cloth", "quantity": 4 }],
       "bonusTags": [],
       "refusalTags": [],
       "refusalLine": "No, that isn't it."
