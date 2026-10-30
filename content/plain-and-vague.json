@@ -887,7 +887,7 @@
     {
       "id": "willow-bark",
       "name": "Willow bark",
-      "prose": "Willow bark stripped with the leaf still on, a physic for fevers.",
+      "prose": "Willow bark peeled from cutting-stock in spring, a physic for fevers.",
       "kind": "botanicals",
       "tags": ["medicinal"],
       "worth": 12
@@ -927,7 +927,7 @@
     {
       "id": "madder-root",
       "name": "Madder root",
-      "prose": "Madder root lifted with its leaf, for the red dye in it.",
+      "prose": "Madder root grown on from seed for three summers, for the red dye in it.",
       "kind": "botanicals",
       "tags": ["textile"],
       "worth": 25
@@ -959,7 +959,7 @@
     {
       "id": "saffron",
       "name": "Saffron",
-      "prose": "Imported saffron, dried crimson threads from a crocus cutting, worth its weight in silver.",
+      "prose": "Imported saffron, the dried threads of a crocus packed between leaf papers, worth its weight in silver.",
       "kind": "botanicals",
       "tags": ["keeps", "exotic"],
       "worth": 55
