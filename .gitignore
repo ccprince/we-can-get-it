@@ -5,3 +5,4 @@ harness/out/
 out/
 *.local
 .DS_Store
+.frontiers/
