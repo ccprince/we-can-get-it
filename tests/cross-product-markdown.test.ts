@@ -9,6 +9,7 @@ import {
   aGood,
   aTag,
   aTradingGalaxy,
+  aWantForGood,
   anArchetype,
 } from './support/content';
 
@@ -86,6 +87,41 @@ describe('the cross-product report as Markdown', () => {
 
     expect(text).toMatch(/- drawn back: `\w+`, for the floor of cloth\n/);
     expect(text).toMatch(/- drawn back: `(linen|silk)`, for the role tag warm\n/);
+  });
+
+  it('names a good drawn back because a buyer wants it by name', () => {
+    // Every cloth is hidden, and Osk wants the canvas by name.
+    const loaded = loadContent(
+      aContentSet({
+        archetypes: [anArchetype({ supplies: ['cloth'] })],
+        tags: [aTag(), aTag({ id: 'warm', class: 'quality', tells: ['fleece'] })],
+        goods: [
+          aGood({ id: 'silk', tags: ['warm'] }),
+          aGood({ id: 'linen', name: 'Linen', tags: ['warm'] }),
+          aGood({ id: 'canvas', name: 'Canvas' }),
+        ],
+        buyers: [
+          aBuyer(),
+          aBuyer({ id: 'osk', name: 'Osk', bonusTags: [], wants: [aWantForGood('canvas')] }),
+        ],
+        bounds: aBounds({ usabilityFloor: 1 }),
+        drawParameters: aDrawParameters({ goodsHiddenPercent: 100 }),
+      }),
+    );
+    if (!loaded.ok) throw new Error('the fixture did not load');
+    const drawn = drawGalaxy(loaded.content, 1);
+    if (!drawn.ok) throw new Error('the fixture did not draw');
+
+    const text = markdown({
+      contentPath: 'fixture.json',
+      seed: 1,
+      problems: [],
+      reports: loaded.reports,
+      drawProblems: [],
+      crossProduct: crossProduct(loaded.content, drawn.galaxy),
+    });
+
+    expect(text).toContain('- drawn back: `canvas`, wanted by name by osk\n');
   });
 
   it('lists a load problem under Problems, tagged with the verdict it carries', () => {

@@ -48,10 +48,11 @@ export type DrawnGalaxy = {
 };
 
 /**
- * A good the goods pass drew back: to keep the floor of a kind, or the least
- * of a role tag.
+ * A good the goods pass drew back: because a buyer wants it by name, or to
+ * keep the floor of a kind, or the least of a role tag.
  */
 export type DrawnBack =
+  | { readonly good: string; readonly wantedBy: string }
   | { readonly good: string; readonly floor: string }
   | { readonly good: string; readonly roleTag: string };
 

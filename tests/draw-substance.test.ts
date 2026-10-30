@@ -241,7 +241,7 @@ describe('the quirk, in the drawn galaxy', () => {
 });
 
 describe('a named good, in the drawn galaxy', () => {
-  it('re-rolls a draw that hid a good a buyer asks for by name', () => {
+  it('is kept by the goods pass, so no seed re-rolls for it', () => {
     const named = {
       buyers: [
         aBuyer({ bonusTags: [], wants: [aWantForGood('silk')] }),
@@ -256,16 +256,63 @@ describe('a named good, in the drawn galaxy', () => {
       ],
     };
 
-    const failed = failures(aClothReserve({ ...named, drawParameters: noRerolls })).filter(
-      (what) => what !== null,
-    );
+    // Every good is rolled hidden, so without the pass keeping it silk would
+    // be hidden wherever the floor drew another good back.
+    const content = aClothReserve({
+      ...named,
+      bounds: aBounds({ usabilityFloor: 1 }),
+      drawParameters: aDrawParameters({ goodsHiddenPercent: 100, rerolls: 0 }),
+    });
 
-    expect(failed.length).toBeGreaterThan(0);
-    expect(failed[0]).toContain('a named good is reachable: ilse wants silk, which was hidden');
+    expect(failures(content)).toEqual(SEEDS.map(() => null));
     for (const seed of SEEDS) {
-      const kept = galaxyOf(aClothReserve(named), seed);
-      expect(kept.goods.map((good) => good.id)).toContain('silk');
+      expect(galaxyOf(content, seed).goods.map((good) => good.id)).toContain('silk');
     }
+  });
+
+  it('keeps nothing for a good named only at a location the draw did not place', () => {
+    // One slot, two markets: Osk at Hollow wants silk by name, and Ilse at
+    // Kestrel wants nothing by name. Where Kestrel is placed, silk is hidden
+    // unless the floor drew it back.
+    const content = loadedContentSet({
+      archetypes: [anArchetype({ supplies: ['cloth'] })],
+      locations: [aLocation(), aLocation({ id: 'hollow', name: "Grieve's Hollow" })],
+      motifs: [aMotif({ slots: [aSlot()] })],
+      tags: [aTag()],
+      goods: [aGood({ id: 'silk' }), aGood({ id: 'linen', name: 'Linen' })],
+      buyers: [
+        aBuyer({ bonusTags: [], wants: [aWant({ predicate: [{ tag: 'cloth' }] })] }),
+        aBuyer({
+          id: 'osk',
+          name: 'Osk',
+          locationId: 'hollow',
+          bonusTags: [],
+          wants: [aWantForGood('silk')],
+        }),
+      ],
+      bounds: aBounds({ usabilityFloor: 1 }),
+      drawParameters: aDrawParameters({ goodsHiddenPercent: 100, rerolls: 0 }),
+    });
+    const placed = SEEDS.map((seed) => galaxyOf(content, seed));
+    const atKestrel = placed.filter((galaxy) => galaxy.startId === 'kestrel');
+
+    expect(atKestrel.length).toBeGreaterThan(0);
+    expect(atKestrel.some((galaxy) => galaxy.goods.every((good) => good.id !== 'silk'))).toBe(true);
+    for (const galaxy of placed.filter((each) => each.startId === 'hollow')) {
+      expect(galaxy.goods.map((good) => good.id)).toContain('silk');
+    }
+  });
+
+  it('misses a galaxy that hid a good a buyer asks for by name', () => {
+    const content = aClothReserve({
+      buyers: [aBuyer({ wants: [aWantForGood('silk')] }), aBobWhoWants(['cloth', 'blue'])],
+    });
+    const galaxy = galaxyOf(content, 1);
+    const hid = { ...galaxy, goods: galaxy.goods.filter((good) => good.id !== 'silk') };
+
+    expect(checkNamed('a named good is reachable').miss(hid, content)).toBe(
+      'ilse wants silk, which was hidden',
+    );
   });
 
   it('fails loudly where no drawn location supplies the good, whatever it re-rolls', () => {
