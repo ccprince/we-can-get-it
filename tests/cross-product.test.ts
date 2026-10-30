@@ -1,8 +1,12 @@
 import { describe, expect, it } from 'vitest';
 import { crossProduct, drawGalaxy } from '../src/engine';
 import {
+  aBounds,
+  aBuyer,
+  aDrawParameters,
   aGood,
   aGalaxy,
+  aTag,
   aLocation,
   aMotif,
   aSlot,
@@ -120,6 +124,37 @@ describe('the cross-product report', () => {
       ['kestrel', 'only-kestrel'],
       ['bellwether', 'only-bellwether'],
     ]);
+  });
+
+  it('says how many goods the draw hid, against the rate declared, and which it drew back', () => {
+    // Every good is rolled hidden, so every good kept was drawn back: one for
+    // cloth's floor of one, and then enough for Ilse's warm to sit on two.
+    const content = loadedContentSet({
+      archetypes: [anArchetype({ supplies: ['cloth'] })],
+      tags: [aTag(), aTag({ id: 'warm', class: 'quality', tells: ['fleece'] })],
+      goods: [
+        aGood({ id: 'silk', tags: ['warm'] }),
+        aGood({ id: 'linen', name: 'Linen', tags: ['warm'] }),
+        aGood({ id: 'canvas', name: 'Canvas' }),
+      ],
+      buyers: [aBuyer()],
+      bounds: aBounds({ usabilityFloor: 1 }),
+      drawParameters: aDrawParameters({ goodsHiddenPercent: 100 }),
+    });
+    const drawn = drawGalaxy(content, 1);
+    if (!drawn.ok) throw new Error('the fixture did not draw');
+    const kept = drawn.galaxy.goods.map((good) => good.id);
+
+    const hiding = crossProduct(content, drawn.galaxy).drawn?.hiding;
+
+    expect(hiding?.declaredPercent).toBe(100);
+    expect(hiding?.inCirculation).toBe(3);
+    expect(hiding?.hidden).toBe(3 - kept.length);
+    expect(hiding?.drawnBack.map(({ good }) => good).sort()).toEqual([...kept].sort());
+    expect(hiding?.drawnBack.filter(({ keeping }) => keeping === 'floor')).toEqual([
+      { good: hiding?.drawnBack[0]?.good, keeping: 'floor', of: 'cloth' },
+    ]);
+    expect(kept.filter((id) => id !== 'canvas')).toEqual(['linen', 'silk']);
   });
 
   it('has nothing drawn to report when no galaxy was drawn', () => {

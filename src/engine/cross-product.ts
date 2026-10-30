@@ -7,7 +7,7 @@ import {
   tellsCarried,
   type Spread,
 } from './content-reports';
-import { locationNamed, type DrawnGalaxy } from './galaxy';
+import { locationNamed, type DrawnBack, type DrawnGalaxy } from './galaxy';
 import { drawnLength, worstDistortion } from './layout';
 import { judge, type Report } from './verdicts';
 
@@ -104,6 +104,22 @@ export type Drawn = Survey & {
    * together (ADR 0011 decisions 5 and 6). Ties keep the order the draw laid them in.
    */
   readonly interMotifStretch: readonly LaneDrawn[];
+  readonly hiding: Hiding;
+};
+
+/**
+ * How much the draw hid of the goods it could have, against the rate the
+ * content set declares, and which goods it drew back after hiding them. Each
+ * one drawn back is a good the declared rate would have hidden, so a writer
+ * tuning the rate reads this rather than the rate (ADR 0008 decision 11).
+ */
+export type Hiding = {
+  readonly declaredPercent: number;
+  /** The goods of the kinds in circulation, in the reserve. */
+  readonly inCirculation: number;
+  /** How many of those the draw hid. */
+  readonly hidden: number;
+  readonly drawnBack: readonly DrawnBack[];
 };
 
 export type PlacedSlot = {
@@ -133,7 +149,18 @@ export function crossProduct(content: ContentSet, galaxy: DrawnGalaxy | null): C
             ...surveyDrawn(content, galaxy),
             placed: placed(galaxy),
             interMotifStretch: interMotifStretch(galaxy),
+            hiding: hiding(content, galaxy),
           },
+  };
+}
+
+function hiding(content: ContentSet, galaxy: DrawnGalaxy): Hiding {
+  const inCirculation = content.goods.filter((good) => galaxy.kinds.includes(good.kind)).length;
+  return {
+    declaredPercent: content.drawParameters.goodsHiddenPercent,
+    inCirculation,
+    hidden: inCirculation - galaxy.goods.length,
+    drawnBack: galaxy.drawnBack,
   };
 }
 

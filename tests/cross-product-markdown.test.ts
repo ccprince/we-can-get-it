@@ -37,10 +37,12 @@ describe('the cross-product report as Markdown', () => {
       '## Drawn: goods per role tag',
       '## Drawn: prose missing the tells of a tag the good holds',
       '## Drawn: prose carrying the tells of a tag the good does not hold',
+      '## Drawn: goods hidden',
       '## Drawn: slots placed',
       '## Drawn: inter-motif stretch',
     ]);
     expect(text).toContain('- 3 goods: cloth');
+    expect(text).toContain('- hidden 0 of 5 (0%), against 0% declared\n- none drawn back');
   });
 
   it('lists a load problem under Problems, tagged with the verdict it carries', () => {
