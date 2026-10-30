@@ -32,11 +32,27 @@ export type DrawnGalaxy = {
   /** The people drawn, in id order, each standing at a drawn location. */
   readonly people: readonly Buyer[];
   /**
+   * The goods the goods pass rolled hidden and then **drew back**, and what
+   * for: the floor's kind by kind, then the role tags' tag by tag, each in id
+   * order. They are why fewer goods are hidden than the declared
+   * rate (ADR 0008 decision 11). Every one is a drawn good, so nothing hidden
+   * leaves a trace here. Read by the cross-product report and by nothing else.
+   */
+  readonly drawnBack: readonly DrawnBack[];
+  /**
    * Each drawn location's **layout coordinates**, by location id: the chart's,
    * and read by nothing else (ADR 0011 decision 7). Rebuilt from the seed with
    * the rest of the galaxy and never saved.
    */
   readonly layout: ReadonlyMap<string, Point>;
+};
+
+/** A good the goods pass drew back, to keep a kind's floor or a role tag's least. */
+export type DrawnBack = {
+  readonly good: string;
+  readonly keeping: 'floor' | 'role tag';
+  /** The kind whose floor, or the tag whose least, it was drawn back for. */
+  readonly of: string;
 };
 
 /**
