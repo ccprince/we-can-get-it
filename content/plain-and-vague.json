@@ -913,7 +913,7 @@
             { "tag": "provisions", "negated": false },
             { "tag": "exotic", "negated": false }
           ],
-          "plainly": "wants something imported",
+          "plainly": "wants imported food",
           "quantity": 3
         }
       ],
