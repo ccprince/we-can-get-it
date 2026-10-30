@@ -33,10 +33,11 @@ export type DrawnGalaxy = {
   readonly people: readonly Buyer[];
   /**
    * The goods the goods pass rolled hidden and then **drew back**, and what
-   * for: the floor's kind by kind, then the role tags' tag by tag, each in id
-   * order. They are why fewer goods are hidden than the declared
-   * rate (ADR 0008 decision 11). Every one is a drawn good, so nothing hidden
-   * leaves a trace here. Read by the cross-product report and by nothing else.
+   * for: kind by kind, those wanted by name and those for the floor, in id
+   * order together; then the role tags' tag by tag. They are why fewer goods
+   * are hidden than the declared rate (ADR 0008 decision 11). Every one is a
+   * drawn good, so nothing hidden leaves a trace here. Read by the
+   * cross-product report and by nothing else.
    */
   readonly drawnBack: readonly DrawnBack[];
   /**

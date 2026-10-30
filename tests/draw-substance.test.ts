@@ -43,7 +43,8 @@ function galaxyOf(content: ContentSet, seed: number): DrawnGalaxy {
 
 /**
  * A registered check, by the invariant it names. Reaches past the seam on
- * purpose, for the three checks no content set can trip through it: the draw
+ * purpose, for the checks no content set can trip through it, such as a
+ * hidden named good, which the goods pass now draws back: the draw
  * and the static validator already guarantee them, and these are what catch
  * either one drifting.
  */
@@ -300,6 +301,33 @@ describe('a named good, in the drawn galaxy', () => {
     expect(atKestrel.some((galaxy) => galaxy.goods.every((good) => good.id !== 'silk'))).toBe(true);
     for (const galaxy of placed.filter((each) => each.startId === 'hollow')) {
       expect(galaxy.goods.map((good) => good.id)).toContain('silk');
+    }
+  });
+
+  it('counts a good drawn back by name toward the floor and its role tags', () => {
+    // Every cloth is hidden. Ilse wants the fleece by name and holds warm, so
+    // the fleece meets the floor of one and half warm's least: only one more
+    // warm good is drawn back, and nothing for the floor.
+    const content = loadedContentSet({
+      archetypes: [anArchetype({ supplies: ['cloth'] })],
+      tags: [aTag(), aTag({ id: 'warm', class: 'quality', tells: ['fleece'] })],
+      goods: [
+        aGood({ id: 'fleece', name: 'Fleece', tags: ['warm'] }),
+        aGood({ id: 'felt', name: 'Felt', tags: ['warm'] }),
+        aGood({ id: 'tweed', name: 'Tweed', tags: ['warm'] }),
+        aGood({ id: 'silk' }),
+      ],
+      buyers: [aBuyer({ wants: [aWant(), aWantForGood('fleece')] })],
+      bounds: aBounds({ usabilityFloor: 1 }),
+      drawParameters: aDrawParameters({ goodsHiddenPercent: 100, rerolls: 0 }),
+    });
+
+    for (const seed of SEEDS) {
+      const { drawnBack } = galaxyOf(content, seed);
+      expect(drawnBack[0]).toEqual({ good: 'fleece', wantedBy: 'ilse' });
+      expect(drawnBack.slice(1)).toEqual([
+        { good: expect.stringMatching(/^(felt|tweed)$/), roleTag: 'warm' },
+      ]);
     }
   });
 
