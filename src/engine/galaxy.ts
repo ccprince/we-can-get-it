@@ -47,13 +47,13 @@ export type DrawnGalaxy = {
   readonly layout: ReadonlyMap<string, Point>;
 };
 
-/** A good the goods pass drew back, to keep a kind's floor or a role tag's least. */
-export type DrawnBack = {
-  readonly good: string;
-  readonly keeping: 'floor' | 'role tag';
-  /** The kind whose floor, or the tag whose least, it was drawn back for. */
-  readonly of: string;
-};
+/**
+ * A good the goods pass drew back: to keep the floor of a kind, or the least
+ * of a role tag.
+ */
+export type DrawnBack =
+  | { readonly good: string; readonly floor: string }
+  | { readonly good: string; readonly roleTag: string };
 
 /**
  * A motif as placed. One motif may be placed twice, filled by different

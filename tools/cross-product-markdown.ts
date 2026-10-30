@@ -1,4 +1,4 @@
-import type { CrossProduct, Hiding, Problem, Report, Spread, Survey } from '../src/engine';
+import type { CrossProduct, GoodsHidden, Problem, Report, Spread, Survey } from '../src/engine';
 
 /**
  * The cross-product report as Markdown. This only **formats** what the engine
@@ -65,7 +65,7 @@ function sections(crossProduct: CrossProduct): readonly string[] {
       ? []
       : [
           ...survey('Drawn', drawn),
-          ...goodsHidden(drawn.hiding),
+          ...goodsHidden(drawn.goodsHidden),
           '## Drawn: slots placed',
           '',
           ...(drawn.placed.length === 0
@@ -94,23 +94,22 @@ function goodsHidden({
   declaredPercent,
   inCirculation,
   hidden,
+  hiddenPercent,
   drawnBack,
-}: Hiding): readonly string[] {
-  const share = inCirculation === 0 ? 0 : Math.round((100 * hidden) / inCirculation);
+}: GoodsHidden): readonly string[] {
   return [
     '## Drawn: goods hidden',
     '',
     'Of the goods of the kinds in circulation, how many the draw hid, against the rate declared; ' +
       'then each good it drew back after hiding it, to keep a kind’s floor or a role tag’s least.',
     '',
-    `- hidden ${hidden} of ${inCirculation} (${share}%), against ${declaredPercent}% declared`,
-    ...(drawnBack.length === 0
-      ? ['- none drawn back']
-      : drawnBack.map(({ good, keeping, of }) =>
-          keeping === 'floor'
-            ? `- drawn back: \`${good}\`, for the floor of ${of}`
-            : `- drawn back: \`${good}\`, for the role tag ${of}`,
-        )),
+    `- hidden ${hidden} of ${inCirculation} (${hiddenPercent}%) ` +
+      `against ${declaredPercent}% declared; ${drawnBack.length} drawn back`,
+    ...drawnBack.map((back) =>
+      'floor' in back
+        ? `- drawn back: \`${back.good}\`, for the floor of ${back.floor}`
+        : `- drawn back: \`${back.good}\`, for the role tag ${back.roleTag}`,
+    ),
     '',
   ];
 }

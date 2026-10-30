@@ -1,7 +1,16 @@
 import { describe, expect, it } from 'vitest';
 import { crossProduct, drawGalaxy, loadContent } from '../src/engine';
 import { markdown } from '../tools/cross-product-markdown';
-import { aTradingGalaxy, aContentSet } from './support/content';
+import {
+  aBounds,
+  aBuyer,
+  aContentSet,
+  aDrawParameters,
+  aGood,
+  aTag,
+  aTradingGalaxy,
+  anArchetype,
+} from './support/content';
 
 /**
  * The formatter only formats, but the report is this ticket's whole interface,
@@ -42,7 +51,41 @@ describe('the cross-product report as Markdown', () => {
       '## Drawn: inter-motif stretch',
     ]);
     expect(text).toContain('- 3 goods: cloth');
-    expect(text).toContain('- hidden 0 of 5 (0%), against 0% declared\n- none drawn back');
+    expect(text).toContain('- hidden 0 of 5 (0%) against 0% declared; 0 drawn back\n\n');
+  });
+
+  it('names each good drawn back and what it was drawn back for', () => {
+    // Every cloth is hidden; the floor of one draws one back, and Ilse's warm
+    // has the rest of its two drawn back.
+    const loaded = loadContent(
+      aContentSet({
+        archetypes: [anArchetype({ supplies: ['cloth'] })],
+        tags: [aTag(), aTag({ id: 'warm', class: 'quality', tells: ['fleece'] })],
+        goods: [
+          aGood({ id: 'silk', tags: ['warm'] }),
+          aGood({ id: 'linen', name: 'Linen', tags: ['warm'] }),
+          aGood({ id: 'canvas', name: 'Canvas' }),
+        ],
+        buyers: [aBuyer()],
+        bounds: aBounds({ usabilityFloor: 1 }),
+        drawParameters: aDrawParameters({ goodsHiddenPercent: 100 }),
+      }),
+    );
+    if (!loaded.ok) throw new Error('the fixture did not load');
+    const drawn = drawGalaxy(loaded.content, 1);
+    if (!drawn.ok) throw new Error('the fixture did not draw');
+
+    const text = markdown({
+      contentPath: 'fixture.json',
+      seed: 1,
+      problems: [],
+      reports: loaded.reports,
+      drawProblems: [],
+      crossProduct: crossProduct(loaded.content, drawn.galaxy),
+    });
+
+    expect(text).toMatch(/- drawn back: `\w+`, for the floor of cloth\n/);
+    expect(text).toMatch(/- drawn back: `(linen|silk)`, for the role tag warm\n/);
   });
 
   it('lists a load problem under Problems, tagged with the verdict it carries', () => {

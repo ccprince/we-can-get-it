@@ -145,16 +145,21 @@ describe('the cross-product report', () => {
     if (!drawn.ok) throw new Error('the fixture did not draw');
     const kept = drawn.galaxy.goods.map((good) => good.id);
 
-    const hiding = crossProduct(content, drawn.galaxy).drawn?.hiding;
+    const hiding = crossProduct(content, drawn.galaxy).drawn?.goodsHidden;
 
+    // The floor draws back one good at random; then warm is drawn back to two,
+    // its goods in id order, less any the floor already drew back.
+    const [first, ...rest] = hiding?.drawnBack ?? [];
     expect(hiding?.declaredPercent).toBe(100);
     expect(hiding?.inCirculation).toBe(3);
-    expect(hiding?.hidden).toBe(3 - kept.length);
-    expect(hiding?.drawnBack.map(({ good }) => good).sort()).toEqual([...kept].sort());
-    expect(hiding?.drawnBack.filter(({ keeping }) => keeping === 'floor')).toEqual([
-      { good: hiding?.drawnBack[0]?.good, keeping: 'floor', of: 'cloth' },
-    ]);
-    expect(kept.filter((id) => id !== 'canvas')).toEqual(['linen', 'silk']);
+    expect(first).toMatchObject({ floor: 'cloth' });
+    expect(rest).toEqual(
+      ['linen', 'silk']
+        .filter((good) => good !== first?.good)
+        .map((good) => ({ good, roleTag: 'warm' })),
+    );
+    expect(hiding?.hidden).toBe(first?.good === 'canvas' ? 0 : 1);
+    expect(kept).toEqual(hiding?.drawnBack.map(({ good }) => good).sort());
   });
 
   it('has nothing drawn to report when no galaxy was drawn', () => {

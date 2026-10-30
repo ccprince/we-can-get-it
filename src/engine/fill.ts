@@ -76,7 +76,7 @@ export function drawGoods(galaxy: DrawnGalaxy, content: ContentSet, rng: Rng): A
     next = afterFloor;
     for (const good of goods) if (!hidden.includes(good)) kept.add(good.id);
     for (const good of rolled) {
-      if (!hidden.includes(good)) drawnBack.push({ good: good.id, keeping: 'floor', of: kind });
+      if (!hidden.includes(good)) drawnBack.push({ good: good.id, floor: kind });
     }
   }
 
@@ -118,7 +118,7 @@ function keepingTheRoleTags(
     for (const good of hidden) {
       if (stillHidden.includes(good)) continue;
       kept.add(good.id);
-      drawnBack.push({ good: good.id, keeping: 'role tag', of: tag.id });
+      drawnBack.push({ good: good.id, roleTag: tag.id });
     }
   }
   return next;
