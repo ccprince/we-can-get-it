@@ -329,7 +329,11 @@
       "class": "quality",
       "tells": ["modern", "latest", "sealed unit", "new-made"]
     },
-    { "id": "keeps", "class": "quality", "tells": ["tinned", "salted", "long-keeping"] },
+    {
+      "id": "keeps",
+      "class": "quality",
+      "tells": ["tinned", "salted", "long-keeping", "dried", "cured"]
+    },
     { "id": "perishable", "class": "quality", "tells": ["fresh", "spoil", "ripe"] },
     { "id": "hearty", "class": "quality", "tells": ["hearty", "filling"] },
     { "id": "common", "class": "origin", "tells": ["common", "plentiful", "cheap"] },
@@ -347,7 +351,9 @@
     { "id": "mined", "class": "origin", "tells": ["dug from", "pithead", "from the mines"] },
     { "id": "pure", "class": "quality", "tells": ["pure", "high-grade"] },
     { "id": "salvaged", "class": "origin", "tells": ["salvaged", "reclaimed", "scrap"] },
-    { "id": "rare", "class": "quality", "tells": ["rare", "freak", "seldom"] }
+    { "id": "rare", "class": "quality", "tells": ["rare", "freak", "seldom"] },
+    { "id": "textile", "class": "quality", "tells": ["fibre", "dye", "retted"] },
+    { "id": "medicinal", "class": "quality", "tells": ["medicinal", "physic", "apothecary"] }
   ],
   "goods": [
     {
@@ -871,36 +877,92 @@
       "worth": 55
     },
     {
-      "id": "stub-botanicals-1",
-      "name": "Stub botanicals 1",
-      "prose": "A stub, standing in until the goods are written.",
+      "id": "seed-potatoes",
+      "name": "Seed potatoes",
+      "prose": "Seed potatoes chitting in the dark, that spoil if they're kept damp.",
       "kind": "botanicals",
-      "tags": [],
+      "tags": ["perishable"],
+      "worth": 10
+    },
+    {
+      "id": "willow-bark",
+      "name": "Willow bark",
+      "prose": "Willow bark stripped with the leaf still on, a physic for fevers.",
+      "kind": "botanicals",
+      "tags": ["medicinal"],
+      "worth": 12
+    },
+    {
+      "id": "retted-flax",
+      "name": "Retted flax",
+      "prose": "Flax retted and scutched for its fibre, the stalks of a linseed crop.",
+      "kind": "botanicals",
+      "tags": ["textile"],
       "worth": 15
     },
     {
-      "id": "stub-botanicals-2",
-      "name": "Stub botanicals 2",
-      "prose": "A stub, standing in until the goods are written.",
+      "id": "cotton-bolls",
+      "name": "Cotton bolls",
+      "prose": "Cotton bolls by the sack, seed and fibre together.",
       "kind": "botanicals",
-      "tags": [],
+      "tags": ["textile"],
+      "worth": 18
+    },
+    {
+      "id": "woad-leaf",
+      "name": "Woad leaf",
+      "prose": "Woad leaf, balled and dried, for a blue dye.",
+      "kind": "botanicals",
+      "tags": ["textile", "keeps"],
       "worth": 20
     },
     {
-      "id": "stub-botanicals-3",
-      "name": "Stub botanicals 3",
-      "prose": "A stub, standing in until the goods are written.",
+      "id": "feverfew",
+      "name": "Feverfew",
+      "prose": "Feverfew leaf, dried in bunches, medicinal for a headache.",
       "kind": "botanicals",
-      "tags": [],
+      "tags": ["medicinal", "keeps"],
+      "worth": 22
+    },
+    {
+      "id": "madder-root",
+      "name": "Madder root",
+      "prose": "Madder root lifted with its leaf, for the red dye in it.",
+      "kind": "botanicals",
+      "tags": ["textile"],
       "worth": 25
     },
     {
-      "id": "stub-botanicals-4",
-      "name": "Stub botanicals 4",
-      "prose": "A stub, standing in until the goods are written.",
+      "id": "foxglove-cuttings",
+      "name": "Foxglove cuttings",
+      "prose": "Foxglove cuttings, fresh and still wet, for the apothecary's heart physic.",
       "kind": "botanicals",
-      "tags": [],
+      "tags": ["medicinal", "perishable"],
       "worth": 30
+    },
+    {
+      "id": "green-tea-leaf",
+      "name": "Green tea leaf",
+      "prose": "Tea leaf, fresh-picked and wilting by the day, wanted at the roller fast.",
+      "kind": "botanicals",
+      "tags": ["perishable"],
+      "worth": 35
+    },
+    {
+      "id": "cured-tobacco",
+      "name": "Cured tobacco",
+      "prose": "Tobacco leaf, cured brown in the barn and good for years.",
+      "kind": "botanicals",
+      "tags": ["keeps"],
+      "worth": 40
+    },
+    {
+      "id": "saffron",
+      "name": "Saffron",
+      "prose": "Imported saffron, dried crimson threads from a crocus cutting, worth its weight in silver.",
+      "kind": "botanicals",
+      "tags": ["keeps", "exotic"],
+      "worth": 55
     }
   ],
   "buyers": [
@@ -1453,7 +1515,17 @@
       "id": "yusuf-brandt",
       "name": "Yusuf Brandt",
       "locationId": "anvil",
-      "wants": [{ "kind": "botanicals", "quantity": 4 }],
+      "wants": [
+        {
+          "predicate": [
+            { "tag": "botanicals", "negated": false },
+            { "tag": "keeps", "negated": false }
+          ],
+          "plainly": "wants dried leaf that will keep in the store",
+          "quantity": 4,
+          "order": { "price": 30, "days": 30 }
+        }
+      ],
       "bonusTags": [],
       "refusalTags": [],
       "refusalLine": "Not that one."
@@ -1471,7 +1543,16 @@
       "id": "marta-ibsen",
       "name": "Marta Ibsen",
       "locationId": "brisance",
-      "wants": [{ "kind": "botanicals", "quantity": 3 }],
+      "wants": [
+        {
+          "predicate": [
+            { "tag": "botanicals", "negated": false },
+            { "tag": "medicinal", "negated": false }
+          ],
+          "plainly": "wants herbs for the infirmary",
+          "quantity": 3
+        }
+      ],
       "bonusTags": [],
       "refusalTags": [],
       "refusalLine": "Wrong goods. I need the other kind."
@@ -1499,8 +1580,8 @@
       "name": "Petra Soot",
       "locationId": "cinderhall",
       "wants": [{ "kind": "botanicals", "quantity": 2 }],
-      "bonusTags": [],
-      "refusalTags": [],
+      "bonusTags": ["keeps"],
+      "refusalTags": ["perishable"],
       "refusalLine": "No. The roof keeps out the weather, not bad judgment."
     },
     {
@@ -1546,8 +1627,8 @@
       "name": "Nell Shuttleworth",
       "locationId": "weft",
       "wants": [{ "kind": "botanicals", "quantity": 2 }],
-      "bonusTags": [],
-      "refusalTags": [],
+      "bonusTags": ["textile"],
+      "refusalTags": ["medicinal"],
       "refusalLine": "The bell rang for something better than that."
     },
     {
@@ -1599,7 +1680,17 @@
       "id": "june-castellan",
       "name": "June Castellan",
       "locationId": "orrery",
-      "wants": [{ "kind": "botanicals", "quantity": 3 }],
+      "wants": [
+        {
+          "predicate": [
+            { "tag": "botanicals", "negated": false },
+            { "tag": "textile", "negated": false }
+          ],
+          "plainly": "wants dye and fibre plants to sell on",
+          "quantity": 3,
+          "order": { "price": 20, "days": 30 }
+        }
+      ],
       "bonusTags": [],
       "refusalTags": [],
       "refusalLine": "That isn't what I asked for."
@@ -1655,7 +1746,16 @@
       "id": "odo-pengelly",
       "name": "Odo Pengelly",
       "locationId": "grist",
-      "wants": [{ "kind": "botanicals", "quantity": 4 }],
+      "wants": [
+        {
+          "predicate": [
+            { "tag": "botanicals", "negated": false },
+            { "tag": "perishable", "negated": true }
+          ],
+          "plainly": "wants plants that won't spoil on the way",
+          "quantity": 4
+        }
+      ],
       "bonusTags": [],
       "refusalTags": [],
       "refusalLine": "That won't fill the order."
