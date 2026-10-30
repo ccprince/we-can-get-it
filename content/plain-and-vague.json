@@ -573,15 +573,6 @@
   ],
   "buyers": [
     {
-      "id": "stub-buyer-spirits",
-      "name": "Stub buyer (spirits)",
-      "locationId": "corrow",
-      "wants": [{ "kind": "spirits", "quantity": 2 }],
-      "bonusTags": [],
-      "refusalTags": [],
-      "refusalLine": "A stub, standing in until the people are written."
-    },
-    {
       "id": "stub-buyer-provisions",
       "name": "Stub buyer (provisions)",
       "locationId": "anvil",
@@ -595,24 +586,6 @@
       "name": "Stub buyer (cloth)",
       "locationId": "longacre",
       "wants": [{ "kind": "cloth", "quantity": 2 }],
-      "bonusTags": [],
-      "refusalTags": [],
-      "refusalLine": "A stub, standing in until the people are written."
-    },
-    {
-      "id": "stub-buyer-remedies",
-      "name": "Stub buyer (remedies)",
-      "locationId": "scoria",
-      "wants": [{ "kind": "remedies", "quantity": 2 }],
-      "bonusTags": [],
-      "refusalTags": [],
-      "refusalLine": "A stub, standing in until the people are written."
-    },
-    {
-      "id": "stub-buyer-curios",
-      "name": "Stub buyer (curios)",
-      "locationId": "vesper",
-      "wants": [{ "kind": "curios", "quantity": 2 }],
       "bonusTags": [],
       "refusalTags": [],
       "refusalLine": "A stub, standing in until the people are written."
@@ -643,6 +616,330 @@
       "bonusTags": [],
       "refusalTags": [],
       "refusalLine": "A stub, standing in until the people are written."
+    },
+    {
+      "id": "hester-barrow",
+      "name": "Hester Barrow",
+      "locationId": "halloran",
+      "wants": [{ "kind": "spirits", "quantity": 2 }],
+      "bonusTags": [],
+      "refusalTags": [],
+      "refusalLine": "I'd haggle that down for the sport of it, but I'd have to want it first."
+    },
+    {
+      "id": "bram-tolliver",
+      "name": "Bram Tolliver",
+      "locationId": "halloran",
+      "wants": [{ "kind": "curios", "quantity": 3 }],
+      "bonusTags": [],
+      "refusalTags": [],
+      "refusalLine": "That isn't what I asked for."
+    },
+    {
+      "id": "wen-aldous",
+      "name": "Wen Aldous",
+      "locationId": "halloran",
+      "wants": [{ "kind": "cloth", "quantity": 4 }],
+      "bonusTags": [],
+      "refusalTags": [],
+      "refusalLine": "Not that one."
+    },
+    {
+      "id": "ode-marlowe",
+      "name": "Ode Marlowe",
+      "locationId": "vesper",
+      "wants": [{ "kind": "curios", "quantity": 1 }],
+      "bonusTags": [],
+      "refusalTags": [],
+      "refusalLine": "The docks never close, and I still have no room for that."
+    },
+    {
+      "id": "joss-penhale",
+      "name": "Joss Penhale",
+      "locationId": "vesper",
+      "wants": [{ "kind": "cloth", "quantity": 3 }],
+      "bonusTags": [],
+      "refusalTags": [],
+      "refusalLine": "Wrong goods. I need the other kind."
+    },
+    {
+      "id": "ruth-calloway",
+      "name": "Ruth Calloway",
+      "locationId": "vesper",
+      "wants": [{ "kind": "provisions", "quantity": 4 }],
+      "bonusTags": [],
+      "refusalTags": [],
+      "refusalLine": "That won't fill the order."
+    },
+    {
+      "id": "pascal-ixley",
+      "name": "Pascal Ixley",
+      "locationId": "corrow",
+      "wants": [{ "kind": "cloth", "quantity": 2 }],
+      "bonusTags": [],
+      "refusalTags": [],
+      "refusalLine": "That isn't it. I'll know the right one when it's in my hands."
+    },
+    {
+      "id": "emeric-dunn",
+      "name": "Emeric Dunn",
+      "locationId": "corrow",
+      "wants": [{ "kind": "provisions", "quantity": 3 }],
+      "bonusTags": [],
+      "refusalTags": [],
+      "refusalLine": "No. It has to be what I said."
+    },
+    {
+      "id": "sabine-hollis",
+      "name": "Sabine Hollis",
+      "locationId": "corrow",
+      "wants": [{ "kind": "spirits", "quantity": 4 }],
+      "bonusTags": [],
+      "refusalTags": [],
+      "refusalLine": "I can't use that."
+    },
+    {
+      "id": "perpetua-lund",
+      "name": "Sister Perpetua Lund",
+      "locationId": "ambry",
+      "wants": [{ "kind": "curios", "quantity": 1 }],
+      "bonusTags": [],
+      "refusalTags": [],
+      "refusalLine": "Every shrine here has a patron saint, and not one of them blesses that."
+    },
+    {
+      "id": "lars-odegaard",
+      "name": "Lars Odegaard",
+      "locationId": "ambry",
+      "wants": [{ "kind": "cloth", "quantity": 3 }],
+      "bonusTags": [],
+      "refusalTags": [],
+      "refusalLine": "Not what I'm buying."
+    },
+    {
+      "id": "mina-okafor",
+      "name": "Mina Okafor",
+      "locationId": "ambry",
+      "wants": [{ "kind": "provisions", "quantity": 4 }],
+      "bonusTags": [],
+      "refusalTags": [],
+      "refusalLine": "No, that isn't it."
+    },
+    {
+      "id": "wick-ardent",
+      "name": "Wick Ardent",
+      "locationId": "lantern",
+      "wants": [{ "kind": "provisions", "quantity": 3 }],
+      "bonusTags": [],
+      "refusalTags": [],
+      "refusalLine": "Someone else's berth, someone else's cargo. Not mine."
+    },
+    {
+      "id": "cato-reeve",
+      "name": "Cato Reeve",
+      "locationId": "lantern",
+      "wants": [{ "kind": "spirits", "quantity": 3 }],
+      "bonusTags": [],
+      "refusalTags": [],
+      "refusalLine": "That isn't what I asked for."
+    },
+    {
+      "id": "dora-winslow",
+      "name": "Dora Winslow",
+      "locationId": "lantern",
+      "wants": [{ "kind": "curios", "quantity": 4 }],
+      "bonusTags": [],
+      "refusalTags": [],
+      "refusalLine": "Not that one."
+    },
+    {
+      "id": "fenn-alderwick",
+      "name": "Fenn Alderwick",
+      "locationId": "quillon",
+      "wants": [{ "kind": "cloth", "quantity": 2 }],
+      "bonusTags": [],
+      "refusalTags": [],
+      "refusalLine": "I'm sorry. I wanted to remember something, and that isn't it."
+    },
+    {
+      "id": "ivo-strand",
+      "name": "Ivo Strand",
+      "locationId": "quillon",
+      "wants": [{ "kind": "provisions", "quantity": 3 }],
+      "bonusTags": [],
+      "refusalTags": [],
+      "refusalLine": "Wrong goods. I need the other kind."
+    },
+    {
+      "id": "tess-marchbanks",
+      "name": "Tess Marchbanks",
+      "locationId": "quillon",
+      "wants": [{ "kind": "spirits", "quantity": 4 }],
+      "bonusTags": [],
+      "refusalTags": [],
+      "refusalLine": "That won't fill the order."
+    },
+    {
+      "id": "marit-cutler",
+      "name": "Marit Cutler",
+      "locationId": "gannet",
+      "wants": [{ "kind": "mechanical", "quantity": 2 }],
+      "bonusTags": [],
+      "refusalTags": [],
+      "refusalLine": "Not for the drills. I know what the drills like."
+    },
+    {
+      "id": "hollis-grey",
+      "name": "Hollis Grey",
+      "locationId": "gannet",
+      "wants": [{ "kind": "provisions", "quantity": 3 }],
+      "bonusTags": [],
+      "refusalTags": [],
+      "refusalLine": "No. It has to be what I said."
+    },
+    {
+      "id": "nadia-fenwick",
+      "name": "Nadia Fenwick",
+      "locationId": "gannet",
+      "wants": [{ "kind": "spirits", "quantity": 4 }],
+      "bonusTags": [],
+      "refusalTags": [],
+      "refusalLine": "I can't use that."
+    },
+    {
+      "id": "oskar-brine",
+      "name": "Oskar Brine",
+      "locationId": "coldwater",
+      "wants": [{ "kind": "spirits", "quantity": 2 }],
+      "bonusTags": [],
+      "refusalTags": [],
+      "refusalLine": "Haulers don't drink much. They don't drink that."
+    },
+    {
+      "id": "orrin-vale",
+      "name": "Orrin Vale",
+      "locationId": "coldwater",
+      "wants": [{ "kind": "remedies", "quantity": 3 }],
+      "bonusTags": [],
+      "refusalTags": [],
+      "refusalLine": "Not what I'm buying."
+    },
+    {
+      "id": "edda-lindqvist",
+      "name": "Edda Lindqvist",
+      "locationId": "coldwater",
+      "wants": [{ "kind": "mechanical", "quantity": 4 }],
+      "bonusTags": [],
+      "refusalTags": [],
+      "refusalLine": "No, that isn't it."
+    },
+    {
+      "id": "ynez-kaldera",
+      "name": "Ynez Kaldera",
+      "locationId": "scoria",
+      "wants": [{ "kind": "remedies", "quantity": 2 }],
+      "bonusTags": [],
+      "refusalTags": [],
+      "refusalLine": "I have been burned by better things than that. Keep it."
+    },
+    {
+      "id": "kit-barlow",
+      "name": "Kit Barlow",
+      "locationId": "scoria",
+      "wants": [{ "kind": "mechanical", "quantity": 3 }],
+      "bonusTags": [],
+      "refusalTags": [],
+      "refusalLine": "That isn't what I asked for."
+    },
+    {
+      "id": "sunniva-roth",
+      "name": "Sunniva Roth",
+      "locationId": "scoria",
+      "wants": [{ "kind": "provisions", "quantity": 4 }],
+      "bonusTags": [],
+      "refusalTags": [],
+      "refusalLine": "Not that one."
+    },
+    {
+      "id": "dagmar-flagg",
+      "name": "Dagmar Flagg",
+      "locationId": "pell",
+      "wants": [{ "kind": "provisions", "quantity": 3 }],
+      "bonusTags": [],
+      "refusalTags": [],
+      "refusalLine": "Wrong rock, wrong flag. I'll hold it against you for a year; it will be a very good grudge."
+    },
+    {
+      "id": "piet-hallam",
+      "name": "Piet Hallam",
+      "locationId": "pell",
+      "wants": [{ "kind": "spirits", "quantity": 3 }],
+      "bonusTags": [],
+      "refusalTags": [],
+      "refusalLine": "Wrong goods. I need the other kind."
+    },
+    {
+      "id": "lena-wirth",
+      "name": "Lena Wirth",
+      "locationId": "pell",
+      "wants": [{ "kind": "remedies", "quantity": 4 }],
+      "bonusTags": [],
+      "refusalTags": [],
+      "refusalLine": "That won't fill the order."
+    },
+    {
+      "id": "tobias-deepwell",
+      "name": "Tobias Deepwell",
+      "locationId": "hob",
+      "wants": [{ "kind": "mechanical", "quantity": 1 }],
+      "bonusTags": [],
+      "refusalTags": [],
+      "refusalLine": "Not deep enough. I mean the goods. I always mean the goods."
+    },
+    {
+      "id": "garrick-soames",
+      "name": "Garrick Soames",
+      "locationId": "hob",
+      "wants": [{ "kind": "provisions", "quantity": 3 }],
+      "bonusTags": [],
+      "refusalTags": [],
+      "refusalLine": "No. It has to be what I said."
+    },
+    {
+      "id": "imogen-pratt",
+      "name": "Imogen Pratt",
+      "locationId": "hob",
+      "wants": [{ "kind": "spirits", "quantity": 4 }],
+      "bonusTags": [],
+      "refusalTags": [],
+      "refusalLine": "I can't use that."
+    },
+    {
+      "id": "ilona-carbury",
+      "name": "Ilona Carbury",
+      "locationId": "tamsin",
+      "wants": [{ "kind": "remedies", "quantity": 2 }],
+      "bonusTags": [],
+      "refusalTags": [],
+      "refusalLine": "It has been years since I saw a sky. I can still tell that isn't right."
+    },
+    {
+      "id": "dov-ellery",
+      "name": "Dov Ellery",
+      "locationId": "tamsin",
+      "wants": [{ "kind": "mechanical", "quantity": 3 }],
+      "bonusTags": [],
+      "refusalTags": [],
+      "refusalLine": "Not what I'm buying."
+    },
+    {
+      "id": "rosa-tennant",
+      "name": "Rosa Tennant",
+      "locationId": "tamsin",
+      "wants": [{ "kind": "provisions", "quantity": 4 }],
+      "bonusTags": [],
+      "refusalTags": [],
+      "refusalLine": "No, that isn't it."
     }
   ],
   "start": { "credits": 400, "day": 1, "ship": { "speed": 4, "range": 20, "hold": 12 } }
