@@ -102,22 +102,21 @@ function keepingTheRoleTags(
   let next = rng;
 
   for (const tag of content.tags.filter((candidate) => held.has(candidate.id))) {
+    // Counted as the role-tag check counts them: a kind held in a role is
+    // carried by every good of it.
     const carrying = content.goods.filter(
-      (good) => circulating.has(good.kind) && good.tags.includes(tag.id),
+      (good) => circulating.has(good.kind) && (good.kind === tag.id || good.tags.includes(tag.id)),
     );
     if (carrying.length < least) continue;
     const hidden = carrying.filter((good) => !kept.has(good.id));
-    while (carrying.length - hidden.length < least) {
-      const [restored, after] = drawFrom(hidden, next);
-      next = after;
-      hidden.splice(hidden.indexOf(restored), 1);
-      kept.add(restored.id);
-    }
+    const [stillHidden, after] = keepingTheFloor(hidden, carrying.length - least, next);
+    next = after;
+    for (const good of hidden) if (!stillHidden.includes(good)) kept.add(good.id);
   }
   return next;
 }
 
-/** The buyers standing at a drawn location: the ones the people pass may draw. */
+/** The buyers who stand at a drawn location, before the people pass hides any. */
 export function buyersAtDrawnLocations(galaxy: DrawnGalaxy, content: ContentSet): readonly Buyer[] {
   const drawn = new Set(galaxy.locations.map((location) => location.id));
   return content.buyers.filter((buyer) => drawn.has(buyer.locationId));
