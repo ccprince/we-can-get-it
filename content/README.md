@@ -346,14 +346,20 @@ difference is for tags to carry, not a second kind.
 
 ### Stubs
 
-**Every good and buyer in this file is a stub**, there only so the set loads, and later stages
-replace all of them. A stub's id begins `stub-`, its name says so, and so does a good's prose or a buyer's refusal line. There are
-four goods per kind, the usability floor, and one buyer per kind with a vague want at it, standing
-at a location whose archetype demands it.
+**The goods of a kind not yet written are stubs**, there only so the set loads, and the goods stages
+replace them a kind at a time. A stub's id begins `stub-`, and its name and prose say so. A stubbed
+kind holds four goods, the usability floor, so the draw hides none of them; and every stub good is
+reported for missing its kind's tells, because stub prose is not prose. Read past both.
 
-Two consequences, to read past rather than act on. Every stub good is reported for missing its
-kind's tells, because stub prose is not prose. And with each kind at exactly its floor, the draw
-hides no goods at all yet.
+A written good carries a **one-line premise** as its prose, not its finished prose: that comes last,
+once measurement shows which goods survive. Its tags are drawn from the cast's tastes, and once a
+kind's goods are written, the minor buyers wanting that kind state their wants plainly, as a
+predicate or as an **order**. Every order's price and window is a placeholder: the price is the
+good's worth, or near the middle of the worths a predicate order matches, and the window is 30 days.
+
+**Waterproof** carries `proof`, a tell of spirits, so every cloth good whose prose says waterproof
+is reported as reading like spirits. That is a known false tell, kept because both words are the
+right ones (#122).
 
 ### The map
 

@@ -1,7 +1,7 @@
 {
   "bounds": {
     "tagsPerGood": { "least": 1, "most": 5 },
-    "goodsPerRoleTag": { "least": 3, "most": 8 },
+    "goodsPerRoleTag": { "least": 2, "most": 8 },
     "usabilityFloor": 4,
     "quirkRation": 3
   },
@@ -311,7 +311,16 @@
     { "id": "curios", "class": "kind", "tells": ["carved", "antique", "keepsake"] },
     { "id": "mechanical", "class": "kind", "tells": ["gear", "motor", "machined"] },
     { "id": "ore", "class": "kind", "tells": ["ore", "seam", "assay"] },
-    { "id": "botanicals", "class": "kind", "tells": ["seed", "cutting", "leaf"] }
+    { "id": "botanicals", "class": "kind", "tells": ["seed", "cutting", "leaf"] },
+    { "id": "plain", "class": "quality", "tells": ["plain", "sober", "unpatterned"] },
+    { "id": "loud", "class": "quality", "tells": ["loud", "garish", "shrieking", "gaudy"] },
+    { "id": "floral", "class": "quirk", "tells": ["floral", "flower", "blossom", "petal", "rose"] },
+    { "id": "rugged", "class": "quality", "tells": ["rugged", "tough", "hard-wearing"] },
+    { "id": "fine", "class": "quality", "tells": ["fine", "delicate", "gossamer"] },
+    { "id": "raw", "class": "quality", "tells": ["raw", "greige", "unscoured", "in the grease"] },
+    { "id": "waterproof", "class": "quality", "tells": ["waterproof", "waxed", "oiled"] },
+    { "id": "handmade", "class": "origin", "tells": ["handmade", "by hand", "hand-", "homespun"] },
+    { "id": "factory", "class": "origin", "tells": ["factory", "machine-made", "mill-"] }
   ],
   "goods": [
     {
@@ -379,36 +388,76 @@
       "worth": 30
     },
     {
-      "id": "stub-cloth-1",
-      "name": "Stub cloth 1",
-      "prose": "A stub, standing in until the goods are written.",
+      "id": "mill-sacking",
+      "name": "Mill sacking",
+      "prose": "Unscoured, plain sacking, mill-woven and tough enough to scrub a deck with.",
       "kind": "cloth",
-      "tags": [],
-      "worth": 15
+      "tags": ["raw", "factory", "rugged", "plain"],
+      "worth": 10
     },
     {
-      "id": "stub-cloth-2",
-      "name": "Stub cloth 2",
-      "prose": "A stub, standing in until the goods are written.",
+      "id": "oilskin-smock",
+      "name": "Oilskin smock",
+      "prose": "A factory-cut smock of waxed cloth in loud yellow, waterproof and hard-wearing, re-oiled until the rain runs off it.",
       "kind": "cloth",
-      "tags": [],
-      "worth": 20
+      "tags": ["waterproof", "rugged", "factory", "loud"],
+      "worth": 35
     },
     {
-      "id": "stub-cloth-3",
-      "name": "Stub cloth 3",
-      "prose": "A stub, standing in until the goods are written.",
+      "id": "grey-work-twill",
+      "name": "Grey work twill",
+      "prose": "A bolt of sober grey twill, machine-made, every hard-wearing yard the same as the last.",
       "kind": "cloth",
-      "tags": [],
+      "tags": ["plain", "factory", "rugged"],
+      "worth": 18
+    },
+    {
+      "id": "homespun-blanket",
+      "name": "Homespun blanket",
+      "prose": "Homespun and woven by one family over one winter, plain as porridge and still raw in the grease.",
+      "kind": "cloth",
+      "tags": ["handmade", "plain", "raw"],
+      "worth": 30
+    },
+    {
+      "id": "rose-border-tablecloth",
+      "name": "Rose-border tablecloth",
+      "prose": "Fine linen cloth with a border of roses stitched by hand, a grandmother's year of evenings.",
+      "kind": "cloth",
+      "tags": ["floral", "handmade", "fine"],
+      "worth": 50
+    },
+    {
+      "id": "chintz",
+      "name": "Chintz",
+      "prose": "A bolt of factory chintz, printed with cabbage blossoms in garish colours that occur nowhere in nature.",
+      "kind": "cloth",
+      "tags": ["floral", "loud", "factory"],
+      "worth": 22
+    },
+    {
+      "id": "raw-silk",
+      "name": "Hand-reeled raw silk",
+      "prose": "A hank of raw silk, hand-reeled and still gummy, fine as breath and not yet woven.",
+      "kind": "cloth",
+      "tags": ["raw", "fine", "handmade"],
+      "worth": 60
+    },
+    {
+      "id": "signal-orange-tarpaulin",
+      "name": "Signal-orange tarpaulin",
+      "prose": "Waxed cotton cloth in a loud orange you could see from orbit, tough and waterproof.",
+      "kind": "cloth",
+      "tags": ["waterproof", "rugged", "loud"],
       "worth": 25
     },
     {
-      "id": "stub-cloth-4",
-      "name": "Stub cloth 4",
-      "prose": "A stub, standing in until the goods are written.",
+      "id": "sweet-pea-rain-cape",
+      "name": "Sweet-pea rain cape",
+      "prose": "A cape of fine oiled cloth printed with sweet peas in shrieking pinks; the rain runs off the petals.",
       "kind": "cloth",
-      "tags": [],
-      "worth": 30
+      "tags": ["floral", "waterproof", "fine", "loud"],
+      "worth": 45
     },
     {
       "id": "stub-remedies-1",
@@ -594,7 +643,16 @@
       "id": "wen-aldous",
       "name": "Wen Aldous",
       "locationId": "halloran",
-      "wants": [{ "kind": "cloth", "quantity": 4 }],
+      "wants": [
+        {
+          "predicate": [
+            { "tag": "cloth", "negated": false },
+            { "tag": "fine", "negated": false }
+          ],
+          "plainly": "wants something fine to sell on",
+          "quantity": 2
+        }
+      ],
       "bonusTags": [],
       "refusalTags": [],
       "refusalLine": "Not that one."
@@ -612,7 +670,7 @@
       "id": "joss-penhale",
       "name": "Joss Penhale",
       "locationId": "vesper",
-      "wants": [{ "kind": "cloth", "quantity": 3 }],
+      "wants": [{ "goodId": "raw-silk", "quantity": 2, "order": { "price": 60, "days": 30 } }],
       "bonusTags": [],
       "refusalTags": [],
       "refusalLine": "Wrong goods. I need the other kind."
@@ -631,8 +689,8 @@
       "name": "Pascal Ixley",
       "locationId": "corrow",
       "wants": [{ "kind": "cloth", "quantity": 2 }],
-      "bonusTags": [],
-      "refusalTags": [],
+      "bonusTags": ["plain"],
+      "refusalTags": ["loud"],
       "refusalLine": "That isn't it. I'll know the right one when it's in my hands."
     },
     {
@@ -666,7 +724,16 @@
       "id": "lars-odegaard",
       "name": "Lars Odegaard",
       "locationId": "ambry",
-      "wants": [{ "kind": "cloth", "quantity": 3 }],
+      "wants": [
+        {
+          "predicate": [
+            { "tag": "cloth", "negated": false },
+            { "tag": "plain", "negated": false }
+          ],
+          "plainly": "wants plain cloth, nothing bright",
+          "quantity": 3
+        }
+      ],
       "bonusTags": [],
       "refusalTags": [],
       "refusalLine": "Not what I'm buying."
@@ -712,8 +779,8 @@
       "name": "Fenn Alderwick",
       "locationId": "quillon",
       "wants": [{ "kind": "cloth", "quantity": 2 }],
-      "bonusTags": [],
-      "refusalTags": [],
+      "bonusTags": ["floral"],
+      "refusalTags": ["factory"],
       "refusalLine": "I'm sorry. I wanted to remember something, and that isn't it."
     },
     {
@@ -1063,8 +1130,8 @@
       "name": "Teague Harlan",
       "locationId": "longacre",
       "wants": [{ "kind": "cloth", "quantity": 2 }],
-      "bonusTags": [],
-      "refusalTags": [],
+      "bonusTags": ["rugged"],
+      "refusalTags": ["fine"],
       "refusalLine": "The machines wouldn't wear that, and I'm told they aren't fussy."
     },
     {
@@ -1080,7 +1147,17 @@
       "id": "cormac-hale",
       "name": "Cormac Hale",
       "locationId": "longacre",
-      "wants": [{ "kind": "cloth", "quantity": 4 }],
+      "wants": [
+        {
+          "predicate": [
+            { "tag": "cloth", "negated": false },
+            { "tag": "rugged", "negated": false }
+          ],
+          "plainly": "wants hard-wearing cloth for the field hands",
+          "quantity": 4,
+          "order": { "price": 22, "days": 30 }
+        }
+      ],
       "bonusTags": [],
       "refusalTags": [],
       "refusalLine": "I can't use that."
@@ -1098,7 +1175,16 @@
       "id": "bea-ashgrove",
       "name": "Bea Ashgrove",
       "locationId": "fallow",
-      "wants": [{ "kind": "cloth", "quantity": 3 }],
+      "wants": [
+        {
+          "predicate": [
+            { "tag": "cloth", "negated": false },
+            { "tag": "waterproof", "negated": false }
+          ],
+          "plainly": "wants something that keeps the rain off",
+          "quantity": 2
+        }
+      ],
       "bonusTags": [],
       "refusalTags": [],
       "refusalLine": "Not what I'm buying."
@@ -1125,7 +1211,9 @@
       "id": "agnes-thorne",
       "name": "Agnes Thorne",
       "locationId": "sheaf",
-      "wants": [{ "kind": "cloth", "quantity": 3 }],
+      "wants": [
+        { "goodId": "homespun-blanket", "quantity": 2, "order": { "price": 30, "days": 30 } }
+      ],
       "bonusTags": [],
       "refusalTags": [],
       "refusalLine": "That isn't what I asked for."
@@ -1144,8 +1232,8 @@
       "name": "Calla Mistral",
       "locationId": "verdance",
       "wants": [{ "kind": "cloth", "quantity": 1 }],
-      "bonusTags": [],
-      "refusalTags": [],
+      "bonusTags": ["waterproof"],
+      "refusalTags": ["raw"],
       "refusalLine": "Damp does terrible things to the wrong cloth, and that is the wrong cloth."
     },
     {
@@ -1161,7 +1249,17 @@
       "id": "gus-pettibone",
       "name": "Gus Pettibone",
       "locationId": "verdance",
-      "wants": [{ "kind": "cloth", "quantity": 4 }],
+      "wants": [
+        {
+          "predicate": [
+            { "tag": "cloth", "negated": false },
+            { "tag": "rugged", "negated": false },
+            { "tag": "factory", "negated": true }
+          ],
+          "plainly": "wants tough cloth, but not mill stuff",
+          "quantity": 3
+        }
+      ],
       "bonusTags": [],
       "refusalTags": [],
       "refusalLine": "That won't fill the order."
@@ -1179,7 +1277,7 @@
       "id": "wilhelmina-dray",
       "name": "Wilhelmina Dray",
       "locationId": "harrow",
-      "wants": [{ "kind": "cloth", "quantity": 3 }],
+      "wants": [{ "goodId": "oilskin-smock", "quantity": 1, "order": { "price": 35, "days": 30 } }],
       "bonusTags": [],
       "refusalTags": [],
       "refusalLine": "No. It has to be what I said."
@@ -1198,8 +1296,8 @@
       "name": "Ada Mallory",
       "locationId": "mallory",
       "wants": [{ "kind": "cloth", "quantity": 3 }],
-      "bonusTags": [],
-      "refusalTags": [],
+      "bonusTags": ["handmade"],
+      "refusalTags": ["factory"],
       "refusalLine": "Put it on the kitchen table and I'll tell you what I think. I think no."
     },
     {
@@ -1215,7 +1313,16 @@
       "id": "joachim-sparrow",
       "name": "Joachim Sparrow",
       "locationId": "mallory",
-      "wants": [{ "kind": "cloth", "quantity": 4 }],
+      "wants": [
+        {
+          "predicate": [
+            { "tag": "cloth", "negated": false },
+            { "tag": "raw", "negated": false }
+          ],
+          "plainly": "wants raw fibre to spin at home",
+          "quantity": 3
+        }
+      ],
       "bonusTags": [],
       "refusalTags": [],
       "refusalLine": "No, that isn't it."
