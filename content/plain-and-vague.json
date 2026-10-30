@@ -1070,7 +1070,7 @@
       "name": "Emeric Dunn",
       "locationId": "corrow",
       "wants": [{ "kind": "curios", "quantity": 1 }],
-      "bonusTags": [],
+      "bonusTags": ["modern"],
       "refusalTags": ["old"],
       "refusalLine": "No. It has to be what I said."
     },
@@ -1412,7 +1412,7 @@
       "name": "Garrick Soames",
       "locationId": "hob",
       "wants": [{ "kind": "remedies", "quantity": 2 }],
-      "bonusTags": [],
+      "bonusTags": ["pungent"],
       "refusalTags": ["burns"],
       "refusalLine": "No. It has to be what I said."
     },
@@ -1459,7 +1459,7 @@
       "name": "Rosa Tennant",
       "locationId": "tamsin",
       "wants": [{ "kind": "spirits", "quantity": 2 }],
-      "bonusTags": [],
+      "bonusTags": ["sweet"],
       "refusalTags": ["strong"],
       "refusalLine": "No, that isn't it."
     },
@@ -1541,7 +1541,7 @@
       "name": "Ned Fairweather",
       "locationId": "brisance",
       "wants": [{ "kind": "botanicals", "quantity": 2 }],
-      "bonusTags": [],
+      "bonusTags": ["keeps"],
       "refusalTags": ["perishable"],
       "refusalLine": "Not what I'm after."
     },
@@ -1606,7 +1606,7 @@
       "name": "Hilde Voss",
       "locationId": "weft",
       "wants": [{ "kind": "ore", "quantity": 3 }],
-      "bonusTags": [],
+      "bonusTags": ["common"],
       "refusalTags": ["rare"],
       "refusalLine": "Not what I'm buying."
     },
