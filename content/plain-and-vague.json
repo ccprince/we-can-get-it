@@ -334,7 +334,11 @@
     { "id": "halberd", "class": "origin", "tells": ["Halberd"] },
     { "id": "storied", "class": "quirk", "tells": ["storied", "the last of", "said to have"] },
     { "id": "strong", "class": "quality", "tells": ["strong", "fiery", "firewater"] },
-    { "id": "sweet", "class": "quality", "tells": ["honeyed", "sugared", "cordial"] }
+    { "id": "sweet", "class": "quality", "tells": ["honeyed", "sugared", "cordial"] },
+    { "id": "burns", "class": "quality", "tells": ["burn", "scald", "blister"] },
+    { "id": "bitter", "class": "quality", "tells": ["bitter", "astringent", "wormwood"] },
+    { "id": "daylight", "class": "quality", "tells": ["eyes", "sunlamp", "pallor"] },
+    { "id": "pungent", "class": "quality", "tells": ["pungent", "reek", "stink"] }
   ],
   "goods": [
     {
@@ -554,33 +558,73 @@
       "worth": 45
     },
     {
-      "id": "stub-remedies-1",
-      "name": "Stub remedies 1",
-      "prose": "A stub, standing in until the goods are written.",
+      "id": "cave-aloe-salve",
+      "name": "Cave-aloe salve",
+      "prose": "A cave-aloe salve, cool on a burn and the first thing a smelter reaches for.",
       "kind": "remedies",
-      "tags": [],
-      "worth": 15
-    },
-    {
-      "id": "stub-remedies-2",
-      "name": "Stub remedies 2",
-      "prose": "A stub, standing in until the goods are written.",
-      "kind": "remedies",
-      "tags": [],
-      "worth": 20
-    },
-    {
-      "id": "stub-remedies-3",
-      "name": "Stub remedies 3",
-      "prose": "A stub, standing in until the goods are written.",
-      "kind": "remedies",
-      "tags": [],
+      "tags": ["burns"],
       "worth": 25
     },
     {
-      "id": "stub-remedies-4",
-      "name": "Stub remedies 4",
-      "prose": "A stub, standing in until the goods are written.",
+      "id": "pine-tar-jelly",
+      "name": "Pine-tar jelly",
+      "prose": "A pine-tar jelly laid thick on a scald: the salve works, and it reeks.",
+      "kind": "remedies",
+      "tags": ["burns", "pungent"],
+      "worth": 18
+    },
+    {
+      "id": "wormwood-tincture",
+      "name": "Wormwood tincture",
+      "prose": "A wormwood tincture for the gut, a dose as bitter as regret.",
+      "kind": "remedies",
+      "tags": ["bitter"],
+      "worth": 20
+    },
+    {
+      "id": "willow-bark-dose",
+      "name": "Willow-bark dose",
+      "prose": "A willow-bark dose for an aching back, astringent enough to pucker the mouth.",
+      "kind": "remedies",
+      "tags": ["bitter"],
+      "worth": 12
+    },
+    {
+      "id": "lamp-blind-drops",
+      "name": "Lamp-blind drops",
+      "prose": "Drops for eyes gone dim under the lamps: a tincture to see by again.",
+      "kind": "remedies",
+      "tags": ["daylight"],
+      "worth": 40
+    },
+    {
+      "id": "sunlamp-tonic",
+      "name": "Sunlamp tonic",
+      "prose": "A sunlamp tonic for a deep-shift pallor, taken as one bitter dose a day.",
+      "kind": "remedies",
+      "tags": ["daylight", "bitter"],
+      "worth": 45
+    },
+    {
+      "id": "camphor-rub",
+      "name": "Camphor rub",
+      "prose": "A camphor chest salve, pungent enough to clear a head across the room.",
+      "kind": "remedies",
+      "tags": ["pungent"],
+      "worth": 15
+    },
+    {
+      "id": "sulphur-poultice",
+      "name": "Sulphur poultice",
+      "prose": "A sulphur poultice for a burn or a blister, a salve that stinks of the pit.",
+      "kind": "remedies",
+      "tags": ["burns", "pungent"],
+      "worth": 22
+    },
+    {
+      "id": "fever-tincture",
+      "name": "Fever tincture",
+      "prose": "A clear fever tincture, measured out by the dose.",
       "kind": "remedies",
       "tags": [],
       "worth": 30
@@ -1061,7 +1105,16 @@
       "id": "orrin-vale",
       "name": "Orrin Vale",
       "locationId": "coldwater",
-      "wants": [{ "kind": "remedies", "quantity": 3 }],
+      "wants": [
+        {
+          "predicate": [
+            { "tag": "remedies", "negated": false },
+            { "tag": "burns", "negated": false }
+          ],
+          "plainly": "wants something for burns",
+          "quantity": 3
+        }
+      ],
       "bonusTags": [],
       "refusalTags": [],
       "refusalLine": "Not what I'm buying."
@@ -1090,8 +1143,8 @@
       "name": "Ynez Kaldera",
       "locationId": "scoria",
       "wants": [{ "kind": "remedies", "quantity": 2 }],
-      "bonusTags": [],
-      "refusalTags": [],
+      "bonusTags": ["burns"],
+      "refusalTags": ["bitter"],
       "refusalLine": "I have been burned by better things than that. Keep it."
     },
     {
@@ -1162,7 +1215,9 @@
       "id": "lena-wirth",
       "name": "Lena Wirth",
       "locationId": "pell",
-      "wants": [{ "kind": "remedies", "quantity": 4 }],
+      "wants": [
+        { "goodId": "lamp-blind-drops", "quantity": 2, "order": { "price": 50, "days": 30 } }
+      ],
       "bonusTags": [],
       "refusalTags": [],
       "refusalLine": "That won't fill the order."
@@ -1218,8 +1273,8 @@
       "name": "Ilona Carbury",
       "locationId": "tamsin",
       "wants": [{ "kind": "remedies", "quantity": 2 }],
-      "bonusTags": [],
-      "refusalTags": [],
+      "bonusTags": ["daylight"],
+      "refusalTags": ["pungent"],
       "refusalLine": "It has been years since I saw a sky. I can still tell that isn't right."
     },
     {
