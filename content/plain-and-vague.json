@@ -305,7 +305,7 @@
   "lanes": [],
   "tags": [
     { "id": "spirits", "class": "kind", "tells": ["distilled", "proof", "bottle"] },
-    { "id": "provisions", "class": "kind", "tells": ["tinned", "preserved", "ration"] },
+    { "id": "provisions", "class": "kind", "tells": ["food", "meal", "fare"] },
     { "id": "cloth", "class": "kind", "tells": ["woven", "bolt", "cloth"] },
     { "id": "remedies", "class": "kind", "tells": ["tincture", "salve", "dose"] },
     { "id": "curios", "class": "kind", "tells": ["carved", "antique", "keepsake"] },
@@ -324,7 +324,14 @@
     { "id": "heavy", "class": "quality", "tells": ["heavy", "hefty"] },
     { "id": "light", "class": "quality", "tells": ["light", "featherweight"] },
     { "id": "old", "class": "quality", "tells": ["vintage", "veteran", "old-pattern"] },
-    { "id": "modern", "class": "quality", "tells": ["modern", "latest", "sealed unit"] }
+    { "id": "modern", "class": "quality", "tells": ["modern", "latest", "sealed unit"] },
+    { "id": "keeps", "class": "quality", "tells": ["tinned", "salted", "long-keeping"] },
+    { "id": "perishable", "class": "quality", "tells": ["fresh", "spoil", "ripe"] },
+    { "id": "hearty", "class": "quality", "tells": ["hearty", "filling"] },
+    { "id": "common", "class": "origin", "tells": ["common", "plentiful"] },
+    { "id": "exotic", "class": "origin", "tells": ["imported", "exotic"] },
+    { "id": "tucks", "class": "origin", "tells": ["Tuck's"] },
+    { "id": "halberd", "class": "origin", "tells": ["Halberd"] }
   ],
   "goods": [
     {
@@ -360,36 +367,76 @@
       "worth": 30
     },
     {
-      "id": "stub-provisions-1",
-      "name": "Stub provisions 1",
-      "prose": "A stub, standing in until the goods are written.",
+      "id": "tucks-salt-pork",
+      "name": "Tuck's salt pork",
+      "prose": "A barrel of Tuck's salt pork, salted hard: hearty fare for a long haul.",
       "kind": "provisions",
-      "tags": [],
-      "worth": 15
+      "tags": ["keeps", "hearty", "tucks"],
+      "worth": 30
     },
     {
-      "id": "stub-provisions-2",
-      "name": "Stub provisions 2",
-      "prose": "A stub, standing in until the goods are written.",
+      "id": "halberd-hardtack",
+      "name": "Halberd hardtack",
+      "prose": "Halberd hardtack, common as dust and tinned by the hundred, the cheapest fare on the Drift.",
       "kind": "provisions",
-      "tags": [],
+      "tags": ["keeps", "common", "halberd"],
+      "worth": 10
+    },
+    {
+      "id": "tucks-fresh-eggs",
+      "name": "Tuck's fresh eggs",
+      "prose": "A tray of Tuck's fresh eggs, good food for a week, then they spoil.",
+      "kind": "provisions",
+      "tags": ["perishable", "tucks"],
       "worth": 20
     },
     {
-      "id": "stub-provisions-3",
-      "name": "Stub provisions 3",
-      "prose": "A stub, standing in until the goods are written.",
+      "id": "halberd-cream-cheese",
+      "name": "Halberd cream cheese",
+      "prose": "A delicate Halberd cream cheese, fresh and soft: fine food that will spoil in days.",
       "kind": "provisions",
-      "tags": [],
-      "worth": 25
+      "tags": ["perishable", "fine", "halberd"],
+      "worth": 35
     },
     {
-      "id": "stub-provisions-4",
-      "name": "Stub provisions 4",
-      "prose": "A stub, standing in until the goods are written.",
+      "id": "imported-tinned-peaches",
+      "name": "Imported tinned peaches",
+      "prose": "Imported peaches, tinned in syrup: sweet fare from a world away.",
       "kind": "provisions",
-      "tags": [],
-      "worth": 30
+      "tags": ["keeps", "exotic"],
+      "worth": 40
+    },
+    {
+      "id": "orchard-figs",
+      "name": "Orchard figs",
+      "prose": "Exotic orchard figs, ripe and delicate: fine food that won't last the trip.",
+      "kind": "provisions",
+      "tags": ["perishable", "fine", "exotic"],
+      "worth": 55
+    },
+    {
+      "id": "sack-of-oats",
+      "name": "Sack of oats",
+      "prose": "A sack of common oats, ground to a hearty, filling meal.",
+      "kind": "provisions",
+      "tags": ["common", "hearty"],
+      "worth": 15
+    },
+    {
+      "id": "field-greens",
+      "name": "Field greens",
+      "prose": "Fresh field greens, common and cheap: good food on the day they're picked.",
+      "kind": "provisions",
+      "tags": ["perishable", "common"],
+      "worth": 12
+    },
+    {
+      "id": "tinned-mutton-stew",
+      "name": "Tinned mutton stew",
+      "prose": "Mutton stew, tinned and long-keeping: a hearty meal for a cold shift.",
+      "kind": "provisions",
+      "tags": ["keeps", "hearty"],
+      "worth": 25
     },
     {
       "id": "mill-sacking",
@@ -723,7 +770,17 @@
       "id": "ruth-calloway",
       "name": "Ruth Calloway",
       "locationId": "vesper",
-      "wants": [{ "kind": "provisions", "quantity": 4 }],
+      "wants": [
+        {
+          "predicate": [
+            { "tag": "provisions", "negated": false },
+            { "tag": "exotic", "negated": false }
+          ],
+          "plainly": "wants imported food for the market",
+          "quantity": 2,
+          "order": { "price": 45, "days": 30 }
+        }
+      ],
       "bonusTags": [],
       "refusalTags": [],
       "refusalLine": "That won't fill the order."
@@ -741,7 +798,17 @@
       "id": "emeric-dunn",
       "name": "Emeric Dunn",
       "locationId": "corrow",
-      "wants": [{ "kind": "provisions", "quantity": 3 }],
+      "wants": [
+        {
+          "predicate": [
+            { "tag": "provisions", "negated": false },
+            { "tag": "keeps", "negated": false }
+          ],
+          "plainly": "wants food that keeps for a long haul",
+          "quantity": 3,
+          "order": { "price": 25, "days": 30 }
+        }
+      ],
       "bonusTags": [],
       "refusalTags": [],
       "refusalLine": "No. It has to be what I said."
@@ -786,7 +853,16 @@
       "id": "mina-okafor",
       "name": "Mina Okafor",
       "locationId": "ambry",
-      "wants": [{ "kind": "provisions", "quantity": 4 }],
+      "wants": [
+        {
+          "predicate": [
+            { "tag": "provisions", "negated": false },
+            { "tag": "perishable", "negated": false }
+          ],
+          "plainly": "wants fresh food",
+          "quantity": 4
+        }
+      ],
       "bonusTags": [],
       "refusalTags": [],
       "refusalLine": "No, that isn't it."
@@ -796,8 +872,8 @@
       "name": "Wick Ardent",
       "locationId": "lantern",
       "wants": [{ "kind": "provisions", "quantity": 3 }],
-      "bonusTags": [],
-      "refusalTags": [],
+      "bonusTags": ["keeps"],
+      "refusalTags": ["perishable"],
       "refusalLine": "Someone else's berth, someone else's cargo. Not mine."
     },
     {
@@ -831,7 +907,16 @@
       "id": "ivo-strand",
       "name": "Ivo Strand",
       "locationId": "quillon",
-      "wants": [{ "kind": "provisions", "quantity": 3 }],
+      "wants": [
+        {
+          "predicate": [
+            { "tag": "provisions", "negated": false },
+            { "tag": "exotic", "negated": false }
+          ],
+          "plainly": "wants something imported",
+          "quantity": 3
+        }
+      ],
       "bonusTags": [],
       "refusalTags": [],
       "refusalLine": "Wrong goods. I need the other kind."
@@ -858,7 +943,17 @@
       "id": "hollis-grey",
       "name": "Hollis Grey",
       "locationId": "gannet",
-      "wants": [{ "kind": "provisions", "quantity": 3 }],
+      "wants": [
+        {
+          "predicate": [
+            { "tag": "provisions", "negated": false },
+            { "tag": "hearty", "negated": false }
+          ],
+          "plainly": "wants hearty food for the shift",
+          "quantity": 3,
+          "order": { "price": 25, "days": 30 }
+        }
+      ],
       "bonusTags": [],
       "refusalTags": [],
       "refusalLine": "No. It has to be what I said."
@@ -940,7 +1035,16 @@
       "id": "sunniva-roth",
       "name": "Sunniva Roth",
       "locationId": "scoria",
-      "wants": [{ "kind": "provisions", "quantity": 4 }],
+      "wants": [
+        {
+          "predicate": [
+            { "tag": "provisions", "negated": false },
+            { "tag": "hearty", "negated": false }
+          ],
+          "plainly": "wants filling food for the crews",
+          "quantity": 4
+        }
+      ],
       "bonusTags": [],
       "refusalTags": [],
       "refusalLine": "Not that one."
@@ -950,8 +1054,8 @@
       "name": "Dagmar Flagg",
       "locationId": "pell",
       "wants": [{ "kind": "provisions", "quantity": 3 }],
-      "bonusTags": [],
-      "refusalTags": [],
+      "bonusTags": ["tucks"],
+      "refusalTags": ["halberd"],
       "refusalLine": "Wrong rock, wrong flag. I'll hold it against you for a year; it will be a very good grudge."
     },
     {
@@ -985,7 +1089,17 @@
       "id": "garrick-soames",
       "name": "Garrick Soames",
       "locationId": "hob",
-      "wants": [{ "kind": "provisions", "quantity": 3 }],
+      "wants": [
+        {
+          "predicate": [
+            { "tag": "provisions", "negated": false },
+            { "tag": "tucks", "negated": false }
+          ],
+          "plainly": "wants food from Tuck's Claim",
+          "quantity": 2,
+          "order": { "price": 25, "days": 30 }
+        }
+      ],
       "bonusTags": [],
       "refusalTags": [],
       "refusalLine": "No. It has to be what I said."
@@ -1023,7 +1137,16 @@
       "id": "rosa-tennant",
       "name": "Rosa Tennant",
       "locationId": "tamsin",
-      "wants": [{ "kind": "provisions", "quantity": 4 }],
+      "wants": [
+        {
+          "predicate": [
+            { "tag": "provisions", "negated": false },
+            { "tag": "keeps", "negated": false }
+          ],
+          "plainly": "wants food that keeps",
+          "quantity": 4
+        }
+      ],
       "bonusTags": [],
       "refusalTags": [],
       "refusalLine": "No, that isn't it."
@@ -1033,8 +1156,8 @@
       "name": "Gideon Ferrous",
       "locationId": "anvil",
       "wants": [{ "kind": "provisions", "quantity": 3 }],
-      "bonusTags": [],
-      "refusalTags": [],
+      "bonusTags": ["hearty"],
+      "refusalTags": ["fine"],
       "refusalLine": "My foundries eat better than I do, and even they would send that back."
     },
     {
@@ -1077,7 +1200,16 @@
       "id": "ned-fairweather",
       "name": "Ned Fairweather",
       "locationId": "brisance",
-      "wants": [{ "kind": "provisions", "quantity": 4 }],
+      "wants": [
+        {
+          "predicate": [
+            { "tag": "provisions", "negated": false },
+            { "tag": "perishable", "negated": true }
+          ],
+          "plainly": "wants food that won't spoil",
+          "quantity": 4
+        }
+      ],
       "bonusTags": [],
       "refusalTags": [],
       "refusalLine": "That won't fill the order."
@@ -1095,7 +1227,17 @@
       "id": "clio-rask",
       "name": "Clio Rask",
       "locationId": "cinderhall",
-      "wants": [{ "kind": "provisions", "quantity": 3 }],
+      "wants": [
+        {
+          "predicate": [
+            { "tag": "provisions", "negated": false },
+            { "tag": "common", "negated": false }
+          ],
+          "plainly": "wants common food, and plenty of it",
+          "quantity": 4,
+          "order": { "price": 12, "days": 30 }
+        }
+      ],
       "bonusTags": [],
       "refusalTags": [],
       "refusalLine": "No. It has to be what I said."
@@ -1122,7 +1264,16 @@
       "id": "hilde-voss",
       "name": "Hilde Voss",
       "locationId": "weft",
-      "wants": [{ "kind": "provisions", "quantity": 3 }],
+      "wants": [
+        {
+          "predicate": [
+            { "tag": "provisions", "negated": false },
+            { "tag": "common", "negated": false }
+          ],
+          "plainly": "wants cheap, plentiful food",
+          "quantity": 3
+        }
+      ],
       "bonusTags": [],
       "refusalTags": [],
       "refusalLine": "Not what I'm buying."
@@ -1158,7 +1309,17 @@
       "id": "rafe-moody",
       "name": "Rafe Moody",
       "locationId": "orrery",
-      "wants": [{ "kind": "provisions", "quantity": 4 }],
+      "wants": [
+        {
+          "predicate": [
+            { "tag": "provisions", "negated": false },
+            { "tag": "fine", "negated": false }
+          ],
+          "plainly": "wants something fine for the table",
+          "quantity": 1,
+          "order": { "price": 45, "days": 30 }
+        }
+      ],
       "bonusTags": [],
       "refusalTags": [],
       "refusalLine": "Not that one."
@@ -1168,8 +1329,8 @@
       "name": "Odalys Pike",
       "locationId": "grist",
       "wants": [{ "kind": "provisions", "quantity": 2 }],
-      "bonusTags": [],
-      "refusalTags": [],
+      "bonusTags": ["common"],
+      "refusalTags": ["exotic"],
       "refusalLine": "It'll do for someone. Not here."
     },
     {
