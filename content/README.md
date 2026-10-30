@@ -325,6 +325,12 @@ What follows from them is arithmetic, recorded as such:
 | Motif reserve | 6 | Two spurs, two chokepoints, two rings. |
 | Usability floor | 4 | ADR 0008 decision 20: a floor below the target, not the target. |
 
+**The first measurement voided them (#110)**, over 200 draws: goods per usable kind drawn is 4–10,
+mostly 6–8; all 8 kinds circulate in every draw; every campaign places 4 motifs and 13–15 locations;
+81 goods are written and 50–68 drawn, since the draw hides fewer than its 33% to keep named goods and
+role tags. The location reserve is exactly the binding per-archetype need, with no slack beyond the
+surplus of 2.
+
 ### Supply and demand
 
 Eight kinds, each one a **tag** of class kind with its tells, and four archetypes, each supplying
@@ -347,14 +353,20 @@ difference is for tags to carry, not a second kind.
 ### The goods
 
 **Every kind's goods are written**, replacing the stubs the set loaded with until then (#107–#109):
-nine goods to a kind, and eleven for ore and botanicals so that goods outnumber wants across the
-galaxy.
+nine goods to a kind, ten for cloth, and eleven for ore and botanicals so that goods outnumber wants
+across the galaxy.
 
 A written good's prose is, for now, one line saying what it is, not its finished prose: that comes last,
 once measurement shows which goods survive. Its tags are drawn from the cast's tastes, and once a
 kind's goods are written, the minor buyers wanting that kind state their wants plainly, as a
 predicate or as an **order**. Every order's price and window is a placeholder: the price is the
 good's worth, or near the middle of the worths a predicate order matches, and the window is 30 days.
+
+**Measurement revised the draft (#110).** Seven minor buyers' wants moved off provisions, the
+most-wanted kind: two became plain wants for curios and remedies, and five became vague wants for
+the kinds that had only two vague wants each. Each of those five holders refuses one tag, as every
+cast vague want's holder does, so that a vague want does not take a whole kind out of **thin
+demand**. Each **quirk** now sits on four goods, so that a drawn quirk is usually three.
 
 **Waterproof** carries `proof`, a tell of spirits, so every cloth good whose prose says waterproof
 is reported as reading like spirits. That is a known false tell, kept because both words are the

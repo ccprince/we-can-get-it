@@ -399,9 +399,9 @@
     {
       "id": "pear-brandy",
       "name": "Pear brandy",
-      "prose": "A clear orchard pear brandy, distilled twice and bottled with care.",
+      "prose": "A clear orchard pear brandy, said to have been laid down the year the orchard first fruited.",
       "kind": "spirits",
-      "tags": [],
+      "tags": ["storied"],
       "worth": 35
     },
     {
@@ -573,6 +573,14 @@
       "worth": 45
     },
     {
+      "id": "daisy-stitch-shawl",
+      "name": "Daisy-stitch shawl",
+      "prose": "A daisy-stitch shawl, light as breath, its flowers worked by hand.",
+      "kind": "cloth",
+      "tags": ["floral", "handmade", "light"],
+      "worth": 28
+    },
+    {
       "id": "cave-aloe-salve",
       "name": "Cave-aloe salve",
       "prose": "A cave-aloe salve, cool on a burn and the first thing a smelter reaches for.",
@@ -711,9 +719,9 @@
     {
       "id": "music-box",
       "name": "Music box",
-      "prose": "A painted music box, a bauble that plays one tune.",
+      "prose": "A painted music box, a pilgrim's bauble that plays one hymn.",
       "kind": "curios",
-      "tags": [],
+      "tags": ["blessed"],
       "worth": 20
     },
     {
@@ -1061,19 +1069,9 @@
       "id": "emeric-dunn",
       "name": "Emeric Dunn",
       "locationId": "corrow",
-      "wants": [
-        {
-          "predicate": [
-            { "tag": "provisions", "negated": false },
-            { "tag": "keeps", "negated": false }
-          ],
-          "plainly": "wants food that keeps for a long haul",
-          "quantity": 3,
-          "order": { "price": 25, "days": 30 }
-        }
-      ],
+      "wants": [{ "kind": "curios", "quantity": 1 }],
       "bonusTags": [],
-      "refusalTags": [],
+      "refusalTags": ["old"],
       "refusalLine": "No. It has to be what I said."
     },
     {
@@ -1129,11 +1127,11 @@
       "wants": [
         {
           "predicate": [
-            { "tag": "provisions", "negated": false },
-            { "tag": "perishable", "negated": false }
+            { "tag": "curios", "negated": false },
+            { "tag": "mined", "negated": false }
           ],
-          "plainly": "wants fresh food",
-          "quantity": 4
+          "plainly": "wants keepsakes dug from the deep rock",
+          "quantity": 2
         }
       ],
       "bonusTags": [],
@@ -1350,11 +1348,11 @@
       "wants": [
         {
           "predicate": [
-            { "tag": "provisions", "negated": false },
-            { "tag": "hearty", "negated": false }
+            { "tag": "remedies", "negated": false },
+            { "tag": "bitter", "negated": false }
           ],
-          "plainly": "wants filling food for the crews",
-          "quantity": 4
+          "plainly": "wants a bitter tonic for the crews",
+          "quantity": 2
         }
       ],
       "bonusTags": [],
@@ -1413,19 +1411,9 @@
       "id": "garrick-soames",
       "name": "Garrick Soames",
       "locationId": "hob",
-      "wants": [
-        {
-          "predicate": [
-            { "tag": "provisions", "negated": false },
-            { "tag": "tucks", "negated": false }
-          ],
-          "plainly": "wants food from Tuck's Claim",
-          "quantity": 2,
-          "order": { "price": 25, "days": 30 }
-        }
-      ],
+      "wants": [{ "kind": "remedies", "quantity": 2 }],
       "bonusTags": [],
-      "refusalTags": [],
+      "refusalTags": ["burns"],
       "refusalLine": "No. It has to be what I said."
     },
     {
@@ -1470,18 +1458,9 @@
       "id": "rosa-tennant",
       "name": "Rosa Tennant",
       "locationId": "tamsin",
-      "wants": [
-        {
-          "predicate": [
-            { "tag": "provisions", "negated": false },
-            { "tag": "keeps", "negated": false }
-          ],
-          "plainly": "wants food that keeps",
-          "quantity": 4
-        }
-      ],
+      "wants": [{ "kind": "spirits", "quantity": 2 }],
       "bonusTags": [],
-      "refusalTags": [],
+      "refusalTags": ["strong"],
       "refusalLine": "No, that isn't it."
     },
     {
@@ -1561,19 +1540,10 @@
       "id": "ned-fairweather",
       "name": "Ned Fairweather",
       "locationId": "brisance",
-      "wants": [
-        {
-          "predicate": [
-            { "tag": "provisions", "negated": false },
-            { "tag": "perishable", "negated": true }
-          ],
-          "plainly": "wants food that won't spoil",
-          "quantity": 4
-        }
-      ],
+      "wants": [{ "kind": "botanicals", "quantity": 2 }],
       "bonusTags": [],
-      "refusalTags": [],
-      "refusalLine": "That won't fill the order."
+      "refusalTags": ["perishable"],
+      "refusalLine": "Not what I'm after."
     },
     {
       "id": "petra-soot",
@@ -1635,18 +1605,9 @@
       "id": "hilde-voss",
       "name": "Hilde Voss",
       "locationId": "weft",
-      "wants": [
-        {
-          "predicate": [
-            { "tag": "provisions", "negated": false },
-            { "tag": "common", "negated": false }
-          ],
-          "plainly": "wants cheap, plentiful food",
-          "quantity": 3
-        }
-      ],
+      "wants": [{ "kind": "ore", "quantity": 3 }],
       "bonusTags": [],
-      "refusalTags": [],
+      "refusalTags": ["rare"],
       "refusalLine": "Not what I'm buying."
     },
     {
