@@ -1,4 +1,4 @@
-import type { ContentSet, Good } from './content';
+import { roleTags, type Buyer, type ContentSet, type Good } from './content';
 import type { Attempt } from './draw-checks';
 import type { DrawnGalaxy } from './galaxy';
 import { drawFrom, drawHidden, type Rng } from './rng';
@@ -51,8 +51,10 @@ export function drawKinds(galaxy: DrawnGalaxy, content: ContentSet, rng: Rng): A
  * the declared rate, and the draw **never takes a kind below its floor** (ADR
  * 0008 decision 11). Where the rolls hide more than that allows, the goods the
  * floor needs are drawn back from among the hidden ones — by the generator,
- * and not by id, which would make the same goods survive every campaign. A
- * kind's goods go with it when it is out of circulation.
+ * and not by id, which would make the same goods survive every campaign. Nor
+ * does it take a **role tag** held at a drawn location below its least, and
+ * goods are drawn back for a short tag the same way (decision 11, as amended).
+ * A kind's goods go with it when it is out of circulation.
  */
 export function drawGoods(galaxy: DrawnGalaxy, content: ContentSet, rng: Rng): Attempt {
   const kept = new Set<string>();
@@ -74,8 +76,51 @@ export function drawGoods(galaxy: DrawnGalaxy, content: ContentSet, rng: Rng): A
     for (const good of goods) if (!hidden.includes(good)) kept.add(good.id);
   }
 
+  next = keepingTheRoleTags(galaxy, content, kept, next);
   const goods = content.goods.filter((good) => kept.has(good.id));
   return { ok: true, galaxy: { ...galaxy, goods }, rng: next };
+}
+
+/**
+ * Draws hidden goods back, into `kept`, until every **role tag** held by a
+ * buyer at a drawn location sits on its least (ADR 0008 decision 11, as
+ * amended). The goods pass runs before the people pass, so it reads the
+ * buyers who could be drawn. Tags are walked in id order and the goods drawn
+ * back by the generator, as the floor's are. A tag its kinds in circulation
+ * carry too few goods for is left alone: no drawing back can reach its least,
+ * and the role-tag check judges it.
+ */
+function keepingTheRoleTags(
+  galaxy: DrawnGalaxy,
+  content: ContentSet,
+  kept: Set<string>,
+  rng: Rng,
+): Rng {
+  const { least } = content.bounds.goodsPerRoleTag;
+  const held = roleTags({ buyers: buyersAtDrawnLocations(galaxy, content) });
+  const circulating = new Set(galaxy.kinds);
+  let next = rng;
+
+  for (const tag of content.tags.filter((candidate) => held.has(candidate.id))) {
+    const carrying = content.goods.filter(
+      (good) => circulating.has(good.kind) && good.tags.includes(tag.id),
+    );
+    if (carrying.length < least) continue;
+    const hidden = carrying.filter((good) => !kept.has(good.id));
+    while (carrying.length - hidden.length < least) {
+      const [restored, after] = drawFrom(hidden, next);
+      next = after;
+      hidden.splice(hidden.indexOf(restored), 1);
+      kept.add(restored.id);
+    }
+  }
+  return next;
+}
+
+/** The buyers standing at a drawn location: the ones the people pass may draw. */
+export function buyersAtDrawnLocations(galaxy: DrawnGalaxy, content: ContentSet): readonly Buyer[] {
+  const drawn = new Set(galaxy.locations.map((location) => location.id));
+  return content.buyers.filter((buyer) => drawn.has(buyer.locationId));
 }
 
 /** The hidden ones, cut down to at most `mostHidden` by drawing the rest back. */
@@ -102,8 +147,7 @@ function keepingTheFloor<T>(
  * wholesale by location would reproduce the prototype's failure verbatim.
  */
 export function drawPeople(galaxy: DrawnGalaxy, content: ContentSet, rng: Rng): Attempt {
-  const drawn = new Set(galaxy.locations.map((location) => location.id));
-  const atDrawnLocations = content.buyers.filter((person) => drawn.has(person.locationId));
+  const atDrawnLocations = buyersAtDrawnLocations(galaxy, content);
   const [hidden, next] = hiddenAmong(
     atDrawnLocations,
     content.drawParameters.peopleHiddenPercent,

@@ -138,8 +138,19 @@ describe('goods, hidden within a kind', () => {
   });
 
   it('reads the floor from the content set rather than holding one of its own', () => {
+    // Nobody holds a tag in a role, so only the floor draws goods back.
     const content = aFilledReserve('market', {
       bounds: { ...loadedContentSet().bounds, usabilityFloor: 3 },
+      buyers: [
+        aBuyer({ bonusTags: [] }),
+        aBuyer({
+          id: 'oskar',
+          name: 'Oskar Venn',
+          locationId: 'hollow',
+          wants: [aWant({ predicate: [{ tag: 'ore' }] })],
+          bonusTags: [],
+        }),
+      ],
       drawParameters: aDrawParameters({ goodsHiddenPercent: 100 }),
     });
 
