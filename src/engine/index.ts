@@ -39,7 +39,7 @@ export type {
   ArchetypeLocations,
   CrossProduct,
   Drawn,
-  Hiding,
+  GoodsHidden,
   LaneDrawn,
   MotifLayout,
   PlacedSlot,
