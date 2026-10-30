@@ -344,12 +344,11 @@ the market is both their supplier and their buyer. `cloth` covers the raw materi
 `mechanical` covers things usable as they are and the parts they are made of: within a kind, that
 difference is for tags to carry, not a second kind.
 
-### Stubs
+### The goods
 
-**The goods of a kind not yet written are stubs**, there only so the set loads, and the three goods
-tickets of #22 (#107–#109) replace them a kind at a time. A stub's id begins `stub-`, and its name and prose say so. A stubbed
-kind holds four goods, the usability floor, so the draw hides none of them; and every stub good is
-reported for missing its kind's tells, because stub prose is not prose. Read past both.
+**Every kind's goods are written**, replacing the stubs the set loaded with until then (#107–#109):
+nine goods to a kind, and eleven for ore and botanicals so that goods outnumber wants across the
+galaxy.
 
 A written good's prose is, for now, one line saying what it is, not its finished prose: that comes last,
 once measurement shows which goods survive. Its tags are drawn from the cast's tastes, and once a
