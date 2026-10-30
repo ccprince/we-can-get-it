@@ -546,7 +546,7 @@
     {
       "id": "hand-winch",
       "name": "Hand winch",
-      "prose": "A featherweight winch with a hand-cranked gear, light enough to carry up a ladder.",
+      "prose": "A featherweight winch built by hand around a cranked gear, light enough to carry up a ladder.",
       "kind": "mechanical",
       "tags": ["light", "handmade"],
       "worth": 15
@@ -1331,7 +1331,7 @@
             { "tag": "mechanical", "negated": false },
             { "tag": "modern", "negated": true }
           ],
-          "plainly": "wants machinery with nothing sealed in it",
+          "plainly": "wants machinery that isn't modern",
           "quantity": 3,
           "order": { "price": 30, "days": 30 }
         }
