@@ -344,7 +344,10 @@
     { "id": "daylight", "class": "quality", "tells": ["eyes", "sunlamp", "pallor"] },
     { "id": "pungent", "class": "quality", "tells": ["pungent", "reek", "stink"] },
     { "id": "blessed", "class": "quirk", "tells": ["blessed", "consecrated", "pilgrim"] },
-    { "id": "mined", "class": "origin", "tells": ["dug from", "pithead", "from the mines"] }
+    { "id": "mined", "class": "origin", "tells": ["dug from", "pithead", "from the mines"] },
+    { "id": "pure", "class": "quality", "tells": ["pure", "high-grade"] },
+    { "id": "salvaged", "class": "origin", "tells": ["salvaged", "reclaimed", "scrap"] },
+    { "id": "rare", "class": "quality", "tells": ["rare", "freak", "seldom"] }
   ],
   "goods": [
     {
@@ -780,36 +783,92 @@
       "worth": 20
     },
     {
-      "id": "stub-ore-1",
-      "name": "Stub ore 1",
-      "prose": "A stub, standing in until the goods are written.",
+      "id": "bog-iron",
+      "name": "Bog iron",
+      "prose": "Bog iron raked up from a swamp moon's shallows: cheap ore, sold by the tonne.",
       "kind": "ore",
-      "tags": [],
-      "worth": 15
+      "tags": ["common"],
+      "worth": 10
     },
     {
-      "id": "stub-ore-2",
-      "name": "Stub ore 2",
-      "prose": "A stub, standing in until the goods are written.",
+      "id": "reworked-tailings",
+      "name": "Reworked tailings",
+      "prose": "Tailings reclaimed from a spent working and run again, cheap ore with little left in it.",
+      "kind": "ore",
+      "tags": ["salvaged", "common"],
+      "worth": 12
+    },
+    {
+      "id": "smelter-slag",
+      "name": "Smelter slag",
+      "prose": "Slag reclaimed from the heaps behind a smelter and crushed for the ore still in it.",
+      "kind": "ore",
+      "tags": ["salvaged"],
+      "worth": 14
+    },
+    {
+      "id": "hull-plate-scrap",
+      "name": "Hull-plate scrap",
+      "prose": "Hull plate salvaged from a breaker's yard and baled, sold by assay like any ore.",
+      "kind": "ore",
+      "tags": ["salvaged"],
+      "worth": 18
+    },
+    {
+      "id": "pyrite",
+      "name": "Pyrite",
+      "prose": "Pyrite from a sulphur seam, an ore that has fooled many a prospector.",
       "kind": "ore",
       "tags": [],
       "worth": 20
     },
     {
-      "id": "stub-ore-3",
-      "name": "Stub ore 3",
-      "prose": "A stub, standing in until the goods are written.",
+      "id": "galena",
+      "name": "Galena",
+      "prose": "Galena in grey cubes, lead ore with a dull shine.",
       "kind": "ore",
       "tags": [],
       "worth": 25
     },
     {
-      "id": "stub-ore-4",
-      "name": "Stub ore 4",
-      "prose": "A stub, standing in until the goods are written.",
+      "id": "assayed-tin",
+      "name": "Assayed tin",
+      "prose": "Tin ore, assayed high-grade and bagged with its certificate.",
       "kind": "ore",
-      "tags": [],
+      "tags": ["pure"],
       "worth": 30
+    },
+    {
+      "id": "copper-ore",
+      "name": "Copper ore",
+      "prose": "Copper ore pure enough to show green at a scratch, from a rich seam.",
+      "kind": "ore",
+      "tags": ["pure"],
+      "worth": 35
+    },
+    {
+      "id": "bismuth",
+      "name": "Bismuth",
+      "prose": "Bismuth crystal in rainbow stairsteps, a rare ore few smelters ever see.",
+      "kind": "ore",
+      "tags": ["rare"],
+      "worth": 40
+    },
+    {
+      "id": "meteoric-iron",
+      "name": "Meteoric iron",
+      "prose": "Meteoric iron cut from a fallen star, a freak ore laced with nickel.",
+      "kind": "ore",
+      "tags": ["rare"],
+      "worth": 45
+    },
+    {
+      "id": "native-silver",
+      "name": "Native silver",
+      "prose": "Native silver in wires, pure from the seam, and seldom found.",
+      "kind": "ore",
+      "tags": ["pure", "rare"],
+      "worth": 55
     },
     {
       "id": "stub-botanicals-1",
@@ -1376,7 +1435,16 @@
       "id": "abel-crane",
       "name": "Abel Crane",
       "locationId": "anvil",
-      "wants": [{ "kind": "ore", "quantity": 3 }],
+      "wants": [
+        {
+          "predicate": [
+            { "tag": "ore", "negated": false },
+            { "tag": "salvaged", "negated": true }
+          ],
+          "plainly": "wants ore from the ground, not scrap",
+          "quantity": 3
+        }
+      ],
       "bonusTags": [],
       "refusalTags": [],
       "refusalLine": "That isn't what I asked for."
@@ -1395,8 +1463,8 @@
       "name": "Corvin Trask",
       "locationId": "brisance",
       "wants": [{ "kind": "ore", "quantity": 2 }],
-      "bonusTags": [],
-      "refusalTags": [],
+      "bonusTags": ["pure"],
+      "refusalTags": ["salvaged"],
       "refusalLine": "The furnace wouldn't have it, and I've never won an argument with the furnace."
     },
     {
@@ -1458,7 +1526,17 @@
       "id": "tomas-orwell",
       "name": "Tomas Orwell",
       "locationId": "cinderhall",
-      "wants": [{ "kind": "ore", "quantity": 4 }],
+      "wants": [
+        {
+          "predicate": [
+            { "tag": "ore", "negated": false },
+            { "tag": "common", "negated": false }
+          ],
+          "plainly": "wants cheap ore by the load",
+          "quantity": 4,
+          "order": { "price": 11, "days": 30 }
+        }
+      ],
       "bonusTags": [],
       "refusalTags": [],
       "refusalLine": "I can't use that."
@@ -1494,7 +1572,16 @@
       "id": "alder-finch",
       "name": "Alder Finch",
       "locationId": "weft",
-      "wants": [{ "kind": "ore", "quantity": 4 }],
+      "wants": [
+        {
+          "predicate": [
+            { "tag": "ore", "negated": false },
+            { "tag": "pure", "negated": false }
+          ],
+          "plainly": "wants high-grade ore for the mordant vats",
+          "quantity": 4
+        }
+      ],
       "bonusTags": [],
       "refusalTags": [],
       "refusalLine": "No, that isn't it."
@@ -1504,8 +1591,8 @@
       "name": "Anselm Quadrant",
       "locationId": "orrery",
       "wants": [{ "kind": "ore", "quantity": 3 }],
-      "bonusTags": [],
-      "refusalTags": [],
+      "bonusTags": ["rare"],
+      "refusalTags": ["common"],
       "refusalLine": "Built to order, and that is not what I ordered. It isn't even in the right orbit."
     },
     {
@@ -1549,7 +1636,17 @@
       "id": "selma-quint",
       "name": "Selma Quint",
       "locationId": "grist",
-      "wants": [{ "kind": "ore", "quantity": 3 }],
+      "wants": [
+        {
+          "predicate": [
+            { "tag": "ore", "negated": false },
+            { "tag": "rare", "negated": false }
+          ],
+          "plainly": "wants a rare ore for a buyer of hers",
+          "quantity": 3,
+          "order": { "price": 45, "days": 30 }
+        }
+      ],
       "bonusTags": [],
       "refusalTags": [],
       "refusalLine": "Wrong goods. I need the other kind."
