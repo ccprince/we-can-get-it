@@ -1,7 +1,8 @@
 # ADR 0008: The draw is an ordered cascade over the reserve, sized by one number
 
 **Status:** accepted, 2026-10-22; decision 11 amended 2026-10-29 (#124): the goods pass spares a role
-tag held at a drawn location as it spares a kind's floor.
+tag held at a drawn location as it spares a kind's floor; amended again 2026-10-30 (#127): it keeps a
+good a buyer at a drawn location wants by name.
 **Context:** `docs/design-overview.md` §4 chunk 3, §5 (the question this settles), §6 item 4;
 `docs/prototype-findings.md` §2.1, §2.2, §2.3, §2.5; ADR 0002, ADR 0003, ADR 0004, ADR 0006, ADR 0007
 
@@ -153,6 +154,14 @@ kind, and the check stays as the net under both. The tags are read off the buyer
 because the goods pass runs before the people pass and cannot know who will be hidden. Drawing goods
 back hides fewer than the declared rate, so the cross-product report says how many were hidden and
 which were drawn back. *(Amended 2026-10-29, #124. Before it, a short role tag re-rolled the pass.)*
+
+Nor does it hide a good that a buyer at a drawn location **wants by name** (ADR 0007 decision 6). A want
+that names a good the draw hid is broken, like a vague want at a kind below its floor, and re-rolling
+fails for the reason it fails for role tags: every named good must survive the same roll, and a catalogue
+gains orders as it is written. So the pass keeps named goods before it counts the role tags, and a good
+kept by name counts toward its tags. The check stays as the net under it, and it still catches a named
+good whose kind no drawn location supplies. The report names the goods kept this way among those drawn
+back. *(Amended 2026-10-30, #127. Before it, a hidden named good re-rolled the pass.)*
 
 Dropping a kind is the large-grained, legible way to vary the galaxy's economic grain, and it is only legal
 for a kind no drawn archetype supplies or demands — which is why kinds are drawn after the map and before
