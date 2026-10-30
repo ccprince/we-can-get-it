@@ -320,7 +320,11 @@
     { "id": "raw", "class": "quality", "tells": ["raw", "greige", "unscoured", "in the grease"] },
     { "id": "waterproof", "class": "quality", "tells": ["waterproof", "waxed", "oiled"] },
     { "id": "handmade", "class": "origin", "tells": ["handmade", "by hand", "hand-", "homespun"] },
-    { "id": "factory", "class": "origin", "tells": ["factory", "machine-made", "mill-"] }
+    { "id": "factory", "class": "origin", "tells": ["factory", "machine-made", "mill-"] },
+    { "id": "heavy", "class": "quality", "tells": ["heavy", "hefty"] },
+    { "id": "light", "class": "quality", "tells": ["light", "featherweight"] },
+    { "id": "old", "class": "quality", "tells": ["vintage", "veteran", "old-pattern"] },
+    { "id": "modern", "class": "quality", "tells": ["modern", "latest", "sealed unit"] }
   ],
   "goods": [
     {
@@ -524,36 +528,76 @@
       "worth": 30
     },
     {
-      "id": "stub-mechanical-1",
-      "name": "Stub mechanical 1",
-      "prose": "A stub, standing in until the goods are written.",
+      "id": "deep-rated-pump",
+      "name": "Deep-rated pump",
+      "prose": "A factory-built pump, modern and machined to take crushing depth; heavy, and tough as the rock around it.",
       "kind": "mechanical",
-      "tags": [],
+      "tags": ["heavy", "rugged", "modern", "factory"],
+      "worth": 55
+    },
+    {
+      "id": "veteran-gearbox",
+      "name": "Veteran harvester gearbox",
+      "prose": "A veteran gearbox out of a harvester, heavy and hard-wearing, its teeth worn but true and its casing patched by hand.",
+      "kind": "mechanical",
+      "tags": ["old", "heavy", "rugged", "handmade"],
+      "worth": 40
+    },
+    {
+      "id": "hand-winch",
+      "name": "Hand winch",
+      "prose": "A featherweight winch with a hand-cranked gear, light enough to carry up a ladder.",
+      "kind": "mechanical",
+      "tags": ["light", "handmade"],
       "worth": 15
     },
     {
-      "id": "stub-mechanical-2",
-      "name": "Stub mechanical 2",
-      "prose": "A stub, standing in until the goods are written.",
+      "id": "vintage-clock-movement",
+      "name": "Vintage clock movement",
+      "prose": "A vintage clockwork movement, every gear delicate and light as a wish.",
       "kind": "mechanical",
-      "tags": [],
-      "worth": 20
+      "tags": ["old", "fine", "light"],
+      "worth": 50
     },
     {
-      "id": "stub-mechanical-3",
-      "name": "Stub mechanical 3",
-      "prose": "A stub, standing in until the goods are written.",
+      "id": "sealed-unit-servo",
+      "name": "Sealed-unit servo",
+      "prose": "A latest-model servo motor, a factory sealed unit, delicate and light in the palm.",
       "kind": "mechanical",
-      "tags": [],
+      "tags": ["modern", "fine", "light", "factory"],
+      "worth": 35
+    },
+    {
+      "id": "shed-rebuilt-motor",
+      "name": "Shed-rebuilt motor",
+      "prose": "A vintage tractor motor, rebuilt by hand in someone's shed, tough and ugly.",
+      "kind": "mechanical",
+      "tags": ["old", "handmade", "rugged"],
       "worth": 25
     },
     {
-      "id": "stub-mechanical-4",
-      "name": "Stub mechanical 4",
-      "prose": "A stub, standing in until the goods are written.",
+      "id": "crusher-jaw-plate",
+      "name": "Crusher jaw plate",
+      "prose": "A jaw plate for a rock crusher, factory-cast and machined, hefty and tough.",
       "kind": "mechanical",
-      "tags": [],
+      "tags": ["heavy", "rugged", "factory"],
       "worth": 30
+    },
+    {
+      "id": "laser-level",
+      "name": "Laser level",
+      "prose": "A modern laser level, its motor delicate and its case light enough to clip to a belt.",
+      "kind": "mechanical",
+      "tags": ["modern", "fine", "light"],
+      "worth": 45
+    },
+    {
+      "id": "cast-iron-flywheel",
+      "name": "Cast-iron flywheel",
+      "prose": "A vintage cast-iron flywheel off an old-pattern engine, heavy and slow and machined smooth.",
+      "kind": "mechanical",
+      "tags": ["old", "heavy"],
+      "worth": 20
     },
     {
       "id": "stub-ore-1",
@@ -806,8 +850,8 @@
       "name": "Marit Cutler",
       "locationId": "gannet",
       "wants": [{ "kind": "mechanical", "quantity": 2 }],
-      "bonusTags": [],
-      "refusalTags": [],
+      "bonusTags": ["rugged"],
+      "refusalTags": ["fine"],
       "refusalLine": "Not for the drills. I know what the drills like."
     },
     {
@@ -850,7 +894,17 @@
       "id": "edda-lindqvist",
       "name": "Edda Lindqvist",
       "locationId": "coldwater",
-      "wants": [{ "kind": "mechanical", "quantity": 4 }],
+      "wants": [
+        {
+          "predicate": [
+            { "tag": "mechanical", "negated": false },
+            { "tag": "heavy", "negated": false }
+          ],
+          "plainly": "wants heavy machinery for the workings",
+          "quantity": 3,
+          "order": { "price": 35, "days": 30 }
+        }
+      ],
       "bonusTags": [],
       "refusalTags": [],
       "refusalLine": "No, that isn't it."
@@ -868,7 +922,16 @@
       "id": "kit-barlow",
       "name": "Kit Barlow",
       "locationId": "scoria",
-      "wants": [{ "kind": "mechanical", "quantity": 3 }],
+      "wants": [
+        {
+          "predicate": [
+            { "tag": "mechanical", "negated": false },
+            { "tag": "rugged", "negated": false }
+          ],
+          "plainly": "wants machinery that can take a beating",
+          "quantity": 3
+        }
+      ],
       "bonusTags": [],
       "refusalTags": [],
       "refusalLine": "That isn't what I asked for."
@@ -914,8 +977,8 @@
       "name": "Tobias Deepwell",
       "locationId": "hob",
       "wants": [{ "kind": "mechanical", "quantity": 1 }],
-      "bonusTags": [],
-      "refusalTags": [],
+      "bonusTags": ["heavy"],
+      "refusalTags": ["light"],
       "refusalLine": "Not deep enough. I mean the goods. I always mean the goods."
     },
     {
@@ -949,7 +1012,9 @@
       "id": "dov-ellery",
       "name": "Dov Ellery",
       "locationId": "tamsin",
-      "wants": [{ "kind": "mechanical", "quantity": 3 }],
+      "wants": [
+        { "goodId": "deep-rated-pump", "quantity": 1, "order": { "price": 55, "days": 30 } }
+      ],
       "bonusTags": [],
       "refusalTags": [],
       "refusalLine": "Not what I'm buying."
@@ -1138,7 +1203,16 @@
       "id": "thea-lowry",
       "name": "Thea Lowry",
       "locationId": "longacre",
-      "wants": [{ "kind": "mechanical", "quantity": 3 }],
+      "wants": [
+        {
+          "predicate": [
+            { "tag": "mechanical", "negated": false },
+            { "tag": "light", "negated": false }
+          ],
+          "plainly": "wants something light enough to carry out to the field",
+          "quantity": 2
+        }
+      ],
       "bonusTags": [],
       "refusalTags": [],
       "refusalLine": "No. It has to be what I said."
@@ -1167,8 +1241,8 @@
       "name": "Marguerite Lye",
       "locationId": "fallow",
       "wants": [{ "kind": "mechanical", "quantity": 2 }],
-      "bonusTags": [],
-      "refusalTags": [],
+      "bonusTags": ["old"],
+      "refusalTags": ["modern"],
       "refusalLine": "We rest half the land. We don't rest our standards."
     },
     {
@@ -1193,7 +1267,9 @@
       "id": "lucan-frost",
       "name": "Lucan Frost",
       "locationId": "fallow",
-      "wants": [{ "kind": "mechanical", "quantity": 4 }],
+      "wants": [
+        { "goodId": "veteran-gearbox", "quantity": 2, "order": { "price": 40, "days": 30 } }
+      ],
       "bonusTags": [],
       "refusalTags": [],
       "refusalLine": "No, that isn't it."
@@ -1203,8 +1279,8 @@
       "name": "Bertil Strawe",
       "locationId": "sheaf",
       "wants": [{ "kind": "mechanical", "quantity": 2 }],
-      "bonusTags": [],
-      "refusalTags": [],
+      "bonusTags": ["handmade"],
+      "refusalTags": ["modern"],
       "refusalLine": "My harvester is older than the charter and has better taste than that."
     },
     {
@@ -1222,7 +1298,16 @@
       "id": "perrin-keel",
       "name": "Perrin Keel",
       "locationId": "sheaf",
-      "wants": [{ "kind": "mechanical", "quantity": 4 }],
+      "wants": [
+        {
+          "predicate": [
+            { "tag": "mechanical", "negated": false },
+            { "tag": "old", "negated": false }
+          ],
+          "plainly": "wants something old that's proved itself",
+          "quantity": 3
+        }
+      ],
       "bonusTags": [],
       "refusalTags": [],
       "refusalLine": "Not that one."
@@ -1240,7 +1325,17 @@
       "id": "isolde-marsh",
       "name": "Isolde Marsh",
       "locationId": "verdance",
-      "wants": [{ "kind": "mechanical", "quantity": 3 }],
+      "wants": [
+        {
+          "predicate": [
+            { "tag": "mechanical", "negated": false },
+            { "tag": "modern", "negated": true }
+          ],
+          "plainly": "wants machinery with nothing sealed in it",
+          "quantity": 3,
+          "order": { "price": 30, "days": 30 }
+        }
+      ],
       "bonusTags": [],
       "refusalTags": [],
       "refusalLine": "Wrong goods. I need the other kind."
@@ -1269,8 +1364,8 @@
       "name": "Hamish Corrie",
       "locationId": "harrow",
       "wants": [{ "kind": "mechanical", "quantity": 1 }],
-      "bonusTags": [],
-      "refusalTags": [],
+      "bonusTags": ["light"],
+      "refusalTags": ["heavy"],
       "refusalLine": "The hills won't take it. Neither will I."
     },
     {
@@ -1286,7 +1381,16 @@
       "id": "anders-kell",
       "name": "Anders Kell",
       "locationId": "harrow",
-      "wants": [{ "kind": "mechanical", "quantity": 4 }],
+      "wants": [
+        {
+          "predicate": [
+            { "tag": "mechanical", "negated": false },
+            { "tag": "fine", "negated": false }
+          ],
+          "plainly": "wants a fine instrument for the surveyor",
+          "quantity": 1
+        }
+      ],
       "bonusTags": [],
       "refusalTags": [],
       "refusalLine": "I can't use that."
@@ -1304,7 +1408,9 @@
       "id": "mara-fitch",
       "name": "Mara Fitch",
       "locationId": "mallory",
-      "wants": [{ "kind": "mechanical", "quantity": 3 }],
+      "wants": [
+        { "goodId": "shed-rebuilt-motor", "quantity": 2, "order": { "price": 25, "days": 30 } }
+      ],
       "bonusTags": [],
       "refusalTags": [],
       "refusalLine": "Not what I'm buying."
