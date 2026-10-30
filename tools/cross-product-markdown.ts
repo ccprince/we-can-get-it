@@ -101,14 +101,17 @@ function goodsHidden({
     '## Drawn: goods hidden',
     '',
     'Of the goods of the kinds in circulation, how many the draw hid, against the rate declared; ' +
-      'then each good it drew back after hiding it, to keep a kind’s floor or a role tag’s least.',
+      'then each good it drew back after hiding it: one a buyer wants by name, ' +
+      'or to keep a kind’s floor or a role tag’s least.',
     '',
     `- hidden ${hidden} of ${inCirculation} (${hiddenPercent}%) ` +
       `against ${declaredPercent}% declared; ${drawnBack.length} drawn back`,
     ...drawnBack.map((back) =>
-      'floor' in back
-        ? `- drawn back: \`${back.good}\`, for the floor of ${back.floor}`
-        : `- drawn back: \`${back.good}\`, for the role tag ${back.roleTag}`,
+      'wantedBy' in back
+        ? `- drawn back: \`${back.good}\`, wanted by name by ${back.wantedBy}`
+        : 'floor' in back
+          ? `- drawn back: \`${back.good}\`, for the floor of ${back.floor}`
+          : `- drawn back: \`${back.good}\`, for the role tag ${back.roleTag}`,
     ),
     '',
   ];

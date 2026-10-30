@@ -54,11 +54,14 @@ export function drawKinds(galaxy: DrawnGalaxy, content: ContentSet, rng: Rng): A
  * and not by id, which would make the same goods survive every campaign. Nor
  * does it take a **role tag** held at a drawn location below its least, and
  * goods are drawn back for a short tag the same way (decision 11, as amended).
- * A kind's goods go with it when it is out of circulation.
+ * Before either is counted, a good a buyer at a drawn location wants by name
+ * is never hidden (as amended by #127). A kind's goods go with it when it is
+ * out of circulation.
  */
 export function drawGoods(galaxy: DrawnGalaxy, content: ContentSet, rng: Rng): Attempt {
   const kept = new Set<string>();
   const drawnBack: DrawnBack[] = [];
+  const named = goodsWantedByName(galaxy, content);
   let next = rng;
 
   for (const kind of galaxy.kinds) {
@@ -68,15 +71,19 @@ export function drawGoods(galaxy: DrawnGalaxy, content: ContentSet, rng: Rng): A
       content.drawParameters.goodsHiddenPercent,
       next,
     );
+    // Named goods are kept first, so they count toward the floor and the tags.
+    const unnamed = rolled.filter((good) => !named.has(good.id));
     const [hidden, afterFloor] = keepingTheFloor(
-      rolled,
+      unnamed,
       goods.length - floorOf(goods, content),
       afterRolls,
     );
     next = afterFloor;
     for (const good of goods) if (!hidden.includes(good)) kept.add(good.id);
     for (const good of rolled) {
-      if (!hidden.includes(good)) drawnBack.push({ good: good.id, floor: kind });
+      const wantedBy = named.get(good.id);
+      if (wantedBy !== undefined) drawnBack.push({ good: good.id, wantedBy });
+      else if (!hidden.includes(good)) drawnBack.push({ good: good.id, floor: kind });
     }
   }
 
@@ -122,6 +129,21 @@ function keepingTheRoleTags(
     }
   }
   return next;
+}
+
+/**
+ * Each good a buyer at a drawn location wants by name, to the first such buyer
+ * in id order. The goods pass never hides one (ADR 0008 decision 11, as
+ * amended by #127): a want naming a hidden good is broken.
+ */
+function goodsWantedByName(galaxy: DrawnGalaxy, content: ContentSet): ReadonlyMap<string, string> {
+  const named = new Map<string, string>();
+  for (const buyer of buyersAtDrawnLocations(galaxy, content)) {
+    for (const want of buyer.wants) {
+      if ('goodId' in want && !named.has(want.goodId)) named.set(want.goodId, buyer.id);
+    }
+  }
+  return named;
 }
 
 /** The buyers who stand at a drawn location, before the people pass hides any. */
