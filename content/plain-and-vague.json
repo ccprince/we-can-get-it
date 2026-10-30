@@ -670,15 +670,15 @@
     {
       "id": "jet-brooch",
       "name": "Jet brooch",
-      "prose": "A vintage mourning brooch of jet dug from the coal, a widow's trinket.",
+      "prose": "A vintage mourning brooch, carved in jet dug from the coal: a widow's trinket.",
       "kind": "curios",
       "tags": ["mined", "old"],
       "worth": 40
     },
     {
-      "id": "pithead-lamp",
-      "name": "Pithead lamp",
-      "prose": "A pithead lamp in miniature, new-made for visitors: a bauble with a working wick.",
+      "id": "coal-pony",
+      "name": "Coal pony",
+      "prose": "A pit pony figurine of coal dug from the deep, new-made for visitors: a bauble for the mantel.",
       "kind": "curios",
       "tags": ["mined", "modern"],
       "worth": 15
