@@ -1,13 +1,5 @@
-import {
-  goodsCarrying,
-  roleTags,
-  shapes,
-  within,
-  type Buyer,
-  type ContentSet,
-  type Shape,
-} from './content';
-import { kindsTradedIn } from './fill';
+import { goodsCarrying, roleTags, shapes, within, type ContentSet, type Shape } from './content';
+import { buyersAtDrawnLocations, kindsTradedIn } from './fill';
 import type { DrawnGalaxy } from './galaxy';
 import { reachableFrom } from './map';
 import { holdsStartHub, readAsStart } from './start-hub';
@@ -228,6 +220,8 @@ export const drawChecks: readonly DrawCheck[] = [
     // A role tag is a learnable pattern or it is a one-off answer (ADR 0007
     // decision 7). Read over the buyers who could be drawn: the goods pass
     // runs before the people pass, so a tag one of them holds must be spread.
+    // The pass draws goods back to keep it, so this is the net under that
+    // guarantee, and misses only where too few goods carry the tag at all.
     // A tag no drawn good carries is absent rather than a one-off answer, and
     // the goods pass could not bring it back: its kind was dropped whole.
     stage: 'goods pass',
@@ -350,12 +344,6 @@ export function reserveShortfall(content: ContentSet): Problem | null {
     }
   }
   return null;
-}
-
-/** The buyers who stand at a drawn location, before the people pass hides any. */
-function buyersAtDrawnLocations(galaxy: DrawnGalaxy, content: ContentSet): readonly Buyer[] {
-  const drawn = new Set(galaxy.locations.map((location) => location.id));
-  return content.buyers.filter((buyer) => drawn.has(buyer.locationId));
 }
 
 /** The quirk tags some drawn good carries, in id order. */

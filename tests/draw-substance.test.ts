@@ -91,21 +91,82 @@ function aBobWhoWants(tags: readonly string[]): RawObject {
 const noRerolls = aDrawParameters({ goodsHiddenPercent: 50, rerolls: 0 });
 
 describe('the role-tag spread, in the drawn galaxy', () => {
-  it('re-rolls a draw that left a role tag on one good, and draws it on none or enough', () => {
-    const failed = failures(aClothReserve({ drawParameters: noRerolls }));
+  it('is kept by the goods pass, so no seed re-rolls for it', () => {
+    const content = aClothReserve({ drawParameters: noRerolls });
 
-    expect(failed.some((what) => what?.includes('the role-tag spread'))).toBe(true);
-    expect(failed.find((what) => what?.includes('the role-tag spread'))).toContain(
+    expect(failures(content)).toEqual(SEEDS.map(() => null));
+    for (const seed of SEEDS) {
+      expect(goodsCarryingIn(galaxyOf(content, seed), 'warm')).toBeGreaterThanOrEqual(2);
+    }
+  });
+
+  it('draws the goods it spares back by the generator, not by id', () => {
+    // Every good is hidden and the floor draws one back, so the tag is short on
+    // every seed and the pass has to choose which warm goods to keep.
+    const content = aWarmReserve({ bonusTags: ['warm'] });
+
+    const kept = new Set<string>();
+    for (const seed of SEEDS) {
+      const warm = galaxyOf(content, seed).goods.filter((good) => good.tags.includes('warm'));
+      expect(warm.length).toBeGreaterThanOrEqual(2);
+      kept.add(warm.map((good) => good.id).join(' '));
+    }
+    expect(kept.size).toBeGreaterThan(1);
+  });
+
+  it('spares no tag held only by someone at a location the draw did not place', () => {
+    // One slot, two markets: Osk at Hollow holds warm, and Ilse at Kestrel
+    // holds nothing. Where Kestrel is placed, only the floor draws goods back.
+    const content = aWarmReserve({ bonusTags: [] });
+    const placed = SEEDS.map((seed) => galaxyOf(content, seed));
+    const atKestrel = placed.filter((galaxy) => galaxy.startId === 'kestrel');
+    const atHollow = placed.filter((galaxy) => galaxy.startId === 'hollow');
+
+    expect(atKestrel.length).toBeGreaterThan(0);
+    expect(atHollow.length).toBeGreaterThan(0);
+    for (const galaxy of atKestrel) expect(goodsCarryingIn(galaxy, 'warm')).toBeLessThan(2);
+    for (const galaxy of atHollow)
+      expect(goodsCarryingIn(galaxy, 'warm')).toBeGreaterThanOrEqual(2);
+  });
+
+  it('misses a galaxy that left a role tag on one good', () => {
+    const content = aClothReserve();
+    const galaxy = galaxyOf(content, 1);
+    const thin = { ...galaxy, goods: galaxy.goods.filter((good) => good.id !== 'linen') };
+
+    expect(checkNamed('the role-tag spread').miss(thin, content)).toBe(
       'warm held in a role but sat on fewer than 2 drawn goods',
     );
-    for (const seed of SEEDS) {
-      expect(goodsCarryingIn(galaxyOf(aClothReserve(), seed), 'warm')).not.toBe(1);
-    }
   });
 });
 
 function goodsCarryingIn(galaxy: DrawnGalaxy, tag: string): number {
   return galaxy.goods.filter((good) => good.tags.includes(tag)).length;
+}
+
+/**
+ * Cloth, every good of it hidden and the floor at one: three goods are warm
+ * and two are not, so the floor alone leaves warm on one good at most. One
+ * slot, filled by Kestrel or Hollow: Ilse stands at Kestrel with the roles
+ * given, and Osk at Hollow holds warm as a bonus.
+ */
+function aWarmReserve(ilse: RawObject): ContentSet {
+  return loadedContentSet({
+    archetypes: [anArchetype({ supplies: ['cloth'] })],
+    locations: [aLocation(), aLocation({ id: 'hollow', name: "Grieve's Hollow" })],
+    motifs: [aMotif({ slots: [aSlot()] })],
+    tags: [aTag(), aTag({ id: 'warm', class: 'quality', tells: ['fleece'] })],
+    goods: [
+      aGood({ id: 'fleece', name: 'Fleece', tags: ['warm'] }),
+      aGood({ id: 'felt', name: 'Felt', tags: ['warm'] }),
+      aGood({ id: 'tweed', name: 'Tweed', tags: ['warm'] }),
+      aGood({ id: 'silk', name: 'Silk' }),
+      aGood({ id: 'lawn', name: 'Lawn' }),
+    ],
+    buyers: [aBuyer(ilse), aBuyer({ id: 'osk', name: 'Osk', locationId: 'hollow' })],
+    bounds: aBounds({ usabilityFloor: 1 }),
+    drawParameters: aDrawParameters({ goodsHiddenPercent: 100, rerolls: 0 }),
+  });
 }
 
 describe('the quirk, in the drawn galaxy', () => {

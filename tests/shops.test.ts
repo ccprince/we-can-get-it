@@ -7,6 +7,7 @@ import {
   aShopParameters,
   aTradingGalaxy,
   loadedContentSet,
+  type RawObject,
 } from './support/content';
 import { started } from './support/campaign';
 
@@ -56,9 +57,13 @@ describe('the shop where the player is', () => {
   it('stocks only goods the draw kept, never one it hid', () => {
     // Every good is rolled hidden and the floor of two draws two of the three
     // cloth goods back, so a shop that read the reserve would list three.
-    const content = loadedContentSet(
-      aTradingGalaxy({ drawParameters: aDrawParameters({ goodsHiddenPercent: 100 }) }),
-    );
+    // Nobody holds a tag in a role, so only the floor draws goods back.
+    const trading = aTradingGalaxy();
+    const content = loadedContentSet({
+      ...trading,
+      buyers: (trading.buyers as RawObject[]).map((buyer) => ({ ...buyer, bonusTags: [] })),
+      drawParameters: aDrawParameters({ goodsHiddenPercent: 100 }),
+    });
 
     expect(view(started(content, SEED)).here?.lots).toHaveLength(2);
   });
