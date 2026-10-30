@@ -308,7 +308,7 @@
     { "id": "provisions", "class": "kind", "tells": ["food", "meal", "fare"] },
     { "id": "cloth", "class": "kind", "tells": ["woven", "bolt", "cloth"] },
     { "id": "remedies", "class": "kind", "tells": ["tincture", "salve", "dose"] },
-    { "id": "curios", "class": "kind", "tells": ["carved", "antique", "keepsake"] },
+    { "id": "curios", "class": "kind", "tells": ["curio", "trinket", "bauble"] },
     { "id": "mechanical", "class": "kind", "tells": ["gear", "motor", "machined"] },
     { "id": "ore", "class": "kind", "tells": ["ore", "seam", "assay"] },
     { "id": "botanicals", "class": "kind", "tells": ["seed", "cutting", "leaf"] },
@@ -323,8 +323,12 @@
     { "id": "factory", "class": "origin", "tells": ["factory", "machine-made", "mill-"] },
     { "id": "heavy", "class": "quality", "tells": ["heavy", "hefty"] },
     { "id": "light", "class": "quality", "tells": ["light", "featherweight"] },
-    { "id": "old", "class": "quality", "tells": ["vintage", "veteran", "old-pattern"] },
-    { "id": "modern", "class": "quality", "tells": ["modern", "latest", "sealed unit"] },
+    { "id": "old", "class": "quality", "tells": ["vintage", "veteran", "old-pattern", "antique"] },
+    {
+      "id": "modern",
+      "class": "quality",
+      "tells": ["modern", "latest", "sealed unit", "new-made"]
+    },
     { "id": "keeps", "class": "quality", "tells": ["tinned", "salted", "long-keeping"] },
     { "id": "perishable", "class": "quality", "tells": ["fresh", "spoil", "ripe"] },
     { "id": "hearty", "class": "quality", "tells": ["hearty", "filling"] },
@@ -338,7 +342,9 @@
     { "id": "burns", "class": "quality", "tells": ["burn", "scald", "blister"] },
     { "id": "bitter", "class": "quality", "tells": ["bitter", "astringent", "wormwood"] },
     { "id": "daylight", "class": "quality", "tells": ["eyes", "sunlamp", "pallor"] },
-    { "id": "pungent", "class": "quality", "tells": ["pungent", "reek", "stink"] }
+    { "id": "pungent", "class": "quality", "tells": ["pungent", "reek", "stink"] },
+    { "id": "blessed", "class": "quirk", "tells": ["blessed", "consecrated", "pilgrim"] },
+    { "id": "mined", "class": "origin", "tells": ["dug from", "pithead", "from the mines"] }
   ],
   "goods": [
     {
@@ -630,36 +636,76 @@
       "worth": 30
     },
     {
-      "id": "stub-curios-1",
-      "name": "Stub curios 1",
-      "prose": "A stub, standing in until the goods are written.",
+      "id": "bone-reliquary",
+      "name": "Bone reliquary",
+      "prose": "An antique bone reliquary, carved by a pilgrim long ago: a curio fit for a chapel shelf.",
       "kind": "curios",
-      "tags": [],
-      "worth": 15
+      "tags": ["blessed", "old"],
+      "worth": 50
     },
     {
-      "id": "stub-curios-2",
-      "name": "Stub curios 2",
-      "prose": "A stub, standing in until the goods are written.",
+      "id": "pilgrims-badge",
+      "name": "Pilgrim's badge",
+      "prose": "A pilgrim's tin badge from the shrine road, a trinket worn thin by thumbs.",
       "kind": "curios",
-      "tags": [],
-      "worth": 20
+      "tags": ["blessed"],
+      "worth": 12
     },
     {
-      "id": "stub-curios-3",
-      "name": "Stub curios 3",
-      "prose": "A stub, standing in until the goods are written.",
+      "id": "chapel-bell",
+      "name": "Chapel bell",
+      "prose": "A consecrated chapel bell in miniature, a bauble that rings true.",
       "kind": "curios",
-      "tags": [],
+      "tags": ["blessed"],
+      "worth": 30
+    },
+    {
+      "id": "geode-bookends",
+      "name": "Geode bookends",
+      "prose": "A pair of geode bookends, dug from the deep rock and polished to a curio's shine.",
+      "kind": "curios",
+      "tags": ["mined"],
       "worth": 25
     },
     {
-      "id": "stub-curios-4",
-      "name": "Stub curios 4",
-      "prose": "A stub, standing in until the goods are written.",
+      "id": "jet-brooch",
+      "name": "Jet brooch",
+      "prose": "A vintage mourning brooch of jet dug from the coal, a widow's trinket.",
+      "kind": "curios",
+      "tags": ["mined", "old"],
+      "worth": 40
+    },
+    {
+      "id": "pithead-lamp",
+      "name": "Pithead lamp",
+      "prose": "A pithead lamp in miniature, new-made for visitors: a bauble with a working wick.",
+      "kind": "curios",
+      "tags": ["mined", "modern"],
+      "worth": 15
+    },
+    {
+      "id": "brass-astrolabe",
+      "name": "Brass astrolabe",
+      "prose": "A vintage brass astrolabe, its rings carved with the old constellations: a navigator's curio.",
+      "kind": "curios",
+      "tags": ["old"],
+      "worth": 55
+    },
+    {
+      "id": "clockwork-songbird",
+      "name": "Clockwork songbird",
+      "prose": "A clockwork songbird, the latest model, a trinket that sings on the hour.",
+      "kind": "curios",
+      "tags": ["modern"],
+      "worth": 35
+    },
+    {
+      "id": "music-box",
+      "name": "Music box",
+      "prose": "A painted music box, a bauble that plays one tune.",
       "kind": "curios",
       "tags": [],
-      "worth": 30
+      "worth": 20
     },
     {
       "id": "deep-rated-pump",
@@ -812,7 +858,16 @@
       "id": "bram-tolliver",
       "name": "Bram Tolliver",
       "locationId": "halloran",
-      "wants": [{ "kind": "curios", "quantity": 3 }],
+      "wants": [
+        {
+          "predicate": [
+            { "tag": "curios", "negated": false },
+            { "tag": "old", "negated": false }
+          ],
+          "plainly": "wants old curios for the shop",
+          "quantity": 3
+        }
+      ],
       "bonusTags": [],
       "refusalTags": [],
       "refusalLine": "That isn't what I asked for."
@@ -840,8 +895,8 @@
       "name": "Ode Marlowe",
       "locationId": "vesper",
       "wants": [{ "kind": "curios", "quantity": 1 }],
-      "bonusTags": [],
-      "refusalTags": [],
+      "bonusTags": ["old"],
+      "refusalTags": ["modern"],
       "refusalLine": "The docks never close, and I still have no room for that."
     },
     {
@@ -924,8 +979,8 @@
       "name": "Sister Perpetua Lund",
       "locationId": "ambry",
       "wants": [{ "kind": "curios", "quantity": 1 }],
-      "bonusTags": [],
-      "refusalTags": [],
+      "bonusTags": ["blessed"],
+      "refusalTags": ["mined"],
       "refusalLine": "Every shrine here has a patron saint, and not one of them blesses that."
     },
     {
@@ -995,7 +1050,9 @@
       "id": "dora-winslow",
       "name": "Dora Winslow",
       "locationId": "lantern",
-      "wants": [{ "kind": "curios", "quantity": 4 }],
+      "wants": [
+        { "goodId": "clockwork-songbird", "quantity": 2, "order": { "price": 35, "days": 30 } }
+      ],
       "bonusTags": [],
       "refusalTags": [],
       "refusalLine": "Not that one."
