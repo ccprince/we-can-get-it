@@ -96,7 +96,7 @@ argument, and both ends of both ranges are expected to widen as it grows.
 | Field | What it bounds |
 | --- | --- |
 | `tagsPerGood` | Tags on one good, the mandatory kind included. Outside it, the good fails. |
-| `goodsPerRoleTag` | Goods carrying a tag any buyer holds as a **bonus** or a **refusal**. A role must be a learnable pattern, so more than one good. Outside it, the load fails. |
+| `goodsPerRoleTag` | Goods carrying a tag any buyer holds as a **bonus** or a **refusal**. A role must be a learnable pattern, so more than one good. Outside it, the load fails. The drawn galaxy must meet it too, among the goods the draw kept, so the least is set against what a hidden third leaves. |
 | `usabilityFloor` | The goods a **kind** must carry to be **usable**. A kind below it is legal and is **reported**; what is refused is a **vague** want pointed at one (#16). |
 | `quirkRation` | The most **quirk** tags the galaxy may hold. Above it, the load fails. |
 
@@ -346,12 +346,12 @@ difference is for tags to carry, not a second kind.
 
 ### Stubs
 
-**The goods of a kind not yet written are stubs**, there only so the set loads, and the goods stages
-replace them a kind at a time. A stub's id begins `stub-`, and its name and prose say so. A stubbed
+**The goods of a kind not yet written are stubs**, there only so the set loads, and the three goods
+tickets of #22 (#107–#109) replace them a kind at a time. A stub's id begins `stub-`, and its name and prose say so. A stubbed
 kind holds four goods, the usability floor, so the draw hides none of them; and every stub good is
 reported for missing its kind's tells, because stub prose is not prose. Read past both.
 
-A written good carries a **one-line premise** as its prose, not its finished prose: that comes last,
+A written good's prose is, for now, one line saying what it is, not its finished prose: that comes last,
 once measurement shows which goods survive. Its tags are drawn from the cast's tastes, and once a
 kind's goods are written, the minor buyers wanting that kind state their wants plainly, as a
 predicate or as an **order**. Every order's price and window is a placeholder: the price is the
