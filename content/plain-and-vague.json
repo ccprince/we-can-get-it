@@ -328,43 +328,86 @@
     { "id": "keeps", "class": "quality", "tells": ["tinned", "salted", "long-keeping"] },
     { "id": "perishable", "class": "quality", "tells": ["fresh", "spoil", "ripe"] },
     { "id": "hearty", "class": "quality", "tells": ["hearty", "filling"] },
-    { "id": "common", "class": "origin", "tells": ["common", "plentiful"] },
+    { "id": "common", "class": "origin", "tells": ["common", "plentiful", "cheap"] },
     { "id": "exotic", "class": "origin", "tells": ["imported", "exotic"] },
     { "id": "tucks", "class": "origin", "tells": ["Tuck's"] },
-    { "id": "halberd", "class": "origin", "tells": ["Halberd"] }
+    { "id": "halberd", "class": "origin", "tells": ["Halberd"] },
+    { "id": "storied", "class": "quirk", "tells": ["storied", "the last of", "said to have"] },
+    { "id": "strong", "class": "quality", "tells": ["strong", "fiery", "firewater"] },
+    { "id": "sweet", "class": "quality", "tells": ["honeyed", "sugared", "cordial"] }
   ],
   "goods": [
     {
-      "id": "stub-spirits-1",
-      "name": "Stub spirits 1",
-      "prose": "A stub, standing in until the goods are written.",
+      "id": "still-house-rotgut",
+      "name": "Still-house rotgut",
+      "prose": "Still-house rotgut, cheap and fiery, distilled in a shed and bottled in whatever was to hand.",
       "kind": "spirits",
-      "tags": [],
+      "tags": ["strong", "common"],
+      "worth": 10
+    },
+    {
+      "id": "tater-firewater",
+      "name": "Tater firewater",
+      "prose": "Tater firewater, distilled from a common crop and as plentiful as it is rough.",
+      "kind": "spirits",
+      "tags": ["strong", "common"],
+      "worth": 12
+    },
+    {
+      "id": "peppered-root-brandy",
+      "name": "Peppered root brandy",
+      "prose": "A strong root brandy distilled with pepper-bark, a bottle that warms the hands that hold it.",
+      "kind": "spirits",
+      "tags": ["strong"],
+      "worth": 30
+    },
+    {
+      "id": "plum-cordial",
+      "name": "Plum cordial",
+      "prose": "A plum cordial, sugared and distilled to keep a summer in a bottle.",
+      "kind": "spirits",
+      "tags": ["sweet"],
+      "worth": 22
+    },
+    {
+      "id": "harvest-liqueur",
+      "name": "Harvest liqueur",
+      "prose": "A honeyed harvest liqueur, cheap by the bottle at every farm fair.",
+      "kind": "spirits",
+      "tags": ["sweet", "common"],
       "worth": 15
     },
     {
-      "id": "stub-spirits-2",
-      "name": "Stub spirits 2",
-      "prose": "A stub, standing in until the goods are written.",
+      "id": "pear-brandy",
+      "name": "Pear brandy",
+      "prose": "A clear orchard pear brandy, distilled twice and bottled with care.",
       "kind": "spirits",
       "tags": [],
-      "worth": 20
+      "worth": 35
     },
     {
-      "id": "stub-spirits-3",
-      "name": "Stub spirits 3",
-      "prose": "A stub, standing in until the goods are written.",
+      "id": "last-of-marrowby",
+      "name": "The last of Marrowby's",
+      "prose": "The last of Marrowby's still, saved when the fire took it: a strong spirit in a scorched bottle.",
       "kind": "spirits",
-      "tags": [],
-      "worth": 25
+      "tags": ["storied", "strong"],
+      "worth": 55
     },
     {
-      "id": "stub-spirits-4",
-      "name": "Stub spirits 4",
-      "prose": "A stub, standing in until the goods are written.",
+      "id": "blockade-rum",
+      "name": "Blockade rum",
+      "prose": "A bottle of rum said to have run the Corrow blockade, and it tastes of the trip.",
       "kind": "spirits",
-      "tags": [],
-      "worth": 30
+      "tags": ["storied"],
+      "worth": 45
+    },
+    {
+      "id": "wedding-year-cordial",
+      "name": "Wedding-year cordial",
+      "prose": "A storied bottle of honeyed cordial, laid down the year the farm's daughter was wed.",
+      "kind": "spirits",
+      "tags": ["storied", "sweet"],
+      "worth": 50
     },
     {
       "id": "tucks-salt-pork",
@@ -717,8 +760,8 @@
       "name": "Hester Barrow",
       "locationId": "halloran",
       "wants": [{ "kind": "spirits", "quantity": 2 }],
-      "bonusTags": [],
-      "refusalTags": [],
+      "bonusTags": ["storied"],
+      "refusalTags": ["common"],
       "refusalLine": "I'd haggle that down for the sport of it, but I'd have to want it first."
     },
     {
@@ -817,7 +860,17 @@
       "id": "sabine-hollis",
       "name": "Sabine Hollis",
       "locationId": "corrow",
-      "wants": [{ "kind": "spirits", "quantity": 4 }],
+      "wants": [
+        {
+          "predicate": [
+            { "tag": "spirits", "negated": false },
+            { "tag": "strong", "negated": false }
+          ],
+          "plainly": "wants a strong bottle to sell on",
+          "quantity": 2,
+          "order": { "price": 35, "days": 30 }
+        }
+      ],
       "bonusTags": [],
       "refusalTags": [],
       "refusalLine": "I can't use that."
@@ -880,7 +933,16 @@
       "id": "cato-reeve",
       "name": "Cato Reeve",
       "locationId": "lantern",
-      "wants": [{ "kind": "spirits", "quantity": 3 }],
+      "wants": [
+        {
+          "predicate": [
+            { "tag": "spirits", "negated": false },
+            { "tag": "sweet", "negated": false }
+          ],
+          "plainly": "wants something sweet for the quayside",
+          "quantity": 3
+        }
+      ],
       "bonusTags": [],
       "refusalTags": [],
       "refusalLine": "That isn't what I asked for."
@@ -925,7 +987,17 @@
       "id": "tess-marchbanks",
       "name": "Tess Marchbanks",
       "locationId": "quillon",
-      "wants": [{ "kind": "spirits", "quantity": 4 }],
+      "wants": [
+        {
+          "predicate": [
+            { "tag": "spirits", "negated": false },
+            { "tag": "common", "negated": true }
+          ],
+          "plainly": "wants something better than rotgut",
+          "quantity": 2,
+          "order": { "price": 45, "days": 30 }
+        }
+      ],
       "bonusTags": [],
       "refusalTags": [],
       "refusalLine": "That won't fill the order."
@@ -962,7 +1034,16 @@
       "id": "nadia-fenwick",
       "name": "Nadia Fenwick",
       "locationId": "gannet",
-      "wants": [{ "kind": "spirits", "quantity": 4 }],
+      "wants": [
+        {
+          "predicate": [
+            { "tag": "spirits", "negated": false },
+            { "tag": "strong", "negated": false }
+          ],
+          "plainly": "wants strong drink for the crews",
+          "quantity": 4
+        }
+      ],
       "bonusTags": [],
       "refusalTags": [],
       "refusalLine": "I can't use that."
@@ -972,8 +1053,8 @@
       "name": "Oskar Brine",
       "locationId": "coldwater",
       "wants": [{ "kind": "spirits", "quantity": 2 }],
-      "bonusTags": [],
-      "refusalTags": [],
+      "bonusTags": ["strong"],
+      "refusalTags": ["sweet"],
       "refusalLine": "Haulers don't drink much. They don't drink that."
     },
     {
@@ -1062,7 +1143,17 @@
       "id": "piet-hallam",
       "name": "Piet Hallam",
       "locationId": "pell",
-      "wants": [{ "kind": "spirits", "quantity": 3 }],
+      "wants": [
+        {
+          "predicate": [
+            { "tag": "spirits", "negated": false },
+            { "tag": "common", "negated": false }
+          ],
+          "plainly": "wants cheap drink, and plenty of it",
+          "quantity": 3,
+          "order": { "price": 14, "days": 30 }
+        }
+      ],
       "bonusTags": [],
       "refusalTags": [],
       "refusalLine": "Wrong goods. I need the other kind."
@@ -1108,7 +1199,16 @@
       "id": "imogen-pratt",
       "name": "Imogen Pratt",
       "locationId": "hob",
-      "wants": [{ "kind": "spirits", "quantity": 4 }],
+      "wants": [
+        {
+          "predicate": [
+            { "tag": "spirits", "negated": false },
+            { "tag": "sweet", "negated": true }
+          ],
+          "plainly": "wants drink with no sugar in it",
+          "quantity": 4
+        }
+      ],
       "bonusTags": [],
       "refusalTags": [],
       "refusalLine": "I can't use that."
