@@ -46,10 +46,12 @@ can report.
 | `stay` | Never departs. The exposure of one location, and the baseline the others read against. |
 | `nearest` | Departs along the flyable lane of fewest days: many landings, little time in transit. |
 | `farthest` | Departs along the flyable lane of most days: few landings, long hauls. |
+| `explore` | Departs toward the destination the **trade guide** knows least: never seen first, then the stalest, fewest days among equals. |
 
-All three are stateless reads of the **chart**, because a policy is handed a view and nothing else. A
-rule that would not fly straight back the way it came needs the policy to remember where it has been,
-which is a later knob if a run asks for one.
+All four are stateless reads of the view, because a policy is handed a view and nothing else.
+`nearest` and `farthest` fly straight back the way they came, so a campaign under either knows two
+places (#148). `explore` avoids that without remembering anything, because the guide's as-of dates
+already say where it has been.
 
 **Every number in the config is a knob, and none of them is a finding.** What a run concludes belongs
 in a play-test write-up (`docs/playtests/TEMPLATE.md`), not here.

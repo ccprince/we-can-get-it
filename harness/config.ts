@@ -27,7 +27,7 @@ import { readJson } from '../tools/files';
  * would need the policy to remember, which is a later knob if a run asks for
  * it.
  */
-export const routeRules = ['stay', 'nearest', 'farthest'] as const;
+export const routeRules = ['stay', 'nearest', 'farthest', 'explore'] as const;
 
 export type RouteRule = (typeof routeRules)[number];
 
