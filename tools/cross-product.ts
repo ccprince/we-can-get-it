@@ -30,7 +30,7 @@ function defaultOut(contentPath: string): string {
 }
 
 function main(): void {
-  const asked = parse(process.argv.slice(2));
+  const asked = readArgs(process.argv.slice(2));
   const loaded = loadContent(readJson(asked.contentPath, 'there is no content set to report on'));
 
   let galaxy: DrawnGalaxy | null = null;
@@ -77,7 +77,7 @@ const USAGE = 'usage: npm run report -- <content set> [--seed <n>] [--out <path>
  * words. What is left here is what it cannot know: that the seed is a whole
  * number, and that there is exactly one content set.
  */
-function parse(argv: string[]): Asked {
+function readArgs(argv: string[]): Asked {
   let parsed;
   try {
     parsed = parseArgs({
