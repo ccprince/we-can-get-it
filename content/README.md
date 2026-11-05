@@ -372,8 +372,7 @@ demand**. Each **quirk** now sits on four goods, so that a drawn quirk is usuall
 ### The prose
 
 A good's prose is written to carry its **tells** the way a writer would, not as a list of them
-(#111). Every kind's goods but ore's and botanicals' have their finished prose; those two still
-have one line saying what each good is.
+(#111). Every good has its finished prose.
 
 Every tell finding the cross-product report raises has been read, and the ones left standing are
 judged here rather than padded away:
@@ -384,20 +383,26 @@ judged here rather than padded away:
 | No tell of `provisions` | field-greens, halberd-cream-cheese, imported-tinned-peaches, orchard-figs | Each is plainly something to eat, and a **kind** is public. *Food* would be padding. |
 | No tell of `curios` | bone-reliquary, brass-astrolabe, chapel-bell, clockwork-songbird, geode-bookends, jet-brooch, music-box | A curio is named by what it is: a reliquary, an astrolabe, a brooch. *Trinket* and *bauble* fit the two cheapest, the badge and the pony, and those two carry them. |
 | No tell of `remedies` | sulphur-poultice | *Poultice* is the better word. |
+| No tell of `ore` | meteoric-iron | *Iron* and *a lump of star* are the better words. |
 | Reads like `spirits` | oilskin-smock, signal-orange-tarpaulin, sweet-pea-rain-cape | **Waterproof** carries `proof`. A known false tell, kept because both words are the right ones (#122). |
 
-Writing the prose also turned up two plain wants that read wrong against the goods they reach, the
+Writing the prose also turned up four plain wants that read wrong against the goods they reach, the
 way findings §2.4 found balloon silk is cloth but not warm. Each want was reworded to fit what
 meets it:
 
 - Joachim wanted raw *fibre to spin*, but mill sacking and the homespun blanket are woven already.
-  He now wants "raw fibre or cloth, as it comes", which fits them and the raw silk alike.
+  The want is now "raw fibre or cloth, as it comes", which fits them and the raw silk alike.
 - Anders wanted a fine *instrument for the surveyor*, which a sealed-unit servo and a clock
-  movement are not. He now wants "finely made machinery".
+  movement are not. The want is now "finely made machinery".
+- Alder wanted high-grade ore *for the mordant vats*, and native silver is no mordant. The want is
+  now "high-grade ore, and nothing less".
+- Yusuf wanted dried *leaf*, and saffron is threads. The want is now "dried crops that will keep in
+  the store".
 
 The prose was read for the opposite mistake too: a good whose prose claims a tag it does not hold.
 The homespun blanket no longer outlasts a generation, since it is not `rugged`. The rose-border
-tablecloth no longer has a history, since it is not `old`.
+tablecloth no longer has a history, since it is not `old`, and neither the chapel bell nor the
+pilgrim's badge reads as new-made or as worn, since curios buyers pay for one and refuse the other.
 
 A tell matches inside longer words, so *before* and *wore* read as `ore`, *drawn* as `raw` and
 *slightly* as `light`. No player reads them that way. Where an equally good word was to hand, the
