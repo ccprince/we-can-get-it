@@ -1,0 +1,1969 @@
+{
+  "bounds": {
+    "tagsPerGood": { "least": 1, "most": 5 },
+    "goodsPerRoleTag": { "least": 2, "most": 8 },
+    "usabilityFloor": 4,
+    "quirkRation": 3
+  },
+  "fareRate": 10,
+  "calendar": {
+    "daysPerWeek": 6,
+    "weekdayNames": ["Firstday", "Seconday", "Thirdday", "Fourthday", "Fifthday", "Marketday"],
+    "months": [
+      { "name": "Unem", "days": 36 },
+      { "name": "Duon", "days": 36 },
+      { "name": "Trest", "days": 36 },
+      { "name": "Quarn", "days": 36 },
+      { "name": "Quint", "days": 36 },
+      { "name": "Sext", "days": 36 },
+      { "name": "Septem", "days": 36 },
+      { "name": "Octem", "days": 36 },
+      { "name": "Novem", "days": 36 },
+      { "name": "Decem", "days": 36 }
+    ],
+    "firstYear": 1
+  },
+  "drawParameters": {
+    "motifsPerCampaign": 4,
+    "interMotifDistance": { "least": 12, "most": 20 },
+    "locationCount": { "least": 12, "most": 16 },
+    "rerolls": 24,
+    "goodsHiddenPercent": 33,
+    "peopleHiddenPercent": 33,
+    "peopleFloor": 1,
+    "reserveSurplus": 2
+  },
+  "topology": {
+    "leastPlaced": { "spur": 1, "chokepoint": 1, "ring": 0 },
+    "farHaul": 16,
+    "minimumGapPercent": 25,
+    "startHub": { "archetype": "market", "neighbours": 3, "spurs": 1 }
+  },
+  "shops": {
+    "lotsPerShop": { "least": 1, "most": 3 },
+    "lotQuantity": { "least": 2, "most": 8 },
+    "markupPercent": { "least": 0, "most": 40 },
+    "scarcityPercent": 30
+  },
+  "offers": { "grudgingPercent": 50, "acceptablePercent": 100, "greatPercent": 130 },
+  "archetypes": [
+    {
+      "id": "extractor",
+      "supplies": ["ore"],
+      "demands": ["mechanical", "provisions", "spirits", "remedies"]
+    },
+    {
+      "id": "processor",
+      "supplies": ["mechanical", "cloth"],
+      "demands": ["ore", "botanicals", "provisions"]
+    },
+    {
+      "id": "agricultural",
+      "supplies": ["provisions", "botanicals", "spirits"],
+      "demands": ["mechanical", "cloth"]
+    },
+    {
+      "id": "market",
+      "supplies": ["curios", "remedies"],
+      "demands": ["spirits", "curios", "cloth", "provisions"]
+    }
+  ],
+  "motifs": [
+    {
+      "id": "mine-spur",
+      "shape": "spur",
+      "slots": [
+        { "id": "junction", "archetype": "market" },
+        { "id": "approach", "archetype": "processor" },
+        { "id": "dead-end", "archetype": "extractor" },
+        { "id": "roads", "archetype": null }
+      ],
+      "lanes": [
+        { "ends": ["junction", "approach"], "distance": 5 },
+        { "ends": ["junction", "dead-end"], "distance": 16 },
+        { "ends": ["junction", "roads"], "distance": 3 }
+      ]
+    },
+    {
+      "id": "field-spur",
+      "shape": "spur",
+      "slots": [
+        { "id": "junction", "archetype": "market" },
+        { "id": "approach", "archetype": "extractor" },
+        { "id": "dead-end", "archetype": "agricultural" },
+        { "id": "roads", "archetype": null }
+      ],
+      "lanes": [
+        { "ends": ["junction", "approach"], "distance": 7 },
+        { "ends": ["junction", "dead-end"], "distance": 14 },
+        { "ends": ["junction", "roads"], "distance": 4 }
+      ]
+    },
+    {
+      "id": "narrows",
+      "shape": "chokepoint",
+      "slots": [
+        { "id": "gate", "archetype": "market" },
+        { "id": "east", "archetype": "processor" },
+        { "id": "west", "archetype": null }
+      ],
+      "lanes": [
+        { "ends": ["gate", "east"], "distance": 9 },
+        { "ends": ["gate", "west"], "distance": 4 }
+      ]
+    },
+    {
+      "id": "toll",
+      "shape": "chokepoint",
+      "slots": [
+        { "id": "gate", "archetype": "processor" },
+        { "id": "north", "archetype": "agricultural" },
+        { "id": "south", "archetype": "extractor" }
+      ],
+      "lanes": [
+        { "ends": ["gate", "north"], "distance": 8 },
+        { "ends": ["gate", "south"], "distance": 6 }
+      ]
+    },
+    {
+      "id": "circuit",
+      "shape": "ring",
+      "slots": [
+        { "id": "landing", "archetype": "market" },
+        { "id": "pits", "archetype": "extractor" },
+        { "id": "yard", "archetype": null }
+      ],
+      "lanes": [
+        { "ends": ["landing", "pits"], "distance": 10 },
+        { "ends": ["landing", "yard"], "distance": 6 },
+        { "ends": ["pits", "yard"], "distance": 7 }
+      ]
+    },
+    {
+      "id": "round",
+      "shape": "ring",
+      "slots": [
+        { "id": "mills", "archetype": "processor" },
+        { "id": "acres", "archetype": "agricultural" },
+        { "id": "near", "archetype": null },
+        { "id": "far", "archetype": null }
+      ],
+      "lanes": [
+        { "ends": ["mills", "acres"], "distance": 7 },
+        { "ends": ["acres", "far"], "distance": 6 },
+        { "ends": ["far", "near"], "distance": 7 },
+        { "ends": ["near", "mills"], "distance": 6 }
+      ]
+    }
+  ],
+  "locations": [
+    {
+      "id": "halloran",
+      "name": "Halloran's Rest",
+      "prose": "A crowded world that buys more than it makes, and argues about the price of all of it.",
+      "archetype": "market"
+    },
+    {
+      "id": "vesper",
+      "name": "Vesper Exchange",
+      "prose": "A trading station anchored over a dead world, open every hour the docks are.",
+      "archetype": "market"
+    },
+    {
+      "id": "corrow",
+      "name": "Corrow",
+      "prose": "Old cities stacked on older ones, and a bazaar in every gap between them.",
+      "archetype": "market"
+    },
+    {
+      "id": "ambry",
+      "name": "Saint Ambry",
+      "prose": "A pilgrim world grown rich on visitors, with a shrine for every trade.",
+      "archetype": "market"
+    },
+    {
+      "id": "lantern",
+      "name": "Lantern Quay",
+      "prose": "A ring station where every berth keeps a light burning for the ship it is owed.",
+      "archetype": "market"
+    },
+    {
+      "id": "quillon",
+      "name": "Quillon",
+      "prose": "A garden-city world with no gardens left, only the names of them.",
+      "archetype": "market"
+    },
+    {
+      "id": "gannet",
+      "name": "Gannet Shelf",
+      "prose": "An asteroid colony dug into a shelf of nickel, its tunnels named for the families who cut them.",
+      "archetype": "extractor"
+    },
+    {
+      "id": "coldwater",
+      "name": "Coldwater",
+      "prose": "An ice world where the haulers sleep in shifts and the drills never do.",
+      "archetype": "extractor"
+    },
+    {
+      "id": "scoria",
+      "name": "Scoria",
+      "prose": "A black volcanic world, mined from the craters inward.",
+      "archetype": "extractor"
+    },
+    {
+      "id": "pell",
+      "name": "Pell's Drift",
+      "prose": "A loose string of claimed rocks, each with its own flag and its own grudge.",
+      "archetype": "extractor"
+    },
+    {
+      "id": "hob",
+      "name": "Hob Deep",
+      "prose": "A world of pit towns, each one a little deeper than the last.",
+      "archetype": "extractor"
+    },
+    {
+      "id": "tamsin",
+      "name": "Tamsin Reef",
+      "prose": "A reef of carbon rock worked by crews who have not seen a sky in years.",
+      "archetype": "extractor"
+    },
+    {
+      "id": "anvil",
+      "name": "Anvil",
+      "prose": "A world of foundries under a sky the colour of their smoke. Its food all comes in by ship.",
+      "archetype": "processor"
+    },
+    {
+      "id": "brisance",
+      "name": "Brisance",
+      "prose": "Machine shops from pole to pole, and a fair price for any engine brought in broken.",
+      "archetype": "processor"
+    },
+    {
+      "id": "cinderhall",
+      "name": "Cinderhall",
+      "prose": "A refinery world, roofed against its own weather.",
+      "archetype": "processor"
+    },
+    {
+      "id": "weft",
+      "name": "Weft",
+      "prose": "A mill world, where the looms run all night and the shifts change by bell.",
+      "archetype": "processor"
+    },
+    {
+      "id": "orrery",
+      "name": "Orrery Works",
+      "prose": "A station of workshops turning slowly about a gas giant, building to order.",
+      "archetype": "processor"
+    },
+    {
+      "id": "grist",
+      "name": "Grist",
+      "prose": "A tired industrial world that makes a little of everything and boasts of none of it.",
+      "archetype": "processor"
+    },
+    {
+      "id": "longacre",
+      "name": "Long Acre",
+      "prose": "Fields to every horizon, tended by machines and a handful of people who mind them.",
+      "archetype": "agricultural"
+    },
+    {
+      "id": "fallow",
+      "name": "Fallow",
+      "prose": "A farm world resting half its land each year, and its families with it.",
+      "archetype": "agricultural"
+    },
+    {
+      "id": "sheaf",
+      "name": "Sheaf",
+      "prose": "Grain from pole to pole, cut by harvesters older than the colony charter.",
+      "archetype": "agricultural"
+    },
+    {
+      "id": "verdance",
+      "name": "Verdance",
+      "prose": "A wet green world of orchards and greenhouses, and stills behind most of them.",
+      "archetype": "agricultural"
+    },
+    {
+      "id": "harrow",
+      "name": "Harrow Green",
+      "prose": "Terraced hill farms, worked by hand where the machines cannot climb.",
+      "archetype": "agricultural"
+    },
+    {
+      "id": "mallory",
+      "name": "Mallory's Field",
+      "prose": "One family's farm grown into a world, and still run from the same kitchen table.",
+      "archetype": "agricultural"
+    }
+  ],
+  "lanes": [],
+  "tags": [
+    { "id": "spirits", "class": "kind", "tells": ["distilled", "proof", "bottle"] },
+    { "id": "provisions", "class": "kind", "tells": ["food", "meal", "fare"] },
+    { "id": "cloth", "class": "kind", "tells": ["woven", "bolt", "cloth"] },
+    { "id": "remedies", "class": "kind", "tells": ["tincture", "salve", "dose"] },
+    { "id": "curios", "class": "kind", "tells": ["curio", "trinket", "bauble"] },
+    { "id": "mechanical", "class": "kind", "tells": ["gear", "motor", "machined"] },
+    { "id": "ore", "class": "kind", "tells": ["ore", "seam", "assay"] },
+    { "id": "botanicals", "class": "kind", "tells": ["seed", "cutting", "leaf"] },
+    { "id": "plain", "class": "quality", "tells": ["plain", "sober", "unpatterned"] },
+    { "id": "loud", "class": "quality", "tells": ["loud", "garish", "shrieking", "gaudy"] },
+    { "id": "floral", "class": "quirk", "tells": ["floral", "flower", "blossom", "petal", "rose"] },
+    { "id": "rugged", "class": "quality", "tells": ["rugged", "tough", "hard-wearing"] },
+    { "id": "fine", "class": "quality", "tells": ["fine", "delicate", "gossamer"] },
+    { "id": "raw", "class": "quality", "tells": ["raw", "greige", "unscoured", "in the grease"] },
+    { "id": "waterproof", "class": "quality", "tells": ["waterproof", "waxed", "oiled"] },
+    { "id": "handmade", "class": "origin", "tells": ["handmade", "by hand", "hand-", "homespun"] },
+    { "id": "factory", "class": "origin", "tells": ["factory", "machine-made", "mill-"] },
+    { "id": "heavy", "class": "quality", "tells": ["heavy", "hefty"] },
+    { "id": "light", "class": "quality", "tells": ["light", "featherweight"] },
+    { "id": "old", "class": "quality", "tells": ["vintage", "veteran", "old-pattern", "antique"] },
+    {
+      "id": "modern",
+      "class": "quality",
+      "tells": ["modern", "latest", "sealed unit", "new-made"]
+    },
+    {
+      "id": "keeps",
+      "class": "quality",
+      "tells": ["tinned", "salted", "long-keeping", "dried", "cured"]
+    },
+    { "id": "perishable", "class": "quality", "tells": ["fresh", "spoil", "ripe"] },
+    { "id": "hearty", "class": "quality", "tells": ["hearty", "filling"] },
+    { "id": "common", "class": "origin", "tells": ["common", "plentiful", "cheap"] },
+    { "id": "exotic", "class": "origin", "tells": ["imported", "exotic"] },
+    { "id": "tucks", "class": "origin", "tells": ["Tuck's"] },
+    { "id": "halberd", "class": "origin", "tells": ["Halberd"] },
+    { "id": "storied", "class": "quirk", "tells": ["storied", "the last of", "said to have"] },
+    { "id": "strong", "class": "quality", "tells": ["strong", "fiery", "firewater"] },
+    { "id": "sweet", "class": "quality", "tells": ["honeyed", "sugared", "cordial"] },
+    { "id": "burns", "class": "quality", "tells": ["burn", "scald", "blister"] },
+    { "id": "bitter", "class": "quality", "tells": ["bitter", "astringent", "wormwood"] },
+    { "id": "daylight", "class": "quality", "tells": ["eyes", "sunlamp", "pallor"] },
+    { "id": "pungent", "class": "quality", "tells": ["pungent", "reek", "stink"] },
+    { "id": "blessed", "class": "quirk", "tells": ["blessed", "consecrated", "pilgrim"] },
+    { "id": "mined", "class": "origin", "tells": ["dug from", "pithead", "from the mines"] },
+    { "id": "pure", "class": "quality", "tells": ["pure", "high-grade"] },
+    { "id": "salvaged", "class": "origin", "tells": ["salvaged", "reclaimed", "scrap"] },
+    { "id": "rare", "class": "quality", "tells": ["rare", "freak", "seldom"] },
+    { "id": "textile", "class": "quality", "tells": ["fibre", "dye", "retted"] },
+    { "id": "medicinal", "class": "quality", "tells": ["medicinal", "physic", "apothecary"] }
+  ],
+  "goods": [
+    {
+      "id": "still-house-rotgut",
+      "name": "Still-house rotgut",
+      "prose": "Still-house rotgut, distilled in a shed out of whatever was going and bottled in whatever was to hand. It is cheap, it is fiery, and the morning after it is a long morning.",
+      "kind": "spirits",
+      "tags": ["strong", "common"],
+      "worth": 10
+    },
+    {
+      "id": "tater-firewater",
+      "name": "Tater firewater",
+      "prose": "Firewater distilled from a potato mash on any farm with a still behind the barn, which is most of them. It is as plentiful as potatoes and about as subtle, and a cup of it will take the frost out of a hauler's bones.",
+      "kind": "spirits",
+      "tags": ["strong", "common"],
+      "worth": 12
+    },
+    {
+      "id": "peppered-root-brandy",
+      "name": "Peppered root brandy",
+      "prose": "A root brandy distilled with pepper-bark, strong enough to warm the hands holding the bottle. Crews on Scoria drink it neat and call it good for the chest, and nobody has ever shown them wrong.",
+      "kind": "spirits",
+      "tags": ["strong"],
+      "worth": 30
+    },
+    {
+      "id": "plum-cordial",
+      "name": "Plum cordial",
+      "prose": "A plum cordial, sugared and distilled to keep a summer in a bottle. It is gentle, dark and sticky, and the label is the farm's own, painted by somebody's child.",
+      "kind": "spirits",
+      "tags": ["sweet"],
+      "worth": 22
+    },
+    {
+      "id": "harvest-liqueur",
+      "name": "Harvest liqueur",
+      "prose": "A honeyed liqueur that every farm on Verdance makes for its harvest fair, and sells cheap by the bottle the morning after, when it finds it has made too much.",
+      "kind": "spirits",
+      "tags": ["sweet", "common"],
+      "worth": 15
+    },
+    {
+      "id": "pear-brandy",
+      "name": "Pear brandy",
+      "prose": "A clear pear brandy, said to have been laid down the year the orchard first fruited. A whole pear sits in the bottle, grown inside it on the branch, and nobody on Verdance will say how many bottles there were.",
+      "kind": "spirits",
+      "tags": ["storied"],
+      "worth": 35
+    },
+    {
+      "id": "last-of-marrowby",
+      "name": "The last of Marrowby's",
+      "prose": "The last of Marrowby's still, saved when the fire took the distillery and the Marrowbys with it. It is strong and smoky, and the bottle is scorched down one side where somebody carried it out.",
+      "kind": "spirits",
+      "tags": ["storied", "strong"],
+      "worth": 55
+    },
+    {
+      "id": "blockade-rum",
+      "name": "Blockade rum",
+      "prose": "A bottle of dark rum said to have run the Corrow blockade in a false hull, and it tastes of the trip: tar, salt and nerves.",
+      "kind": "spirits",
+      "tags": ["storied"],
+      "worth": 45
+    },
+    {
+      "id": "wedding-year-cordial",
+      "name": "Wedding-year cordial",
+      "prose": "A honeyed cordial laid down the year the farm's daughter was wed, a bottle for every guest, and this is one of the last of them unopened. The story of the wedding comes with it, whether you want it or not.",
+      "kind": "spirits",
+      "tags": ["storied", "sweet"],
+      "worth": 50
+    },
+    {
+      "id": "tucks-salt-pork",
+      "name": "Tuck's salt pork",
+      "prose": "A barrel of Tuck's salt pork, salted hard enough to see out a long haul and the one after it. Stewed with whatever is going, it makes a hearty meal for a whole crew, and the Tuck's mark is stamped into every lid, as it is on everything the claim sends out.",
+      "kind": "provisions",
+      "tags": ["keeps", "hearty", "tucks"],
+      "worth": 30
+    },
+    {
+      "id": "halberd-hardtack",
+      "name": "Halberd hardtack",
+      "prose": "Halberd hardtack, tinned by the hundred, common as dust and about as tasty. It lasts for ever, it breaks teeth, and it is the cheapest fare anywhere on the Drift.",
+      "kind": "provisions",
+      "tags": ["keeps", "common", "halberd"],
+      "worth": 10
+    },
+    {
+      "id": "tucks-fresh-eggs",
+      "name": "Tuck's fresh eggs",
+      "prose": "A tray of Tuck's eggs, fresh from the one henhouse on the whole claim, packed in husks against the jolts. They are good food for a week. After that they spoil, and nobody wants to be in the hold when the hatch opens.",
+      "kind": "provisions",
+      "tags": ["perishable", "tucks"],
+      "worth": 20
+    },
+    {
+      "id": "halberd-cream-cheese",
+      "name": "Halberd cream cheese",
+      "prose": "A fresh cream cheese from the Halberd dairies, soft, white and delicate, fine enough for a captain's table. It has to get there in days, because in a week it will spoil, and then it will have opinions.",
+      "kind": "provisions",
+      "tags": ["perishable", "fine", "halberd"],
+      "worth": 35
+    },
+    {
+      "id": "imported-tinned-peaches",
+      "name": "Imported tinned peaches",
+      "prose": "Peaches from a world nobody here has seen, tinned in thick syrup and imported at a price that would buy a side of beef. They keep for years and taste of a summer somewhere else.",
+      "kind": "provisions",
+      "tags": ["keeps", "exotic"],
+      "worth": 40
+    },
+    {
+      "id": "orchard-figs",
+      "name": "Orchard figs",
+      "prose": "Exotic figs from an orchard a long way off the Drift, ripe and purple and so delicate that they travel in paper twists, one to a twist. For the week they last they are the finest thing on any table, and after that a sticky regret.",
+      "kind": "provisions",
+      "tags": ["perishable", "fine", "exotic"],
+      "worth": 55
+    },
+    {
+      "id": "sack-of-oats",
+      "name": "Sack of oats",
+      "prose": "A sack of oats, common as rain on a farm world and cheap anywhere else. Ground coarse and stirred into hot water, it makes a filling meal that will keep a shift on its feet till supper.",
+      "kind": "provisions",
+      "tags": ["common", "hearty"],
+      "worth": 15
+    },
+    {
+      "id": "field-greens",
+      "name": "Field greens",
+      "prose": "Field greens in a wet crate, cut this morning and common as weeds where they grow. Fresh, they are the best thing a crew has eaten in a month; two days out, they are compost.",
+      "kind": "provisions",
+      "tags": ["perishable", "common"],
+      "worth": 12
+    },
+    {
+      "id": "tinned-mutton-stew",
+      "name": "Tinned mutton stew",
+      "prose": "Mutton stew, tinned on Sheaf with barley by the fistful, and long-keeping enough to ride in a hold for a year. Heated on an engine manifold, one tin is a hearty meal for a cold shift.",
+      "kind": "provisions",
+      "tags": ["keeps", "hearty"],
+      "worth": 25
+    },
+    {
+      "id": "mill-sacking",
+      "name": "Mill sacking",
+      "prose": "Plain brown sacking, mill-woven by the mile and sold unscoured, still smelling of the jute. It is tough enough to scrub a deck with, and that is mostly what it is for.",
+      "kind": "cloth",
+      "tags": ["raw", "factory", "rugged", "plain"],
+      "worth": 10
+    },
+    {
+      "id": "oilskin-smock",
+      "name": "Oilskin smock",
+      "prose": "A smock of waxed cloth in a loud, unmissable yellow, cut by the thousand in a factory on Weft. It is waterproof and hard-wearing, and its owner re-oils it every spring until the rain runs off it like an insult.",
+      "kind": "cloth",
+      "tags": ["waterproof", "rugged", "factory", "loud"],
+      "worth": 35
+    },
+    {
+      "id": "grey-work-twill",
+      "name": "Grey work twill",
+      "prose": "A bolt of sober grey twill, machine-made on Weft, every hard-wearing yard of it the same as the last. Nobody has ever been sorry to own it, and nobody has ever been glad.",
+      "kind": "cloth",
+      "tags": ["plain", "factory", "rugged"],
+      "worth": 18
+    },
+    {
+      "id": "homespun-blanket",
+      "name": "Homespun blanket",
+      "prose": "A homespun blanket, woven by one family over one winter, plain as porridge and still raw in the grease, so that it smells of sheep when it gets wet. It is warm enough for a winter on Fallow, and soft enough that nobody minds the smell.",
+      "kind": "cloth",
+      "tags": ["handmade", "plain", "raw"],
+      "worth": 30
+    },
+    {
+      "id": "rose-border-tablecloth",
+      "name": "Rose-border tablecloth",
+      "prose": "A linen tablecloth, fine as paper, with a border of roses stitched by hand: a grandmother's year of evenings. It is meant for a table with company at it, and it has never once been spilt on.",
+      "kind": "cloth",
+      "tags": ["floral", "handmade", "fine"],
+      "worth": 50
+    },
+    {
+      "id": "chintz",
+      "name": "Chintz",
+      "prose": "A bolt of factory chintz, printed with cabbage roses in garish colours that occur nowhere in nature. It sells by the mile to anyone who wants a room to be noticed from the street.",
+      "kind": "cloth",
+      "tags": ["floral", "loud", "factory"],
+      "worth": 22
+    },
+    {
+      "id": "raw-silk",
+      "name": "Hand-reeled raw silk",
+      "prose": "A hank of raw silk, hand-reeled from the cocoon and still stiff with its gum, fine as breath and not yet woven into anything. A spinner with patience will make a gown of it; a spinner without will make a mess.",
+      "kind": "cloth",
+      "tags": ["raw", "fine", "handmade"],
+      "worth": 60
+    },
+    {
+      "id": "signal-orange-tarpaulin",
+      "name": "Signal-orange tarpaulin",
+      "prose": "A tarpaulin of waxed cotton cloth in a loud orange you could see from orbit. It is tough and waterproof, and it has covered harvesters, crashed shuttles and one wedding in a downpour.",
+      "kind": "cloth",
+      "tags": ["waterproof", "rugged", "loud"],
+      "worth": 25
+    },
+    {
+      "id": "sweet-pea-rain-cape",
+      "name": "Sweet-pea rain cape",
+      "prose": "A rain cape of fine oiled cloth, printed with sweet peas in shrieking pinks and purples. It is waterproof, the rain runs off its petals, and nobody has ever accused it of being discreet.",
+      "kind": "cloth",
+      "tags": ["floral", "waterproof", "fine", "loud"],
+      "worth": 45
+    },
+    {
+      "id": "daisy-stitch-shawl",
+      "name": "Daisy-stitch shawl",
+      "prose": "A shawl knitted in daisy-stitch, light as breath, every one of its little flowers knotted by hand. It folds into a pocket and comes out without a crease, which is better than most travellers manage.",
+      "kind": "cloth",
+      "tags": ["floral", "handmade", "light"],
+      "worth": 28
+    },
+    {
+      "id": "cave-aloe-salve",
+      "name": "Cave-aloe salve",
+      "prose": "A salve pressed from the cave aloe that grows in the warm dark under Scoria's craters. Cool on a burn, it is the first thing a smelter reaches for and the last thing anybody runs short of on purpose.",
+      "kind": "remedies",
+      "tags": ["burns"],
+      "worth": 25
+    },
+    {
+      "id": "pine-tar-jelly",
+      "name": "Pine-tar jelly",
+      "prose": "A pine-tar jelly, the salve furnace crews swear by, laid on thick over a scald. It works, and it reeks: a shift can tell who has been burnt by the smell alone.",
+      "kind": "remedies",
+      "tags": ["burns", "pungent"],
+      "worth": 18
+    },
+    {
+      "id": "wormwood-tincture",
+      "name": "Wormwood tincture",
+      "prose": "A wormwood tincture for a sour gut, taken a dose at a time from a dropper. It is as bitter as regret, and about as quick to leave the mouth.",
+      "kind": "remedies",
+      "tags": ["bitter"],
+      "worth": 20
+    },
+    {
+      "id": "willow-bark-dose",
+      "name": "Willow-bark dose",
+      "prose": "Willow bark steeped down to a dose for an aching back, astringent enough to pucker the mouth for an hour. It works, and that is all the praise it ever gets.",
+      "kind": "remedies",
+      "tags": ["bitter"],
+      "worth": 12
+    },
+    {
+      "id": "lamp-blind-drops",
+      "name": "Lamp-blind drops",
+      "prose": "Drops for eyes gone dim under the lamps: a tincture to see by again. Crews on Tamsin Reef put them in at the start of every shift and argue about the colour of skies none of them has seen.",
+      "kind": "remedies",
+      "tags": ["daylight"],
+      "worth": 40
+    },
+    {
+      "id": "sunlamp-tonic",
+      "name": "Sunlamp tonic",
+      "prose": "A tonic for a deep-shift pallor, steeped under a sunlamp and taken as one bitter dose a day. It puts the colour back in a miner's face and takes it out of the miner's mouth.",
+      "kind": "remedies",
+      "tags": ["daylight", "bitter"],
+      "worth": 45
+    },
+    {
+      "id": "camphor-rub",
+      "name": "Camphor rub",
+      "prose": "A camphor chest salve, pungent enough to clear a head from across the room, and to empty the room while it is at it.",
+      "kind": "remedies",
+      "tags": ["pungent"],
+      "worth": 15
+    },
+    {
+      "id": "sulphur-poultice",
+      "name": "Sulphur poultice",
+      "prose": "A sulphur poultice for a burn or a blister, wrapped hot in muslin. It heals clean, and it stinks of the pit, so the patient is keen to get better.",
+      "kind": "remedies",
+      "tags": ["burns", "pungent"],
+      "worth": 22
+    },
+    {
+      "id": "fever-tincture",
+      "name": "Fever tincture",
+      "prose": "A clear fever tincture in a stoppered vial, measured out by the dose. It tastes of nothing much, smells of nothing at all, and brings a fever down overnight.",
+      "kind": "remedies",
+      "tags": [],
+      "worth": 30
+    },
+    {
+      "id": "bone-reliquary",
+      "name": "Bone reliquary",
+      "prose": "An antique reliquary carved from bone by a pilgrim on the road to Saint Ambry, and blessed at every shrine along the way. What it holds is a knuckle, or a tooth, or nothing: it has not been opened in three hundred years.",
+      "kind": "curios",
+      "tags": ["blessed", "old"],
+      "worth": 50
+    },
+    {
+      "id": "pilgrims-badge",
+      "name": "Pilgrim's badge",
+      "prose": "A pilgrim's tin badge from the shrine road, a trinket stamped with the saint who keeps it. Every pilgrim to Saint Ambry buys one, and every pilgrim swears theirs is the lucky one.",
+      "kind": "curios",
+      "tags": ["blessed"],
+      "worth": 12
+    },
+    {
+      "id": "chapel-bell",
+      "name": "Chapel bell",
+      "prose": "A chapel bell no taller than a thumb, cast for a shrine on Saint Ambry and consecrated there. Pilgrims hang one over the door to keep out bad news, and it has a better record than most.",
+      "kind": "curios",
+      "tags": ["blessed"],
+      "worth": 30
+    },
+    {
+      "id": "geode-bookends",
+      "name": "Geode bookends",
+      "prose": "A geode split in two and polished into bookends, dug from the deep rock under Hob and opened on a cave of purple crystal. They hold up very few books and are looked at a great deal.",
+      "kind": "curios",
+      "tags": ["mined"],
+      "worth": 25
+    },
+    {
+      "id": "jet-brooch",
+      "name": "Jet brooch",
+      "prose": "A vintage mourning brooch in jet dug from the coal at Hob Deep, black and glassy and carved with a weeping willow. A widow pinned it on every morning for forty years, and it has outlasted her by sixty.",
+      "kind": "curios",
+      "tags": ["mined", "old"],
+      "worth": 40
+    },
+    {
+      "id": "coal-pony",
+      "name": "Coal pony",
+      "prose": "A pit pony carved from coal dug from the deep, new-made for the visitors who come down to Hob to see where coal comes from. It is a bauble for the mantel, and it leaves a mark on anything it touches.",
+      "kind": "curios",
+      "tags": ["mined", "modern"],
+      "worth": 15
+    },
+    {
+      "id": "brass-astrolabe",
+      "name": "Brass astrolabe",
+      "prose": "A vintage brass astrolabe, its rings engraved with constellations no ship has steered by in centuries. It no longer points at anything true, and a navigator will still pay for it, because it was the first thing that ever tried.",
+      "kind": "curios",
+      "tags": ["old"],
+      "worth": 55
+    },
+    {
+      "id": "clockwork-songbird",
+      "name": "Clockwork songbird",
+      "prose": "A clockwork songbird, the latest model, that sings on the hour and preens on the half. Every child on Lantern Quay wants one this year, and next year they will want the next one.",
+      "kind": "curios",
+      "tags": ["modern"],
+      "worth": 35
+    },
+    {
+      "id": "music-box",
+      "name": "Music box",
+      "prose": "A painted music box, a pilgrim's keepsake, that plays one hymn and plays it a little wrong. It was blessed at the shrine where it was bought, which is also where it was made.",
+      "kind": "curios",
+      "tags": ["blessed"],
+      "worth": 20
+    },
+    {
+      "id": "deep-rated-pump",
+      "name": "Deep-rated pump",
+      "prose": "A deep-rated pump, the latest thing off a factory line, machined to hold against a mile of rock leaning on it. It is heavy enough to want a crane and a crew to move it, and tough enough that the crew will wear out first.",
+      "kind": "mechanical",
+      "tags": ["heavy", "rugged", "modern", "factory"],
+      "worth": 55
+    },
+    {
+      "id": "veteran-gearbox",
+      "name": "Veteran harvester gearbox",
+      "prose": "A gearbox out of a veteran harvester, forty seasons in the wheat and still turning. Its teeth are worn but true, its casing has been patched by hand so often nobody keeps count, and it is heavy enough to break a foot and hard-wearing enough not to notice.",
+      "kind": "mechanical",
+      "tags": ["old", "heavy", "rugged", "handmade"],
+      "worth": 40
+    },
+    {
+      "id": "hand-winch",
+      "name": "Hand winch",
+      "prose": "A little winch built by hand around one cranked gear, light enough to carry up a ladder under one arm. Clamp it to anything that will hold still and it will lift a bucket, a sack or a stubborn calf.",
+      "kind": "mechanical",
+      "tags": ["light", "handmade"],
+      "worth": 15
+    },
+    {
+      "id": "vintage-clock-movement",
+      "name": "Vintage clock movement",
+      "prose": "A vintage clock movement under a glass bell, every gear as delicate as an eyelash and the whole of it lighter than the glass. It was made on Corrow when the lower cities were new. It still keeps time, and it has views on being dropped.",
+      "kind": "mechanical",
+      "tags": ["old", "fine", "light"],
+      "worth": 50
+    },
+    {
+      "id": "sealed-unit-servo",
+      "name": "Sealed-unit servo",
+      "prose": "A servo motor, a sealed unit straight from the factory: nothing to open, nothing to mend, and nothing inside that anyone with a spanner was meant to touch. It sits light in the palm, delicate enough to answer to a thousandth of a turn.",
+      "kind": "mechanical",
+      "tags": ["modern", "fine", "light", "factory"],
+      "worth": 35
+    },
+    {
+      "id": "shed-rebuilt-motor",
+      "name": "Shed-rebuilt motor",
+      "prose": "A vintage tractor motor, rebuilt by hand in somebody's shed out of three others that had died. It is ugly, it rattles, and it is tough as a boot heel. It starts on the second pull every time, and it has never once started on the first.",
+      "kind": "mechanical",
+      "tags": ["old", "handmade", "rugged"],
+      "worth": 25
+    },
+    {
+      "id": "crusher-jaw-plate",
+      "name": "Crusher jaw plate",
+      "prose": "A jaw plate for a rock crusher, cast in a factory and machined flat: a slab of manganese steel that chews basalt for a living. It is hefty enough to want two hauliers and a sledge, and tough enough to be the last part of the crusher to wear.",
+      "kind": "mechanical",
+      "tags": ["heavy", "rugged", "factory"],
+      "worth": 30
+    },
+    {
+      "id": "laser-level",
+      "name": "Laser level",
+      "prose": "A modern laser level in a case light enough to clip to a belt, its little motor delicate enough to find true across a valley. Surveyors swear by it. Farmers borrow it and swear at it.",
+      "kind": "mechanical",
+      "tags": ["modern", "fine", "light"],
+      "worth": 45
+    },
+    {
+      "id": "cast-iron-flywheel",
+      "name": "Cast-iron flywheel",
+      "prose": "A cast-iron flywheel off an old-pattern steam engine, machined smooth in a works that closed long ago. It is heavy and slow, and once it starts it turns for a very long time, which is all anybody has ever asked of it.",
+      "kind": "mechanical",
+      "tags": ["old", "heavy"],
+      "worth": 20
+    },
+    {
+      "id": "bog-iron",
+      "name": "Bog iron",
+      "prose": "Bog iron raked up from the shallows of a swamp moon, rusty lumps of it by the tonne. It is the cheapest ore there is, and nobody has ever run short of it.",
+      "kind": "ore",
+      "tags": ["common"],
+      "worth": 10
+    },
+    {
+      "id": "reworked-tailings",
+      "name": "Reworked tailings",
+      "prose": "Tailings reclaimed from a spent working and run through the crushers again: grey grit with a little ore still in it. It is cheap, and worth exactly what it costs.",
+      "kind": "ore",
+      "tags": ["salvaged", "common"],
+      "worth": 12
+    },
+    {
+      "id": "smelter-slag",
+      "name": "Smelter slag",
+      "prose": "Slag reclaimed from the heaps behind an Anvil smelter and crushed for the ore the first firing missed. It rings like glass when it is tipped into a hold.",
+      "kind": "ore",
+      "tags": ["salvaged"],
+      "worth": 14
+    },
+    {
+      "id": "hull-plate-scrap",
+      "name": "Hull-plate scrap",
+      "prose": "Hull plate salvaged from a breaker's yard, cut into squares and baled. It was a ship once; now it is iron, sold by assay, and it melts like any other.",
+      "kind": "ore",
+      "tags": ["salvaged"],
+      "worth": 18
+    },
+    {
+      "id": "pyrite",
+      "name": "Pyrite",
+      "prose": "Pyrite from a sulphur seam, gold-bright cubes of iron that have fooled many a prospector into thinking they were rich. Smelters pay a fair price for it all the same, for the iron and the sulphur both.",
+      "kind": "ore",
+      "tags": [],
+      "worth": 20
+    },
+    {
+      "id": "galena",
+      "name": "Galena",
+      "prose": "Galena in grey cubes with a dull shine: lead ore broken straight from the seam, weighing twice what it looks as if it should.",
+      "kind": "ore",
+      "tags": [],
+      "worth": 25
+    },
+    {
+      "id": "assayed-tin",
+      "name": "Assayed tin",
+      "prose": "Tin ore, assayed high-grade where it was dug and bagged with the certificate sewn to the sack. A smelter can pour it without asking a single question.",
+      "kind": "ore",
+      "tags": ["pure"],
+      "worth": 30
+    },
+    {
+      "id": "copper-ore",
+      "name": "Copper ore",
+      "prose": "Copper ore pure enough to show green at a scratch, out of a rich seam on Scoria. It goes into the furnace very nearly as it came out of the ground.",
+      "kind": "ore",
+      "tags": ["pure"],
+      "worth": 35
+    },
+    {
+      "id": "bismuth",
+      "name": "Bismuth",
+      "prose": "Bismuth crystal grown in rainbow stairsteps, a rare ore that few smelters ever see and fewer want to melt. Most of it ends up on a collector's shelf.",
+      "kind": "ore",
+      "tags": ["rare"],
+      "worth": 40
+    },
+    {
+      "id": "meteoric-iron",
+      "name": "Meteoric iron",
+      "prose": "Meteoric iron dug out of the crater where it fell, a freak lump of star laced with nickel. Smiths pay for it by the gram and make knives of it that they never sell.",
+      "kind": "ore",
+      "tags": ["rare"],
+      "worth": 45
+    },
+    {
+      "id": "native-silver",
+      "name": "Native silver",
+      "prose": "Native silver in curling wires, pure as it comes from the seam and seldom found at all. One good pocket of it has made a family's fortune, and started its feud.",
+      "kind": "ore",
+      "tags": ["pure", "rare"],
+      "worth": 55
+    },
+    {
+      "id": "seed-potatoes",
+      "name": "Seed potatoes",
+      "prose": "Seed potatoes chitting in a dark crate, each one putting out pale shoots. Kept dry, they will plant a field; let them get damp and they spoil inside a week.",
+      "kind": "botanicals",
+      "tags": ["perishable"],
+      "worth": 10
+    },
+    {
+      "id": "willow-bark",
+      "name": "Willow bark",
+      "prose": "Willow bark peeled in spring from the cutting-stock along the ditches: a physic for fevers and aching joints that any apothecary will grind.",
+      "kind": "botanicals",
+      "tags": ["medicinal"],
+      "worth": 12
+    },
+    {
+      "id": "retted-flax",
+      "name": "Retted flax",
+      "prose": "Flax retted in the field and scutched for its fibre, the long stalks of a linseed crop bundled like hair.",
+      "kind": "botanicals",
+      "tags": ["textile"],
+      "worth": 15
+    },
+    {
+      "id": "cotton-bolls",
+      "name": "Cotton bolls",
+      "prose": "Cotton bolls by the sack, seed and fibre together, picked on Long Acre and not yet ginned.",
+      "kind": "botanicals",
+      "tags": ["textile"],
+      "worth": 18
+    },
+    {
+      "id": "woad-leaf",
+      "name": "Woad leaf",
+      "prose": "Woad leaf, crushed, balled and dried in the sun, for the blue dye that comes out of it. It smells like a cabbage left in a cupboard, and it keeps for years.",
+      "kind": "botanicals",
+      "tags": ["textile", "keeps"],
+      "worth": 20
+    },
+    {
+      "id": "feverfew",
+      "name": "Feverfew",
+      "prose": "Feverfew leaf, hung in bunches from the rafters until it is dried: a medicinal for headaches that apothecaries buy by the armful.",
+      "kind": "botanicals",
+      "tags": ["medicinal", "keeps"],
+      "worth": 22
+    },
+    {
+      "id": "madder-root",
+      "name": "Madder root",
+      "prose": "Madder root, grown on from seed for three summers until it is worth the digging, for the red dye in it.",
+      "kind": "botanicals",
+      "tags": ["textile"],
+      "worth": 25
+    },
+    {
+      "id": "foxglove-cuttings",
+      "name": "Foxglove cuttings",
+      "prose": "Foxglove cuttings, fresh and still wet, for the apothecary's heart physic. They wilt by the day, and a dead cutting is worth nothing to anybody.",
+      "kind": "botanicals",
+      "tags": ["medicinal", "perishable"],
+      "worth": 30
+    },
+    {
+      "id": "green-tea-leaf",
+      "name": "Green tea leaf",
+      "prose": "Tea leaf, fresh-picked and wilting by the hour, wanted at the rolling sheds while it is still green and worth half as much a day late.",
+      "kind": "botanicals",
+      "tags": ["perishable"],
+      "worth": 35
+    },
+    {
+      "id": "cured-tobacco",
+      "name": "Cured tobacco",
+      "prose": "Tobacco leaf, cured brown in the barn and good for years in a dry hold. It perfumes the whole ship, and the crew will not stop mentioning it.",
+      "kind": "botanicals",
+      "tags": ["keeps"],
+      "worth": 40
+    },
+    {
+      "id": "saffron",
+      "name": "Saffron",
+      "prose": "Imported saffron, the dried red threads of a crocus packed between leaf papers, worth its weight in silver. A pinch of it colours a whole pot.",
+      "kind": "botanicals",
+      "tags": ["keeps", "exotic"],
+      "worth": 55
+    }
+  ],
+  "buyers": [
+    {
+      "id": "hester-barrow",
+      "name": "Hester Barrow",
+      "locationId": "halloran",
+      "wants": [{ "kind": "spirits", "quantity": 2 }],
+      "bonusTags": ["storied"],
+      "refusalTags": ["common"],
+      "refusalLine": "I'd haggle that down for the sport of it, but I'd have to want it first."
+    },
+    {
+      "id": "bram-tolliver",
+      "name": "Bram Tolliver",
+      "locationId": "halloran",
+      "wants": [
+        {
+          "predicate": [
+            { "tag": "curios", "negated": false },
+            { "tag": "old", "negated": false }
+          ],
+          "plainly": "wants old curios for the shop",
+          "quantity": 3
+        }
+      ],
+      "bonusTags": [],
+      "refusalTags": [],
+      "refusalLine": "That isn't what I asked for."
+    },
+    {
+      "id": "wen-aldous",
+      "name": "Wen Aldous",
+      "locationId": "halloran",
+      "wants": [
+        {
+          "predicate": [
+            { "tag": "cloth", "negated": false },
+            { "tag": "fine", "negated": false }
+          ],
+          "plainly": "wants something fine to sell on",
+          "quantity": 2
+        }
+      ],
+      "bonusTags": [],
+      "refusalTags": [],
+      "refusalLine": "Not that one."
+    },
+    {
+      "id": "ode-marlowe",
+      "name": "Ode Marlowe",
+      "locationId": "vesper",
+      "wants": [{ "kind": "curios", "quantity": 1 }],
+      "bonusTags": ["old"],
+      "refusalTags": ["modern"],
+      "refusalLine": "The docks never close, and I still have no room for that."
+    },
+    {
+      "id": "joss-penhale",
+      "name": "Joss Penhale",
+      "locationId": "vesper",
+      "wants": [{ "goodId": "raw-silk", "quantity": 2, "order": { "price": 60, "days": 30 } }],
+      "bonusTags": [],
+      "refusalTags": [],
+      "refusalLine": "Wrong goods. I need the other kind."
+    },
+    {
+      "id": "ruth-calloway",
+      "name": "Ruth Calloway",
+      "locationId": "vesper",
+      "wants": [
+        {
+          "predicate": [
+            { "tag": "provisions", "negated": false },
+            { "tag": "exotic", "negated": false }
+          ],
+          "plainly": "wants imported food for the market",
+          "quantity": 2,
+          "order": { "price": 45, "days": 30 }
+        }
+      ],
+      "bonusTags": [],
+      "refusalTags": [],
+      "refusalLine": "That won't fill the order."
+    },
+    {
+      "id": "pascal-ixley",
+      "name": "Pascal Ixley",
+      "locationId": "corrow",
+      "wants": [{ "kind": "cloth", "quantity": 2 }],
+      "bonusTags": ["plain"],
+      "refusalTags": ["loud"],
+      "refusalLine": "That isn't it. I'll know the right one when it's in my hands."
+    },
+    {
+      "id": "emeric-dunn",
+      "name": "Emeric Dunn",
+      "locationId": "corrow",
+      "wants": [{ "kind": "curios", "quantity": 1 }],
+      "bonusTags": ["modern"],
+      "refusalTags": ["old"],
+      "refusalLine": "No. It has to be what I said."
+    },
+    {
+      "id": "sabine-hollis",
+      "name": "Sabine Hollis",
+      "locationId": "corrow",
+      "wants": [
+        {
+          "predicate": [
+            { "tag": "spirits", "negated": false },
+            { "tag": "strong", "negated": false }
+          ],
+          "plainly": "wants a strong bottle to sell on",
+          "quantity": 2,
+          "order": { "price": 35, "days": 30 }
+        }
+      ],
+      "bonusTags": [],
+      "refusalTags": [],
+      "refusalLine": "I can't use that."
+    },
+    {
+      "id": "perpetua-lund",
+      "name": "Sister Perpetua Lund",
+      "locationId": "ambry",
+      "wants": [{ "kind": "curios", "quantity": 1 }],
+      "bonusTags": ["blessed"],
+      "refusalTags": ["mined"],
+      "refusalLine": "Every shrine here has a patron saint, and not one of them blesses that."
+    },
+    {
+      "id": "lars-odegaard",
+      "name": "Lars Odegaard",
+      "locationId": "ambry",
+      "wants": [
+        {
+          "predicate": [
+            { "tag": "cloth", "negated": false },
+            { "tag": "plain", "negated": false }
+          ],
+          "plainly": "wants plain cloth, nothing bright",
+          "quantity": 3
+        }
+      ],
+      "bonusTags": [],
+      "refusalTags": [],
+      "refusalLine": "Not what I'm buying."
+    },
+    {
+      "id": "mina-okafor",
+      "name": "Mina Okafor",
+      "locationId": "ambry",
+      "wants": [
+        {
+          "predicate": [
+            { "tag": "curios", "negated": false },
+            { "tag": "mined", "negated": false }
+          ],
+          "plainly": "wants keepsakes dug from the deep rock",
+          "quantity": 2
+        }
+      ],
+      "bonusTags": [],
+      "refusalTags": [],
+      "refusalLine": "No, that isn't it."
+    },
+    {
+      "id": "wick-ardent",
+      "name": "Wick Ardent",
+      "locationId": "lantern",
+      "wants": [{ "kind": "provisions", "quantity": 3 }],
+      "bonusTags": ["keeps"],
+      "refusalTags": ["perishable"],
+      "refusalLine": "Someone else's berth, someone else's cargo. Not mine."
+    },
+    {
+      "id": "cato-reeve",
+      "name": "Cato Reeve",
+      "locationId": "lantern",
+      "wants": [
+        {
+          "predicate": [
+            { "tag": "spirits", "negated": false },
+            { "tag": "sweet", "negated": false }
+          ],
+          "plainly": "wants something sweet for the quayside",
+          "quantity": 3
+        }
+      ],
+      "bonusTags": [],
+      "refusalTags": [],
+      "refusalLine": "That isn't what I asked for."
+    },
+    {
+      "id": "dora-winslow",
+      "name": "Dora Winslow",
+      "locationId": "lantern",
+      "wants": [
+        { "goodId": "clockwork-songbird", "quantity": 2, "order": { "price": 35, "days": 30 } }
+      ],
+      "bonusTags": [],
+      "refusalTags": [],
+      "refusalLine": "Not that one."
+    },
+    {
+      "id": "fenn-alderwick",
+      "name": "Fenn Alderwick",
+      "locationId": "quillon",
+      "wants": [{ "kind": "cloth", "quantity": 2 }],
+      "bonusTags": ["floral"],
+      "refusalTags": ["factory"],
+      "refusalLine": "I'm sorry. I wanted to remember something, and that isn't it."
+    },
+    {
+      "id": "ivo-strand",
+      "name": "Ivo Strand",
+      "locationId": "quillon",
+      "wants": [
+        {
+          "predicate": [
+            { "tag": "provisions", "negated": false },
+            { "tag": "exotic", "negated": false }
+          ],
+          "plainly": "wants imported food",
+          "quantity": 3
+        }
+      ],
+      "bonusTags": [],
+      "refusalTags": [],
+      "refusalLine": "Wrong goods. I need the other kind."
+    },
+    {
+      "id": "tess-marchbanks",
+      "name": "Tess Marchbanks",
+      "locationId": "quillon",
+      "wants": [
+        {
+          "predicate": [
+            { "tag": "spirits", "negated": false },
+            { "tag": "common", "negated": true }
+          ],
+          "plainly": "wants something better than rotgut",
+          "quantity": 2,
+          "order": { "price": 45, "days": 30 }
+        }
+      ],
+      "bonusTags": [],
+      "refusalTags": [],
+      "refusalLine": "That won't fill the order."
+    },
+    {
+      "id": "marit-cutler",
+      "name": "Marit Cutler",
+      "locationId": "gannet",
+      "wants": [{ "kind": "mechanical", "quantity": 2 }],
+      "bonusTags": ["rugged"],
+      "refusalTags": ["fine"],
+      "refusalLine": "Not for the drills. I know what the drills like."
+    },
+    {
+      "id": "hollis-grey",
+      "name": "Hollis Grey",
+      "locationId": "gannet",
+      "wants": [
+        {
+          "predicate": [
+            { "tag": "provisions", "negated": false },
+            { "tag": "hearty", "negated": false }
+          ],
+          "plainly": "wants hearty food for the shift",
+          "quantity": 3,
+          "order": { "price": 25, "days": 30 }
+        }
+      ],
+      "bonusTags": [],
+      "refusalTags": [],
+      "refusalLine": "No. It has to be what I said."
+    },
+    {
+      "id": "nadia-fenwick",
+      "name": "Nadia Fenwick",
+      "locationId": "gannet",
+      "wants": [
+        {
+          "predicate": [
+            { "tag": "spirits", "negated": false },
+            { "tag": "strong", "negated": false }
+          ],
+          "plainly": "wants strong drink for the crews",
+          "quantity": 4
+        }
+      ],
+      "bonusTags": [],
+      "refusalTags": [],
+      "refusalLine": "I can't use that."
+    },
+    {
+      "id": "oskar-brine",
+      "name": "Oskar Brine",
+      "locationId": "coldwater",
+      "wants": [{ "kind": "spirits", "quantity": 2 }],
+      "bonusTags": ["strong"],
+      "refusalTags": ["sweet"],
+      "refusalLine": "Haulers don't drink much. They don't drink that."
+    },
+    {
+      "id": "orrin-vale",
+      "name": "Orrin Vale",
+      "locationId": "coldwater",
+      "wants": [
+        {
+          "predicate": [
+            { "tag": "remedies", "negated": false },
+            { "tag": "burns", "negated": false }
+          ],
+          "plainly": "wants something for burns",
+          "quantity": 3
+        }
+      ],
+      "bonusTags": [],
+      "refusalTags": [],
+      "refusalLine": "Not what I'm buying."
+    },
+    {
+      "id": "edda-lindqvist",
+      "name": "Edda Lindqvist",
+      "locationId": "coldwater",
+      "wants": [
+        {
+          "predicate": [
+            { "tag": "mechanical", "negated": false },
+            { "tag": "heavy", "negated": false }
+          ],
+          "plainly": "wants heavy machinery for the workings",
+          "quantity": 3,
+          "order": { "price": 35, "days": 30 }
+        }
+      ],
+      "bonusTags": [],
+      "refusalTags": [],
+      "refusalLine": "No, that isn't it."
+    },
+    {
+      "id": "ynez-kaldera",
+      "name": "Ynez Kaldera",
+      "locationId": "scoria",
+      "wants": [{ "kind": "remedies", "quantity": 2 }],
+      "bonusTags": ["burns"],
+      "refusalTags": ["bitter"],
+      "refusalLine": "I have been burned by better things than that. Keep it."
+    },
+    {
+      "id": "kit-barlow",
+      "name": "Kit Barlow",
+      "locationId": "scoria",
+      "wants": [
+        {
+          "predicate": [
+            { "tag": "mechanical", "negated": false },
+            { "tag": "rugged", "negated": false }
+          ],
+          "plainly": "wants machinery that can take a beating",
+          "quantity": 3
+        }
+      ],
+      "bonusTags": [],
+      "refusalTags": [],
+      "refusalLine": "That isn't what I asked for."
+    },
+    {
+      "id": "sunniva-roth",
+      "name": "Sunniva Roth",
+      "locationId": "scoria",
+      "wants": [
+        {
+          "predicate": [
+            { "tag": "remedies", "negated": false },
+            { "tag": "bitter", "negated": false }
+          ],
+          "plainly": "wants a bitter tonic for the crews",
+          "quantity": 2
+        }
+      ],
+      "bonusTags": [],
+      "refusalTags": [],
+      "refusalLine": "Not that one."
+    },
+    {
+      "id": "dagmar-flagg",
+      "name": "Dagmar Flagg",
+      "locationId": "pell",
+      "wants": [{ "kind": "provisions", "quantity": 3 }],
+      "bonusTags": ["tucks"],
+      "refusalTags": ["halberd"],
+      "refusalLine": "Wrong rock, wrong flag. I'll hold it against you for a year; it will be a very good grudge."
+    },
+    {
+      "id": "piet-hallam",
+      "name": "Piet Hallam",
+      "locationId": "pell",
+      "wants": [
+        {
+          "predicate": [
+            { "tag": "spirits", "negated": false },
+            { "tag": "common", "negated": false }
+          ],
+          "plainly": "wants cheap drink, and plenty of it",
+          "quantity": 3,
+          "order": { "price": 14, "days": 30 }
+        }
+      ],
+      "bonusTags": [],
+      "refusalTags": [],
+      "refusalLine": "Wrong goods. I need the other kind."
+    },
+    {
+      "id": "lena-wirth",
+      "name": "Lena Wirth",
+      "locationId": "pell",
+      "wants": [
+        { "goodId": "lamp-blind-drops", "quantity": 2, "order": { "price": 40, "days": 30 } }
+      ],
+      "bonusTags": [],
+      "refusalTags": [],
+      "refusalLine": "That won't fill the order."
+    },
+    {
+      "id": "tobias-deepwell",
+      "name": "Tobias Deepwell",
+      "locationId": "hob",
+      "wants": [{ "kind": "mechanical", "quantity": 1 }],
+      "bonusTags": ["heavy"],
+      "refusalTags": ["light"],
+      "refusalLine": "Not deep enough. I mean the goods. I always mean the goods."
+    },
+    {
+      "id": "garrick-soames",
+      "name": "Garrick Soames",
+      "locationId": "hob",
+      "wants": [{ "kind": "remedies", "quantity": 2 }],
+      "bonusTags": ["pungent"],
+      "refusalTags": ["burns"],
+      "refusalLine": "No. It has to be what I said."
+    },
+    {
+      "id": "imogen-pratt",
+      "name": "Imogen Pratt",
+      "locationId": "hob",
+      "wants": [
+        {
+          "predicate": [
+            { "tag": "spirits", "negated": false },
+            { "tag": "sweet", "negated": true }
+          ],
+          "plainly": "wants drink with no sugar in it",
+          "quantity": 4
+        }
+      ],
+      "bonusTags": [],
+      "refusalTags": [],
+      "refusalLine": "I can't use that."
+    },
+    {
+      "id": "ilona-carbury",
+      "name": "Ilona Carbury",
+      "locationId": "tamsin",
+      "wants": [{ "kind": "remedies", "quantity": 2 }],
+      "bonusTags": ["daylight"],
+      "refusalTags": ["pungent"],
+      "refusalLine": "It has been years since I saw a sky. I can still tell that isn't right."
+    },
+    {
+      "id": "dov-ellery",
+      "name": "Dov Ellery",
+      "locationId": "tamsin",
+      "wants": [
+        { "goodId": "deep-rated-pump", "quantity": 1, "order": { "price": 55, "days": 30 } }
+      ],
+      "bonusTags": [],
+      "refusalTags": [],
+      "refusalLine": "Not what I'm buying."
+    },
+    {
+      "id": "rosa-tennant",
+      "name": "Rosa Tennant",
+      "locationId": "tamsin",
+      "wants": [{ "kind": "spirits", "quantity": 2 }],
+      "bonusTags": ["sweet"],
+      "refusalTags": ["strong"],
+      "refusalLine": "No, that isn't it."
+    },
+    {
+      "id": "gideon-ferrous",
+      "name": "Gideon Ferrous",
+      "locationId": "anvil",
+      "wants": [{ "kind": "provisions", "quantity": 3 }],
+      "bonusTags": ["hearty"],
+      "refusalTags": ["fine"],
+      "refusalLine": "My foundries eat better than I do, and even they would send that back."
+    },
+    {
+      "id": "abel-crane",
+      "name": "Abel Crane",
+      "locationId": "anvil",
+      "wants": [
+        {
+          "predicate": [
+            { "tag": "ore", "negated": false },
+            { "tag": "salvaged", "negated": true }
+          ],
+          "plainly": "wants ore from the ground, not scrap",
+          "quantity": 3
+        }
+      ],
+      "bonusTags": [],
+      "refusalTags": [],
+      "refusalLine": "That isn't what I asked for."
+    },
+    {
+      "id": "yusuf-brandt",
+      "name": "Yusuf Brandt",
+      "locationId": "anvil",
+      "wants": [
+        {
+          "predicate": [
+            { "tag": "botanicals", "negated": false },
+            { "tag": "keeps", "negated": false }
+          ],
+          "plainly": "wants dried crops that will keep in the store",
+          "quantity": 4,
+          "order": { "price": 30, "days": 30 }
+        }
+      ],
+      "bonusTags": [],
+      "refusalTags": [],
+      "refusalLine": "Not that one."
+    },
+    {
+      "id": "corvin-trask",
+      "name": "Corvin Trask",
+      "locationId": "brisance",
+      "wants": [{ "kind": "ore", "quantity": 2 }],
+      "bonusTags": ["pure"],
+      "refusalTags": ["salvaged"],
+      "refusalLine": "The furnace wouldn't have it, and I've never won an argument with the furnace."
+    },
+    {
+      "id": "marta-ibsen",
+      "name": "Marta Ibsen",
+      "locationId": "brisance",
+      "wants": [
+        {
+          "predicate": [
+            { "tag": "botanicals", "negated": false },
+            { "tag": "medicinal", "negated": false }
+          ],
+          "plainly": "wants medicinal plants for the infirmary",
+          "quantity": 3
+        }
+      ],
+      "bonusTags": [],
+      "refusalTags": [],
+      "refusalLine": "Wrong goods. I need the other kind."
+    },
+    {
+      "id": "ned-fairweather",
+      "name": "Ned Fairweather",
+      "locationId": "brisance",
+      "wants": [{ "kind": "botanicals", "quantity": 2 }],
+      "bonusTags": ["keeps"],
+      "refusalTags": ["perishable"],
+      "refusalLine": "Not what I'm after."
+    },
+    {
+      "id": "petra-soot",
+      "name": "Petra Soot",
+      "locationId": "cinderhall",
+      "wants": [{ "kind": "botanicals", "quantity": 2 }],
+      "bonusTags": ["keeps"],
+      "refusalTags": ["perishable"],
+      "refusalLine": "No. The roof keeps out the weather, not bad judgment."
+    },
+    {
+      "id": "clio-rask",
+      "name": "Clio Rask",
+      "locationId": "cinderhall",
+      "wants": [
+        {
+          "predicate": [
+            { "tag": "provisions", "negated": false },
+            { "tag": "common", "negated": false }
+          ],
+          "plainly": "wants common food, and plenty of it",
+          "quantity": 4,
+          "order": { "price": 12, "days": 30 }
+        }
+      ],
+      "bonusTags": [],
+      "refusalTags": [],
+      "refusalLine": "No. It has to be what I said."
+    },
+    {
+      "id": "tomas-orwell",
+      "name": "Tomas Orwell",
+      "locationId": "cinderhall",
+      "wants": [
+        {
+          "predicate": [
+            { "tag": "ore", "negated": false },
+            { "tag": "common", "negated": false }
+          ],
+          "plainly": "wants cheap ore by the load",
+          "quantity": 4,
+          "order": { "price": 11, "days": 30 }
+        }
+      ],
+      "bonusTags": [],
+      "refusalTags": [],
+      "refusalLine": "I can't use that."
+    },
+    {
+      "id": "nell-shuttleworth",
+      "name": "Nell Shuttleworth",
+      "locationId": "weft",
+      "wants": [{ "kind": "botanicals", "quantity": 2 }],
+      "bonusTags": ["textile"],
+      "refusalTags": ["medicinal"],
+      "refusalLine": "The bell rang for something better than that."
+    },
+    {
+      "id": "hilde-voss",
+      "name": "Hilde Voss",
+      "locationId": "weft",
+      "wants": [{ "kind": "ore", "quantity": 3 }],
+      "bonusTags": ["common"],
+      "refusalTags": ["rare"],
+      "refusalLine": "Not what I'm buying."
+    },
+    {
+      "id": "alder-finch",
+      "name": "Alder Finch",
+      "locationId": "weft",
+      "wants": [
+        {
+          "predicate": [
+            { "tag": "ore", "negated": false },
+            { "tag": "pure", "negated": false }
+          ],
+          "plainly": "wants high-grade ore, and nothing less",
+          "quantity": 4
+        }
+      ],
+      "bonusTags": [],
+      "refusalTags": [],
+      "refusalLine": "No, that isn't it."
+    },
+    {
+      "id": "anselm-quadrant",
+      "name": "Anselm Quadrant",
+      "locationId": "orrery",
+      "wants": [{ "kind": "ore", "quantity": 3 }],
+      "bonusTags": ["rare"],
+      "refusalTags": ["common"],
+      "refusalLine": "Built to order, and that is not what I ordered. It isn't even in the right orbit."
+    },
+    {
+      "id": "june-castellan",
+      "name": "June Castellan",
+      "locationId": "orrery",
+      "wants": [
+        {
+          "predicate": [
+            { "tag": "botanicals", "negated": false },
+            { "tag": "textile", "negated": false }
+          ],
+          "plainly": "wants dye and fibre plants to sell on",
+          "quantity": 3,
+          "order": { "price": 20, "days": 30 }
+        }
+      ],
+      "bonusTags": [],
+      "refusalTags": [],
+      "refusalLine": "That isn't what I asked for."
+    },
+    {
+      "id": "rafe-moody",
+      "name": "Rafe Moody",
+      "locationId": "orrery",
+      "wants": [
+        {
+          "predicate": [
+            { "tag": "provisions", "negated": false },
+            { "tag": "fine", "negated": false }
+          ],
+          "plainly": "wants something fine for the table",
+          "quantity": 1,
+          "order": { "price": 45, "days": 30 }
+        }
+      ],
+      "bonusTags": [],
+      "refusalTags": [],
+      "refusalLine": "Not that one."
+    },
+    {
+      "id": "odalys-pike",
+      "name": "Odalys Pike",
+      "locationId": "grist",
+      "wants": [{ "kind": "provisions", "quantity": 2 }],
+      "bonusTags": ["common"],
+      "refusalTags": ["exotic"],
+      "refusalLine": "It'll do for someone. Not here."
+    },
+    {
+      "id": "selma-quint",
+      "name": "Selma Quint",
+      "locationId": "grist",
+      "wants": [
+        {
+          "predicate": [
+            { "tag": "ore", "negated": false },
+            { "tag": "rare", "negated": false }
+          ],
+          "plainly": "wants a rare ore for a buyer of hers",
+          "quantity": 3,
+          "order": { "price": 45, "days": 30 }
+        }
+      ],
+      "bonusTags": [],
+      "refusalTags": [],
+      "refusalLine": "Wrong goods. I need the other kind."
+    },
+    {
+      "id": "odo-pengelly",
+      "name": "Odo Pengelly",
+      "locationId": "grist",
+      "wants": [
+        {
+          "predicate": [
+            { "tag": "botanicals", "negated": false },
+            { "tag": "perishable", "negated": true }
+          ],
+          "plainly": "wants plants that won't spoil on the way",
+          "quantity": 4
+        }
+      ],
+      "bonusTags": [],
+      "refusalTags": [],
+      "refusalLine": "That won't fill the order."
+    },
+    {
+      "id": "teague-harlan",
+      "name": "Teague Harlan",
+      "locationId": "longacre",
+      "wants": [{ "kind": "cloth", "quantity": 2 }],
+      "bonusTags": ["rugged"],
+      "refusalTags": ["fine"],
+      "refusalLine": "The machines wouldn't wear that, and I'm told they aren't fussy."
+    },
+    {
+      "id": "thea-lowry",
+      "name": "Thea Lowry",
+      "locationId": "longacre",
+      "wants": [
+        {
+          "predicate": [
+            { "tag": "mechanical", "negated": false },
+            { "tag": "light", "negated": false }
+          ],
+          "plainly": "wants something light enough to carry out to the field",
+          "quantity": 2
+        }
+      ],
+      "bonusTags": [],
+      "refusalTags": [],
+      "refusalLine": "No. It has to be what I said."
+    },
+    {
+      "id": "cormac-hale",
+      "name": "Cormac Hale",
+      "locationId": "longacre",
+      "wants": [
+        {
+          "predicate": [
+            { "tag": "cloth", "negated": false },
+            { "tag": "rugged", "negated": false }
+          ],
+          "plainly": "wants hard-wearing cloth for the field hands",
+          "quantity": 4,
+          "order": { "price": 22, "days": 30 }
+        }
+      ],
+      "bonusTags": [],
+      "refusalTags": [],
+      "refusalLine": "I can't use that."
+    },
+    {
+      "id": "marguerite-lye",
+      "name": "Marguerite Lye",
+      "locationId": "fallow",
+      "wants": [{ "kind": "mechanical", "quantity": 2 }],
+      "bonusTags": ["old"],
+      "refusalTags": ["modern"],
+      "refusalLine": "We rest half the land. We don't rest our standards."
+    },
+    {
+      "id": "bea-ashgrove",
+      "name": "Bea Ashgrove",
+      "locationId": "fallow",
+      "wants": [
+        {
+          "predicate": [
+            { "tag": "cloth", "negated": false },
+            { "tag": "waterproof", "negated": false }
+          ],
+          "plainly": "wants something that keeps the rain off",
+          "quantity": 2
+        }
+      ],
+      "bonusTags": [],
+      "refusalTags": [],
+      "refusalLine": "Not what I'm buying."
+    },
+    {
+      "id": "lucan-frost",
+      "name": "Lucan Frost",
+      "locationId": "fallow",
+      "wants": [
+        { "goodId": "veteran-gearbox", "quantity": 2, "order": { "price": 40, "days": 30 } }
+      ],
+      "bonusTags": [],
+      "refusalTags": [],
+      "refusalLine": "No, that isn't it."
+    },
+    {
+      "id": "bertil-strawe",
+      "name": "Bertil Strawe",
+      "locationId": "sheaf",
+      "wants": [{ "kind": "mechanical", "quantity": 2 }],
+      "bonusTags": ["handmade"],
+      "refusalTags": ["modern"],
+      "refusalLine": "My harvester is older than the charter and has better taste than that."
+    },
+    {
+      "id": "agnes-thorne",
+      "name": "Agnes Thorne",
+      "locationId": "sheaf",
+      "wants": [
+        { "goodId": "homespun-blanket", "quantity": 2, "order": { "price": 30, "days": 30 } }
+      ],
+      "bonusTags": [],
+      "refusalTags": [],
+      "refusalLine": "That isn't what I asked for."
+    },
+    {
+      "id": "perrin-keel",
+      "name": "Perrin Keel",
+      "locationId": "sheaf",
+      "wants": [
+        {
+          "predicate": [
+            { "tag": "mechanical", "negated": false },
+            { "tag": "old", "negated": false }
+          ],
+          "plainly": "wants something old that's proved itself",
+          "quantity": 3
+        }
+      ],
+      "bonusTags": [],
+      "refusalTags": [],
+      "refusalLine": "Not that one."
+    },
+    {
+      "id": "calla-mistral",
+      "name": "Calla Mistral",
+      "locationId": "verdance",
+      "wants": [{ "kind": "cloth", "quantity": 1 }],
+      "bonusTags": ["waterproof"],
+      "refusalTags": ["raw"],
+      "refusalLine": "Damp does terrible things to the wrong cloth, and that is the wrong cloth."
+    },
+    {
+      "id": "isolde-marsh",
+      "name": "Isolde Marsh",
+      "locationId": "verdance",
+      "wants": [
+        {
+          "predicate": [
+            { "tag": "mechanical", "negated": false },
+            { "tag": "modern", "negated": true }
+          ],
+          "plainly": "wants machinery that isn't modern",
+          "quantity": 3,
+          "order": { "price": 30, "days": 30 }
+        }
+      ],
+      "bonusTags": [],
+      "refusalTags": [],
+      "refusalLine": "Wrong goods. I need the other kind."
+    },
+    {
+      "id": "gus-pettibone",
+      "name": "Gus Pettibone",
+      "locationId": "verdance",
+      "wants": [
+        {
+          "predicate": [
+            { "tag": "cloth", "negated": false },
+            { "tag": "rugged", "negated": false },
+            { "tag": "factory", "negated": true }
+          ],
+          "plainly": "wants tough cloth, but not mill stuff",
+          "quantity": 3
+        }
+      ],
+      "bonusTags": [],
+      "refusalTags": [],
+      "refusalLine": "That won't fill the order."
+    },
+    {
+      "id": "hamish-corrie",
+      "name": "Hamish Corrie",
+      "locationId": "harrow",
+      "wants": [{ "kind": "mechanical", "quantity": 1 }],
+      "bonusTags": ["light"],
+      "refusalTags": ["heavy"],
+      "refusalLine": "The hills won't take it. Neither will I."
+    },
+    {
+      "id": "wilhelmina-dray",
+      "name": "Wilhelmina Dray",
+      "locationId": "harrow",
+      "wants": [{ "goodId": "oilskin-smock", "quantity": 1, "order": { "price": 35, "days": 30 } }],
+      "bonusTags": [],
+      "refusalTags": [],
+      "refusalLine": "No. It has to be what I said."
+    },
+    {
+      "id": "anders-kell",
+      "name": "Anders Kell",
+      "locationId": "harrow",
+      "wants": [
+        {
+          "predicate": [
+            { "tag": "mechanical", "negated": false },
+            { "tag": "fine", "negated": false }
+          ],
+          "plainly": "wants finely made machinery",
+          "quantity": 1
+        }
+      ],
+      "bonusTags": [],
+      "refusalTags": [],
+      "refusalLine": "I can't use that."
+    },
+    {
+      "id": "ada-mallory",
+      "name": "Ada Mallory",
+      "locationId": "mallory",
+      "wants": [{ "kind": "cloth", "quantity": 3 }],
+      "bonusTags": ["handmade"],
+      "refusalTags": ["factory"],
+      "refusalLine": "Put it on the kitchen table and I'll tell you what I think. I think no."
+    },
+    {
+      "id": "mara-fitch",
+      "name": "Mara Fitch",
+      "locationId": "mallory",
+      "wants": [
+        { "goodId": "shed-rebuilt-motor", "quantity": 2, "order": { "price": 25, "days": 30 } }
+      ],
+      "bonusTags": [],
+      "refusalTags": [],
+      "refusalLine": "Not what I'm buying."
+    },
+    {
+      "id": "joachim-sparrow",
+      "name": "Joachim Sparrow",
+      "locationId": "mallory",
+      "wants": [
+        {
+          "predicate": [
+            { "tag": "cloth", "negated": false },
+            { "tag": "raw", "negated": false }
+          ],
+          "plainly": "wants raw fibre or cloth, as it comes",
+          "quantity": 3
+        }
+      ],
+      "bonusTags": [],
+      "refusalTags": [],
+      "refusalLine": "No, that isn't it."
+    }
+  ],
+  "start": { "credits": 400, "day": 1, "ship": { "speed": 4, "range": 20, "hold": 12 } }
+}
