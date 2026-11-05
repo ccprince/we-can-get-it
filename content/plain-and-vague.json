@@ -663,7 +663,7 @@
     {
       "id": "pilgrims-badge",
       "name": "Pilgrim's badge",
-      "prose": "A pilgrim's tin badge from the shrine road, a trinket rubbed bright by thumbs. Every pilgrim to Saint Ambry buys one, and every pilgrim swears theirs is the lucky one.",
+      "prose": "A pilgrim's tin badge from the shrine road, a trinket stamped with the saint who keeps it. Every pilgrim to Saint Ambry buys one, and every pilgrim swears theirs is the lucky one.",
       "kind": "curios",
       "tags": ["blessed"],
       "worth": 12
@@ -671,7 +671,7 @@
     {
       "id": "chapel-bell",
       "name": "Chapel bell",
-      "prose": "A chapel bell no taller than a thumb, cast for a shrine on Saint Ambry and consecrated while it was still warm from the mould. Pilgrims hang one over the door to keep out bad news, and it has a better record than most.",
+      "prose": "A chapel bell no taller than a thumb, cast for a shrine on Saint Ambry and consecrated there. Pilgrims hang one over the door to keep out bad news, and it has a better record than most.",
       "kind": "curios",
       "tags": ["blessed"],
       "worth": 30
