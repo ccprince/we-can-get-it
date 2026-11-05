@@ -1060,16 +1060,7 @@
       "id": "pascal-ixley",
       "name": "Pascal Ixley",
       "locationId": "corrow",
-      "wants": [
-        {
-          "predicate": [
-            { "tag": "cloth", "negated": false },
-            { "tag": "handmade", "negated": false }
-          ],
-          "plainly": "wants handmade cloth",
-          "quantity": 2
-        }
-      ],
+      "wants": [{ "kind": "cloth", "quantity": 2 }],
       "bonusTags": ["plain"],
       "refusalTags": ["loud"],
       "refusalLine": "That isn't it. I'll know the right one when it's in my hands."
@@ -1084,7 +1075,7 @@
             { "tag": "curios", "negated": false },
             { "tag": "mined", "negated": false }
           ],
-          "plainly": "wants something dug out of the rock",
+          "plainly": "wants a curio dug out of the rock",
           "quantity": 1
         }
       ],
@@ -1213,7 +1204,7 @@
             { "tag": "cloth", "negated": false },
             { "tag": "fine", "negated": false }
           ],
-          "plainly": "wants something fine to remember it by",
+          "plainly": "wants fine cloth to remember it by",
           "quantity": 2
         }
       ],
@@ -1323,7 +1314,7 @@
             { "tag": "spirits", "negated": false },
             { "tag": "storied", "negated": false }
           ],
-          "plainly": "wants an old-label bottle for the haulers",
+          "plainly": "wants a storied bottle for the haulers",
           "quantity": 2
         }
       ],
@@ -1471,7 +1462,7 @@
             { "tag": "remedies", "negated": false },
             { "tag": "bitter", "negated": false }
           ],
-          "plainly": "wants something bitter to take",
+          "plainly": "wants a bitter remedy to take",
           "quantity": 2
         }
       ],
@@ -1973,7 +1964,16 @@
       "id": "calla-mistral",
       "name": "Calla Mistral",
       "locationId": "verdance",
-      "wants": [{ "kind": "cloth", "quantity": 1 }],
+      "wants": [
+        {
+          "predicate": [
+            { "tag": "cloth", "negated": false },
+            { "tag": "rugged", "negated": false }
+          ],
+          "plainly": "wants hard-wearing cloth against the damp",
+          "quantity": 1
+        }
+      ],
       "bonusTags": ["waterproof"],
       "refusalTags": ["raw"],
       "refusalLine": "Damp does terrible things to the wrong cloth, and that is the wrong cloth."
