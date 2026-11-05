@@ -50,8 +50,7 @@ function Known({ known }: { readonly known: KnownView }) {
       <ul className="text-stone-300">
         {known.lots.map((lot) => (
           <li key={lot.good}>
-            {lot.quantity} × <GoodName name={lot.good} prose={lot.prose} /> ({lot.kind}) at{' '}
-            {lot.price} credits
+            {lot.quantity} × <GoodName good={lot} /> ({lot.kind}) at {lot.price} credits
           </li>
         ))}
         {known.people.map((person) => (

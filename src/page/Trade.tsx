@@ -68,7 +68,7 @@ function LotRow({
   return (
     <tr className="border-t border-stone-800">
       <th scope="row" className="py-1.5 font-normal text-stone-300">
-        <GoodName name={lot.good} prose={lot.prose} />
+        <GoodName good={lot} />
       </th>
       <td className="py-1.5 text-stone-400">{lot.kind}</td>
       <td className="py-1.5 text-right text-stone-300">{lot.quantity}</td>
@@ -163,7 +163,7 @@ function Match({
   return (
     <li className="flex items-center gap-2 text-stone-400">
       <span>
-        <GoodName name={match.good} prose={match.prose} />: {match.tier}
+        <GoodName good={match} />: {match.tier}
         {match.offer !== null && `, ${match.offer} credits each`}
         {match.reason !== null && ` — “${match.reason}”`}
         {match.failedTerm !== null && ' — close, but not quite what they asked for'}
@@ -251,7 +251,7 @@ export function Hold({ hold }: { readonly hold: HoldView }) {
         <ul className="mt-1 space-y-1 text-stone-300">
           {hold.cargo.map((line) => (
             <li key={line.good}>
-              {line.quantity} × <GoodName name={line.good} prose={line.prose} /> ({line.kind})
+              {line.quantity} × <GoodName good={line} /> ({line.kind})
             </li>
           ))}
         </ul>

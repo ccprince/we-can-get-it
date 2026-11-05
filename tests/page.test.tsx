@@ -550,7 +550,7 @@ describe("a good's prose", () => {
       { kind: 'buy', lot: 'kestrel/silk', quantity: 1 },
       { kind: 'buy', lot: 'kestrel/blanket', quantity: 1 },
     );
-  const card = () => screen.queryByRole('dialog', { name: 'Ship blanket' });
+  const card = () => screen.queryByRole('region', { name: 'Ship blanket' });
 
   it('is not on the page until asked for', () => {
     surfaces({ campaign: holding() });
@@ -571,6 +571,16 @@ describe("a good's prose", () => {
     expect(card()!.textContent).toBe(`Ship blanket${BLANKET}`);
 
     fireEvent.keyDown(document, { key: 'Escape' });
+
+    expect(card()).toBeNull();
+  });
+
+  it('closes the card when focus moves to another name, so one card is open at a time', () => {
+    surfaces({ campaign: holding() });
+    const [inShop, inHold] = screen.getAllByRole('button', { name: 'Ship blanket' });
+    fireEvent.click(inShop!);
+
+    fireEvent.focusIn(inHold!);
 
     expect(card()).toBeNull();
   });
