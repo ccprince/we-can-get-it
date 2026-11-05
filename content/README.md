@@ -356,10 +356,10 @@ difference is for tags to carry, not a second kind.
 nine goods to a kind, ten for cloth to carry a fourth floral good, and eleven for ore and botanicals
 so that goods outnumber wants across the galaxy.
 
-A good's tags are drawn from the cast's tastes, and once a
-kind's goods are written, the minor buyers wanting that kind state their wants plainly, as a
-predicate or as an **order**. Every order's price and window is a placeholder: the price is the
-good's worth, or near the middle of the worths a predicate order matches, and the window is 30 days.
+A good's tags are drawn from the cast's tastes, and once a kind's goods are written, the minor
+buyers wanting that kind state their wants plainly, as a predicate or as an **order**. Every
+order's price and window is a placeholder: the price is the good's worth, or near the middle of the
+worths a predicate order matches, and the window is 30 days.
 
 **Measurement revised the draft (#110).** Seven minor buyers' wants moved off provisions, the
 most-wanted kind: two became plain wants for curios and remedies, and five became vague wants, one
@@ -389,9 +389,13 @@ way findings §2.4 found balloon silk is cloth but not warm. Each want was rewor
 meets it:
 
 - Joachim wanted raw *fibre to spin*, but mill sacking and the homespun blanket are woven already.
-  He now wants raw cloth, as it comes.
-- Anders wanted a fine *instrument*, which a sealed-unit servo is not. He now wants something fine
-  for the surveyor's kit.
+  He now wants "raw fibre or cloth, as it comes", which fits them and the raw silk alike.
+- Anders wanted a fine *instrument for the surveyor*, which a sealed-unit servo and a clock
+  movement are not. He now wants "finely made machinery".
+
+The prose was read for the opposite mistake too: a good whose prose claims a tag it does not hold.
+The homespun blanket no longer outlasts a generation, since it is not `rugged`. The rose-border
+tablecloth no longer has a history, since it is not `old`.
 
 ### The map
 
