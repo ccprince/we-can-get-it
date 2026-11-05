@@ -1060,7 +1060,16 @@
       "id": "pascal-ixley",
       "name": "Pascal Ixley",
       "locationId": "corrow",
-      "wants": [{ "kind": "cloth", "quantity": 2 }],
+      "wants": [
+        {
+          "predicate": [
+            { "tag": "cloth", "negated": false },
+            { "tag": "handmade", "negated": false }
+          ],
+          "plainly": "wants handmade cloth",
+          "quantity": 2
+        }
+      ],
       "bonusTags": ["plain"],
       "refusalTags": ["loud"],
       "refusalLine": "That isn't it. I'll know the right one when it's in my hands."
@@ -1069,7 +1078,16 @@
       "id": "emeric-dunn",
       "name": "Emeric Dunn",
       "locationId": "corrow",
-      "wants": [{ "kind": "curios", "quantity": 1 }],
+      "wants": [
+        {
+          "predicate": [
+            { "tag": "curios", "negated": false },
+            { "tag": "mined", "negated": false }
+          ],
+          "plainly": "wants something dug out of the rock",
+          "quantity": 1
+        }
+      ],
       "bonusTags": ["modern"],
       "refusalTags": ["old"],
       "refusalLine": "No. It has to be what I said."
@@ -1142,7 +1160,16 @@
       "id": "wick-ardent",
       "name": "Wick Ardent",
       "locationId": "lantern",
-      "wants": [{ "kind": "provisions", "quantity": 3 }],
+      "wants": [
+        {
+          "predicate": [
+            { "tag": "provisions", "negated": false },
+            { "tag": "hearty", "negated": false }
+          ],
+          "plainly": "wants hearty food for the berths",
+          "quantity": 3
+        }
+      ],
       "bonusTags": ["keeps"],
       "refusalTags": ["perishable"],
       "refusalLine": "Someone else's berth, someone else's cargo. Not mine."
@@ -1180,7 +1207,16 @@
       "id": "fenn-alderwick",
       "name": "Fenn Alderwick",
       "locationId": "quillon",
-      "wants": [{ "kind": "cloth", "quantity": 2 }],
+      "wants": [
+        {
+          "predicate": [
+            { "tag": "cloth", "negated": false },
+            { "tag": "fine", "negated": false }
+          ],
+          "plainly": "wants something fine to remember it by",
+          "quantity": 2
+        }
+      ],
       "bonusTags": ["floral"],
       "refusalTags": ["factory"],
       "refusalLine": "I'm sorry. I wanted to remember something, and that isn't it."
@@ -1226,7 +1262,16 @@
       "id": "marit-cutler",
       "name": "Marit Cutler",
       "locationId": "gannet",
-      "wants": [{ "kind": "mechanical", "quantity": 2 }],
+      "wants": [
+        {
+          "predicate": [
+            { "tag": "mechanical", "negated": false },
+            { "tag": "heavy", "negated": false }
+          ],
+          "plainly": "wants heavy machinery for the drills",
+          "quantity": 2
+        }
+      ],
       "bonusTags": ["rugged"],
       "refusalTags": ["fine"],
       "refusalLine": "Not for the drills. I know what the drills like."
@@ -1272,7 +1317,16 @@
       "id": "oskar-brine",
       "name": "Oskar Brine",
       "locationId": "coldwater",
-      "wants": [{ "kind": "spirits", "quantity": 2 }],
+      "wants": [
+        {
+          "predicate": [
+            { "tag": "spirits", "negated": false },
+            { "tag": "storied", "negated": false }
+          ],
+          "plainly": "wants an old-label bottle for the haulers",
+          "quantity": 2
+        }
+      ],
       "bonusTags": ["strong"],
       "refusalTags": ["sweet"],
       "refusalLine": "Haulers don't drink much. They don't drink that."
@@ -1411,7 +1465,16 @@
       "id": "garrick-soames",
       "name": "Garrick Soames",
       "locationId": "hob",
-      "wants": [{ "kind": "remedies", "quantity": 2 }],
+      "wants": [
+        {
+          "predicate": [
+            { "tag": "remedies", "negated": false },
+            { "tag": "bitter", "negated": false }
+          ],
+          "plainly": "wants something bitter to take",
+          "quantity": 2
+        }
+      ],
       "bonusTags": ["pungent"],
       "refusalTags": ["burns"],
       "refusalLine": "No. It has to be what I said."
@@ -1458,7 +1521,16 @@
       "id": "rosa-tennant",
       "name": "Rosa Tennant",
       "locationId": "tamsin",
-      "wants": [{ "kind": "spirits", "quantity": 2 }],
+      "wants": [
+        {
+          "predicate": [
+            { "tag": "spirits", "negated": false },
+            { "tag": "storied", "negated": false }
+          ],
+          "plainly": "wants a bottle with a story to it",
+          "quantity": 2
+        }
+      ],
       "bonusTags": ["sweet"],
       "refusalTags": ["strong"],
       "refusalLine": "No, that isn't it."
@@ -1540,7 +1612,16 @@
       "id": "ned-fairweather",
       "name": "Ned Fairweather",
       "locationId": "brisance",
-      "wants": [{ "kind": "botanicals", "quantity": 2 }],
+      "wants": [
+        {
+          "predicate": [
+            { "tag": "botanicals", "negated": false },
+            { "tag": "medicinal", "negated": false }
+          ],
+          "plainly": "wants medicinal herbs",
+          "quantity": 2
+        }
+      ],
       "bonusTags": ["keeps"],
       "refusalTags": ["perishable"],
       "refusalLine": "Not what I'm after."
@@ -1596,7 +1677,16 @@
       "id": "nell-shuttleworth",
       "name": "Nell Shuttleworth",
       "locationId": "weft",
-      "wants": [{ "kind": "botanicals", "quantity": 2 }],
+      "wants": [
+        {
+          "predicate": [
+            { "tag": "botanicals", "negated": false },
+            { "tag": "keeps", "negated": false }
+          ],
+          "plainly": "wants plants that will keep",
+          "quantity": 2
+        }
+      ],
       "bonusTags": ["textile"],
       "refusalTags": ["medicinal"],
       "refusalLine": "The bell rang for something better than that."
@@ -1605,7 +1695,16 @@
       "id": "hilde-voss",
       "name": "Hilde Voss",
       "locationId": "weft",
-      "wants": [{ "kind": "ore", "quantity": 3 }],
+      "wants": [
+        {
+          "predicate": [
+            { "tag": "ore", "negated": false },
+            { "tag": "salvaged", "negated": false }
+          ],
+          "plainly": "wants salvaged ore for the smelter",
+          "quantity": 3
+        }
+      ],
       "bonusTags": ["common"],
       "refusalTags": ["rare"],
       "refusalLine": "Not what I'm buying."
@@ -1679,7 +1778,16 @@
       "id": "odalys-pike",
       "name": "Odalys Pike",
       "locationId": "grist",
-      "wants": [{ "kind": "provisions", "quantity": 2 }],
+      "wants": [
+        {
+          "predicate": [
+            { "tag": "provisions", "negated": false },
+            { "tag": "keeps", "negated": false }
+          ],
+          "plainly": "wants food that will keep",
+          "quantity": 2
+        }
+      ],
       "bonusTags": ["common"],
       "refusalTags": ["exotic"],
       "refusalLine": "It'll do for someone. Not here."
@@ -1725,7 +1833,16 @@
       "id": "teague-harlan",
       "name": "Teague Harlan",
       "locationId": "longacre",
-      "wants": [{ "kind": "cloth", "quantity": 2 }],
+      "wants": [
+        {
+          "predicate": [
+            { "tag": "cloth", "negated": false },
+            { "tag": "factory", "negated": false }
+          ],
+          "plainly": "wants mill cloth for the machine covers",
+          "quantity": 2
+        }
+      ],
       "bonusTags": ["rugged"],
       "refusalTags": ["fine"],
       "refusalLine": "The machines wouldn't wear that, and I'm told they aren't fussy."
@@ -1771,7 +1888,16 @@
       "id": "marguerite-lye",
       "name": "Marguerite Lye",
       "locationId": "fallow",
-      "wants": [{ "kind": "mechanical", "quantity": 2 }],
+      "wants": [
+        {
+          "predicate": [
+            { "tag": "mechanical", "negated": false },
+            { "tag": "rugged", "negated": false }
+          ],
+          "plainly": "wants machinery that will stand the fields",
+          "quantity": 2
+        }
+      ],
       "bonusTags": ["old"],
       "refusalTags": ["modern"],
       "refusalLine": "We rest half the land. We don't rest our standards."
@@ -1894,7 +2020,16 @@
       "id": "hamish-corrie",
       "name": "Hamish Corrie",
       "locationId": "harrow",
-      "wants": [{ "kind": "mechanical", "quantity": 1 }],
+      "wants": [
+        {
+          "predicate": [
+            { "tag": "mechanical", "negated": false },
+            { "tag": "handmade", "negated": false }
+          ],
+          "plainly": "wants handmade machinery for the hills",
+          "quantity": 1
+        }
+      ],
       "bonusTags": ["light"],
       "refusalTags": ["heavy"],
       "refusalLine": "The hills won't take it. Neither will I."
