@@ -28,7 +28,10 @@ does not start until it has one.
    unless the findings in step 3 add one.
 3. **Review the slice before its PR, not after**: `/mattpocock-skills:code-review <the slice's base>`,
    then take the findings in their own commit. The skeleton's review found a documented breach and a
-   real bug, and both were cheaper to fix on the branch than in a PR comment.
+   real bug, and both were cheaper to fix on the branch than in a PR comment. Mark the slice as under
+   review first, so the stop hook waits for the reviewers instead of asking for a push:
+   `git config branch.<slice>.reviewing $(git rev-parse HEAD)`. The findings' commit moves `HEAD`,
+   which clears the mark.
 4. **Push the slice, open its PR, then branch the next slice off it.** The base is `main` for the
    first slice and the previous slice's branch after that:
 

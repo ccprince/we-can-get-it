@@ -4,6 +4,10 @@ Content is data the engine receives and never imports (ADR 0003 decision 2). The
 files; the harness reads them off disk; both hand the parsed data to the same validator before the
 same engine (ADR 0009 decision 6).
 
+This file is long. Read the section you need, not the whole file:
+`` sed -n '/^### `buyers`/,/^## /p' content/README.md `` for wants and their shapes, and
+`grep -n '^#' content/README.md` for the other sections.
+
 ## The manifest
 
 `sets.json` is an ordered list of the content sets the page offers, by name, where a name is a set's

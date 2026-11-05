@@ -20,6 +20,12 @@ if [ "$(git rev-list --count origin/main..HEAD 2>/dev/null || echo 0)" = "0" ]; 
 fi
 
 if [ "$(git rev-list --count "origin/$branch..HEAD" 2>/dev/null || echo 1)" != "0" ]; then
+  # A slice whose review is running is marked with the head under review
+  # (workflow.md, step 3): let the session wait for the reviewers. A new
+  # commit, such as the review's findings, moves HEAD and re-arms the hook.
+  if [ "$(git config "branch.$branch.reviewing" 2>/dev/null)" = "$(git rev-parse HEAD)" ]; then
+    exit 0
+  fi
   echo "Slice branch '$branch' has commits that are not pushed. Review the slice, push it and open its PR (docs/agents/workflow.md, steps 3-4), then branch the next slice." >&2
   exit 2
 fi

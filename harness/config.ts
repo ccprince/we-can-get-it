@@ -13,21 +13,8 @@ import { readJson } from '../tools/files';
 /**
  * How the **tourist** moves, which is itself a measurement input: what a
  * player is exposed to depends on how they move (#6), so it is a knob here
- * rather than a hardcode in the policy.
- *
- * - `stay` — never departs. The exposure of one location, and the baseline the
- *   other two are read against.
- * - `nearest` — departs along the flyable lane of fewest days, so a run is
- *   many landings and little time in transit.
- * - `farthest` — departs along the flyable lane of most days, so a run is few
- *   landings and long hauls.
- * - `explore` — departs toward the destination the trade guide knows least:
- *   never seen first, then the stalest, fewest days among equals.
- *
- * All four are stateless reads of the view, because a policy is handed a view
- * and nothing else. `nearest` and `farthest` fly straight back the way they
- * came; `explore` avoids that without remembering, because the guide's as-of
- * dates already say where it has been (#148).
+ * rather than a hardcode in the policy. What each rule does is in the `route`
+ * table in harness/README.md, the one place it is described.
  */
 export const routeRules = ['stay', 'nearest', 'farthest', 'explore'] as const;
 
