@@ -15,19 +15,22 @@ import { readFileSync } from 'node:fs';
  * not be read.
  */
 export function readJson(path: string, soThat: string): unknown {
-  let text: string;
-  try {
-    text = readFileSync(path, 'utf8');
-  } catch (trouble) {
-    throw new Error(`${path} cannot be read, so ${soThat}`, { cause: trouble });
-  }
-
+  const text = readText(path, soThat);
   try {
     return JSON.parse(text) as unknown;
   } catch (trouble) {
     // The parser's own complaint names the line, which is the useful half, so
     // it is said out loud as well as carried as the cause.
     throw new Error(`${path} is not JSON, so ${soThat} — ${reason(trouble)}`, { cause: trouble });
+  }
+}
+
+/** The file as text, named the same way when it cannot be read: the harness's CSVs arrive so. */
+export function readText(path: string, soThat: string): string {
+  try {
+    return readFileSync(path, 'utf8');
+  } catch (trouble) {
+    throw new Error(`${path} cannot be read, so ${soThat}`, { cause: trouble });
   }
 }
 
