@@ -103,6 +103,28 @@ something a player sees. The bounds of "few" (`FEW_ANSWERS` in `csv.ts`) are a k
 Run one seed at two settings and `diff` the day files; a single pass over many seeds writes one file
 of rows, each carrying its seed.
 
+## Reading a run: `npm run curves`
+
+The curve through a run, as the Markdown table a play-test write-up quotes. It reads a day CSV the
+harness wrote and never runs the harness.
+
+```
+npm run -s curves -- harness/out/run.csv --columns placesKnown,wantsSeenVague --days 1,5,10,15,20
+npm run -s curves -- harness/out/run.csv --typical wantsSeenPlain,wantsSeenVague,placesKnown
+```
+
+- **`--columns`** prints a row per column per setting and a cell per day (every day if `--days` is
+  left out), each cell `p10/median/p90` across seeds. Percentiles are nearest-rank, so a cell is
+  always a value some seed had. Never a mean. Only columns the CSV has are offered: a column
+  derived from two, such as `ordersOpenPlain` + `ordersOpenVague`, is the reader's to add.
+- **`--typical`** names the seed with the smallest summed distance from the last day's median of
+  those columns, across every setting, with the runners-up beside it. It is how to choose the seed
+  to hand-play.
+- **Every run checks the draw.** It reads the `.draw` file beside the day file and reports any seed
+  whose galaxy shape (`motifs` to `goodsPerUsableKind`) differs between settings, since a diff
+  between settings is meaningless on that seed. The shape agreeing is necessary, not sufficient:
+  the vague-answer buckets are left out because a setting is expected to move them.
+
 ## Why it has no tests
 
 It is an instrument with a short life, and testing it would pin down the thing most expected to
