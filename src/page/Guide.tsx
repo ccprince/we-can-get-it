@@ -1,4 +1,5 @@
 import type { GuideEntryView, KnownView } from '../engine';
+import { GoodName } from './GoodName';
 
 /**
  * The **trade guide**, as its own surface. Every location is on it, visited or
@@ -49,7 +50,8 @@ function Known({ known }: { readonly known: KnownView }) {
       <ul className="text-stone-300">
         {known.lots.map((lot) => (
           <li key={lot.good}>
-            {lot.quantity} × {lot.good} ({lot.kind}) at {lot.price} credits
+            {lot.quantity} × <GoodName name={lot.good} prose={lot.prose} /> ({lot.kind}) at{' '}
+            {lot.price} credits
           </li>
         ))}
         {known.people.map((person) => (
