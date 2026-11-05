@@ -121,7 +121,7 @@ npm run -s curves -- harness/out/run.csv --typical wantsSeenPlain,wantsSeenVague
   those columns, across every setting, with the runners-up beside it. It is how to choose the seed
   to hand-play.
 - **Every run checks the draw.** It reads the `.draw` file beside the day file and reports any seed
-  whose galaxy shape (`motifs` to `goodsPerUsableKind`) differs between settings, since a diff
+  whose draw shape (`motifs` to `goodsPerUsableKind`) differs between settings, since a diff
   between settings is meaningless on that seed. The shape agreeing is necessary, not sufficient:
   the vague-answer buckets are left out because a setting is expected to move them.
 

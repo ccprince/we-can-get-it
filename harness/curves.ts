@@ -1,7 +1,8 @@
-import { existsSync, readFileSync } from 'node:fs';
+import { existsSync } from 'node:fs';
+import { readText } from '../tools/files';
 
 /**
- * Reads a day CSV the harness wrote and prints **the curve through a run**: for
+ * Reads a day CSV the harness wrote and prints **the curve through a campaign**: for
  * each setting and chosen day, the p10 / median / p90 of each chosen column
  * across seeds, as the Markdown table a play-test write-up quotes (#156). It
  * reads the file and never runs the harness.
@@ -19,11 +20,11 @@ import { existsSync, readFileSync } from 'node:fs';
 const RUNNERS_UP = 4;
 
 /**
- * Columns of the `.draw` file that describe the galaxy rather than what is
+ * Columns of the `.draw` file that hold the draw's shape rather than what is
  * wanted in it. The vague-answer buckets count wants, which a setting is
  * expected to change, so they are not part of the comparison.
  */
-const GALAXY_COLUMNS = [
+const DRAW_SHAPE_COLUMNS = [
   'motifs',
   'locations',
   'kinds',
@@ -69,7 +70,7 @@ function main(): void {
     const columns = numericColumns(table, args.typical, args.path);
     console.log(typical(table, settings, columns, days[days.length - 1] ?? 0));
   }
-  console.log(sameGalaxy(drawPathFor(args.path), settings));
+  console.log(sameDrawShape(drawPathFor(args.path), settings));
 }
 
 function parseArgs(argv: readonly string[]): Args {
@@ -183,16 +184,16 @@ function typical(
  * `.draw` file beside the day file. A diff between settings is meaningless for
  * a seed that drew two galaxies, so the answer is printed with every run.
  *
- * The draw file holds the galaxy's shape, not the galaxy, so agreement here is
+ * The draw file holds the draw's shape, not the galaxy, so agreement here is
  * necessary and not sufficient. What it can rule out, it rules out.
  */
-function sameGalaxy(drawPath: string, settings: readonly string[]): string {
+function sameDrawShape(drawPath: string, settings: readonly string[]): string {
   if (settings.length < 2) return 'One setting, so there is no draw to compare.';
   if (!existsSync(drawPath)) {
     return `No ${drawPath} beside it, so whether the settings drew the same galaxy is unchecked.`;
   }
   const draws = readCsv(drawPath);
-  const compared = GALAXY_COLUMNS.filter((column) => draws.header.includes(column));
+  const compared = DRAW_SHAPE_COLUMNS.filter((column) => draws.header.includes(column));
   const bySeed = new Map<string, Record<string, string>[]>();
   for (const row of draws.rows) {
     const seed = row.seed ?? '';
@@ -208,7 +209,7 @@ function sameGalaxy(drawPath: string, settings: readonly string[]): string {
   }
   if (differ.length === 0) {
     return (
-      `Every seed drew the same galaxy shape at every setting ` +
+      `Every seed had the same draw shape at every setting ` +
       `(${compared.join(', ')} in ${drawPath}).`
     );
   }
@@ -259,12 +260,7 @@ function distinct<T>(values: readonly T[]): T[] {
 }
 
 function readCsv(path: string): Table {
-  let text: string;
-  try {
-    text = readFileSync(path, 'utf8');
-  } catch (trouble) {
-    throw new Error(`${path} cannot be read`, { cause: trouble });
-  }
+  const text = readText(path, 'nothing can be read off it');
   const [header = [], ...records] = parseCsv(text);
   const rows = records.map((record) =>
     Object.fromEntries(header.map((column, at) => [column, record[at] ?? ''])),
