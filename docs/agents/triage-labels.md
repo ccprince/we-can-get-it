@@ -14,13 +14,20 @@ When a skill mentions a role (e.g. "apply the AFK-ready triage label"), use the 
 
 ## The rest of the tracker's labels
 
-Three further families, all of them project-specific. Apply them alongside a triage role, not
+Four further families, all of them project-specific. Apply them alongside a triage role, not
 instead of one.
 
-**`area:*` — the nine chunks of `docs/design-overview.md` §4.** Every issue belongs to one:
-`area:campaign`, `area:time`, `area:map`, `area:goods`, `area:demand`, `area:people`, `area:change`,
-`area:knowledge`, `area:content`. The chunks are ordered roughly by dependency; campaign and time are
-upstream of everything.
+**`area:*` — the nine chunks of `docs/design-overview.md` §4.** Every issue about the game belongs
+to one: `area:campaign`, `area:time`, `area:map`, `area:goods`, `area:demand`, `area:people`,
+`area:change`, `area:knowledge`, `area:content`. The chunks are ordered roughly by dependency;
+campaign and time are upstream of everything.
+
+**`tooling` — everything that is not the game.** How the project is built, checked and worked on: the
+check, formatter and hooks, the agent workflow and its scripts, the tracker tools, session
+instruments. An issue carries `tooling` or an `area:*` label, never both. An instrument that measures
+the game belongs to the game: the harness and its readers, the seed-finder and the cross-product tool
+take the area they measure. A change to how such a script is plumbed, rather than what it measures,
+is `tooling`.
 
 **Working method**, from `docs/design-overview.md` §2 and `docs/prototype-findings.md` §5.4:
 
