@@ -356,8 +356,7 @@ difference is for tags to carry, not a second kind.
 nine goods to a kind, ten for cloth to carry a fourth floral good, and eleven for ore and botanicals
 so that goods outnumber wants across the galaxy.
 
-A written good's prose is, for now, one line saying what it is, not its finished prose: that comes last,
-once measurement shows which goods survive. Its tags are drawn from the cast's tastes, and once a
+A good's tags are drawn from the cast's tastes, and once a
 kind's goods are written, the minor buyers wanting that kind state their wants plainly, as a
 predicate or as an **order**. Every order's price and window is a placeholder: the price is the
 good's worth, or near the middle of the worths a predicate order matches, and the window is 30 days.
@@ -370,9 +369,29 @@ become **characters**, since a minor buyer talks plainly: each pays more for one
 cast vague want's holder does, so that a vague want does not take a whole kind out of **thin
 demand**. Each **quirk** now sits on four goods, so that a drawn quirk is usually three.
 
-**Waterproof** carries `proof`, a tell of spirits, so every cloth good whose prose says waterproof
-is reported as reading like spirits. That is a known false tell, kept because both words are the
-right ones (#122).
+### The prose
+
+A good's prose is written to carry its **tells** the way a writer would, not as a list of them
+(#111). Mechanical, provisions and cloth goods have their finished prose. Every other good still
+has one line saying what it is.
+
+Every tell finding the cross-product report raises has been read, and the ones left standing are
+judged here rather than padded away:
+
+| Finding | Goods | Why it stands |
+| --- | --- | --- |
+| No tell of `cloth` | daisy-stitch-shawl | A shawl is knitted, not woven, and *shawl* is the better word. |
+| No tell of `provisions` | field-greens, halberd-cream-cheese, imported-tinned-peaches, orchard-figs | Each is plainly something to eat, and a **kind** is public. *Food* would be padding. |
+| Reads like `spirits` | oilskin-smock, signal-orange-tarpaulin, sweet-pea-rain-cape | **Waterproof** carries `proof`. A known false tell, kept because both words are the right ones (#122). |
+
+Writing the prose also turned up two plain wants that read wrong against the goods they reach, the
+way findings §2.4 found balloon silk is cloth but not warm. Each want was reworded to fit what
+meets it:
+
+- Joachim wanted raw *fibre to spin*, but mill sacking and the homespun blanket are woven already.
+  He now wants raw cloth, as it comes.
+- Anders wanted a fine *instrument*, which a sealed-unit servo is not. He now wants something fine
+  for the surveyor's kit.
 
 ### The map
 
