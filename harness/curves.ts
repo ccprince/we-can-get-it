@@ -1,4 +1,5 @@
 import { existsSync } from 'node:fs';
+import { parseArgs } from 'node:util';
 import { readText } from '../tools/files';
 
 /**
@@ -46,7 +47,7 @@ type Args = {
 };
 
 function main(): void {
-  const args = parseArgs(process.argv.slice(2));
+  const args = readArgs(process.argv.slice(2));
   const table = readCsv(args.path);
   for (const needed of ['setting', 'seed', 'day']) {
     if (!table.header.includes(needed)) {
@@ -73,50 +74,60 @@ function main(): void {
   console.log(sameDrawShape(drawPathFor(args.path), settings));
 }
 
-function parseArgs(argv: readonly string[]): Args {
-  const usage = 'usage: npm run curves -- <day.csv> [--columns a,b --days 1,5,10] [--typical a,b]';
-  let path: string | null = null;
-  const flags = new Map<string, string>();
-  for (let at = 0; at < argv.length; at += 1) {
-    const arg = argv[at] ?? '';
-    if (arg.startsWith('--')) {
-      const value = argv[at + 1];
-      if (value === undefined) throw new Error(`${arg} needs a value\n${usage}`);
-      flags.set(arg, value);
-      at += 1;
-    } else if (path === null) {
-      path = arg;
-    } else {
-      throw new Error(`one CSV at a time, not ${arg} as well\n${usage}`);
-    }
-  }
-  for (const flag of flags.keys()) {
-    if (!['--columns', '--days', '--typical'].includes(flag)) {
-      throw new Error(`${flag} is not a flag\n${usage}`);
-    }
-  }
-  if (path === null) throw new Error(usage);
+const USAGE = 'usage: npm run curves -- <day.csv> [--columns a,b --days 1,5,10] [--typical a,b]';
 
-  const list = (flag: string): string[] | null =>
-    flags
-      .get(flag)
-      ?.split(',')
-      .map((each) => each.trim())
-      .filter((each) => each !== '') ?? null;
-  const columns = list('--columns');
-  const typicalColumns = list('--typical');
-  if (columns === null && typicalColumns === null) {
-    throw new Error(`name --columns, --typical or both\n${usage}`);
+/**
+ * Node's own `parseArgs` owns the command line: unknown flags, a flag with no
+ * value and stray words are its to refuse. What is left here is what it cannot
+ * know — turning text into lists and days, and which flags need which.
+ */
+function readArgs(argv: string[]): Args {
+  let parsed;
+  try {
+    parsed = parseArgs({
+      args: argv,
+      options: {
+        columns: { type: 'string' },
+        days: { type: 'string' },
+        typical: { type: 'string' },
+      },
+      allowPositionals: true,
+      strict: true,
+    });
+  } catch (trouble) {
+    throw new Error(`${trouble instanceof Error ? trouble.message : String(trouble)}\n${USAGE}`, {
+      cause: trouble,
+    });
   }
-  const days = list('--days')?.map((each) => {
+  const { values, positionals } = parsed;
+  const [path, ...extra] = positionals;
+  if (path === undefined) throw new Error(USAGE);
+  if (extra.length > 0)
+    throw new Error(`one CSV at a time, not ${extra.join(' ')} as well\n${USAGE}`);
+
+  const columns = listOf(values.columns);
+  const typicalColumns = listOf(values.typical);
+  if (columns === null && typicalColumns === null) {
+    throw new Error(`name --columns, --typical or both\n${USAGE}`);
+  }
+  const days = listOf(values.days)?.map((each) => {
     const day = Number(each);
     if (!Number.isInteger(day)) throw new Error(`--days takes whole days, not ${each}`);
     return day;
   });
-  if (days !== undefined && days !== null && columns === null) {
+  if (days !== undefined && columns === null) {
     throw new Error('--days chooses the cells of the --columns table, so it needs --columns');
   }
   return { path, columns, days: days ?? null, typical: typicalColumns };
+}
+
+/** A comma-separated flag as a list, or null when the flag was not given. */
+function listOf(value: string | undefined): string[] | null {
+  if (value === undefined) return null;
+  return value
+    .split(',')
+    .map((each) => each.trim())
+    .filter((each) => each !== '');
 }
 
 /**
