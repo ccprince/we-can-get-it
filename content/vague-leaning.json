@@ -1005,7 +1005,16 @@
       "id": "wen-aldous",
       "name": "Wen Aldous",
       "locationId": "halloran",
-      "wants": [{ "kind": "cloth", "quantity": 2 }],
+      "wants": [
+        {
+          "predicate": [
+            { "tag": "cloth", "negated": false },
+            { "tag": "fine", "negated": false }
+          ],
+          "plainly": "wants something fine to sell on",
+          "quantity": 2
+        }
+      ],
       "bonusTags": [],
       "refusalTags": [],
       "refusalLine": "Not that one."
@@ -1282,7 +1291,16 @@
       "id": "kit-barlow",
       "name": "Kit Barlow",
       "locationId": "scoria",
-      "wants": [{ "kind": "mechanical", "quantity": 3 }],
+      "wants": [
+        {
+          "predicate": [
+            { "tag": "mechanical", "negated": false },
+            { "tag": "rugged", "negated": false }
+          ],
+          "plainly": "wants machinery that can take a beating",
+          "quantity": 3
+        }
+      ],
       "bonusTags": [],
       "refusalTags": [],
       "refusalLine": "That isn't what I asked for."
@@ -1291,16 +1309,7 @@
       "id": "sunniva-roth",
       "name": "Sunniva Roth",
       "locationId": "scoria",
-      "wants": [
-        {
-          "predicate": [
-            { "tag": "remedies", "negated": false },
-            { "tag": "bitter", "negated": false }
-          ],
-          "plainly": "wants a bitter tonic for the crews",
-          "quantity": 2
-        }
-      ],
+      "wants": [{ "kind": "remedies", "quantity": 2 }],
       "bonusTags": [],
       "refusalTags": [],
       "refusalLine": "Not that one."
@@ -1459,16 +1468,7 @@
       "id": "marta-ibsen",
       "name": "Marta Ibsen",
       "locationId": "brisance",
-      "wants": [
-        {
-          "predicate": [
-            { "tag": "botanicals", "negated": false },
-            { "tag": "medicinal", "negated": false }
-          ],
-          "plainly": "wants medicinal plants for the infirmary",
-          "quantity": 3
-        }
-      ],
+      "wants": [{ "kind": "botanicals", "quantity": 3 }],
       "bonusTags": [],
       "refusalTags": [],
       "refusalLine": "Wrong goods. I need the other kind."
