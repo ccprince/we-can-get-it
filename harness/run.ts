@@ -1,5 +1,6 @@
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { dirname } from 'node:path';
+import { parseArgs } from 'node:util';
 import {
   drawGalaxy,
   drawShape,
@@ -49,8 +50,30 @@ type LoadedSetting = {
   readonly policy: Policy;
 };
 
+const USAGE = 'usage: npm run harness [-- <config path>]';
+
+/**
+ * Node's own `parseArgs` refuses any flag, since the harness takes none. What
+ * is left here is that there is at most one config, and which one by default.
+ */
+function readArgs(argv: string[]): string {
+  let parsed;
+  try {
+    parsed = parseArgs({ args: argv, options: {}, allowPositionals: true, strict: true });
+  } catch (trouble) {
+    throw new Error(`${trouble instanceof Error ? trouble.message : String(trouble)}\n${USAGE}`, {
+      cause: trouble,
+    });
+  }
+  const [configPath, ...extra] = parsed.positionals;
+  if (extra.length > 0) {
+    throw new Error(`one config at a time, not ${extra.join(' ')} as well\n${USAGE}`);
+  }
+  return configPath ?? DEFAULT_CONFIG;
+}
+
 function main(): void {
-  const configPath = process.argv[2] ?? DEFAULT_CONFIG;
+  const configPath = readArgs(process.argv.slice(2));
   const config = readConfig(configPath);
 
   // Every content set is loaded up front, so a content mistake stops the run

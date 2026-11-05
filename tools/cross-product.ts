@@ -1,5 +1,6 @@
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { basename, dirname, extname } from 'node:path';
+import { parseArgs } from 'node:util';
 import { crossProduct, drawGalaxy, loadContent } from '../src/engine';
 import type { CrossProduct, DrawnGalaxy, Problem } from '../src/engine';
 import { markdown } from './cross-product-markdown';
@@ -71,28 +72,37 @@ type Asked = {
 
 const USAGE = 'usage: npm run report -- <content set> [--seed <n>] [--out <path>]';
 
-function parse(args: readonly string[]): Asked {
-  let contentPath: string | undefined;
-  let seed: number | null = null;
-  let out: string | undefined;
-  for (let at = 0; at < args.length; at += 1) {
-    const word = args[at];
-    if (word === '--seed') {
-      const value = Number(args[(at += 1)]);
-      if (!Number.isInteger(value)) throw new Error(`--seed wants a whole number. ${USAGE}`);
-      seed = value;
-    } else if (word === '--out') {
-      const value = args[(at += 1)];
-      if (value === undefined) throw new Error(`--out wants a path. ${USAGE}`);
-      out = value;
-    } else if (word !== undefined && !word.startsWith('--') && contentPath === undefined) {
-      contentPath = word;
-    } else {
-      throw new Error(`${word ?? ''} is not understood. ${USAGE}`);
-    }
+/**
+ * Node's own `parseArgs` refuses unknown flags, a flag with no value and stray
+ * words. What is left here is what it cannot know: that the seed is a whole
+ * number, and that there is exactly one content set.
+ */
+function parse(argv: string[]): Asked {
+  let parsed;
+  try {
+    parsed = parseArgs({
+      args: argv,
+      options: { seed: { type: 'string' }, out: { type: 'string' } },
+      allowPositionals: true,
+      strict: true,
+    });
+  } catch (trouble) {
+    throw new Error(`${trouble instanceof Error ? trouble.message : String(trouble)}\n${USAGE}`, {
+      cause: trouble,
+    });
   }
+  const { values, positionals } = parsed;
+  const [contentPath, ...extra] = positionals;
   if (contentPath === undefined) throw new Error(USAGE);
-  return { contentPath, seed, out: out ?? defaultOut(contentPath) };
+  if (extra.length > 0) {
+    throw new Error(`one content set at a time, not ${extra.join(' ')} as well\n${USAGE}`);
+  }
+  let seed: number | null = null;
+  if (values.seed !== undefined) {
+    seed = Number(values.seed);
+    if (!Number.isInteger(seed)) throw new Error(`--seed wants a whole number\n${USAGE}`);
+  }
+  return { contentPath, seed, out: values.out ?? defaultOut(contentPath) };
 }
 
 try {
