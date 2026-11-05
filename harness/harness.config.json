@@ -23,6 +23,11 @@
       "name": "plain-leaning",
       "contentPath": "content/plain-leaning.json",
       "route": "nearest"
+    },
+    {
+      "name": "vague-leaning",
+      "contentPath": "content/vague-leaning.json",
+      "route": "nearest"
     }
   ]
 }

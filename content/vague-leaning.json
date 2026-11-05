@@ -1005,16 +1005,7 @@
       "id": "wen-aldous",
       "name": "Wen Aldous",
       "locationId": "halloran",
-      "wants": [
-        {
-          "predicate": [
-            { "tag": "cloth", "negated": false },
-            { "tag": "fine", "negated": false }
-          ],
-          "plainly": "wants something fine to sell on",
-          "quantity": 2
-        }
-      ],
+      "wants": [{ "kind": "cloth", "quantity": 2 }],
       "bonusTags": [],
       "refusalTags": [],
       "refusalLine": "Not that one."
@@ -1106,16 +1097,7 @@
       "id": "lars-odegaard",
       "name": "Lars Odegaard",
       "locationId": "ambry",
-      "wants": [
-        {
-          "predicate": [
-            { "tag": "cloth", "negated": false },
-            { "tag": "plain", "negated": false }
-          ],
-          "plainly": "wants plain cloth, nothing bright",
-          "quantity": 3
-        }
-      ],
+      "wants": [{ "kind": "cloth", "quantity": 3 }],
       "bonusTags": [],
       "refusalTags": [],
       "refusalLine": "Not what I'm buying."
@@ -1124,16 +1106,7 @@
       "id": "mina-okafor",
       "name": "Mina Okafor",
       "locationId": "ambry",
-      "wants": [
-        {
-          "predicate": [
-            { "tag": "curios", "negated": false },
-            { "tag": "mined", "negated": false }
-          ],
-          "plainly": "wants keepsakes dug from the deep rock",
-          "quantity": 2
-        }
-      ],
+      "wants": [{ "kind": "curios", "quantity": 2 }],
       "bonusTags": [],
       "refusalTags": [],
       "refusalLine": "No, that isn't it."
@@ -1151,16 +1124,7 @@
       "id": "cato-reeve",
       "name": "Cato Reeve",
       "locationId": "lantern",
-      "wants": [
-        {
-          "predicate": [
-            { "tag": "spirits", "negated": false },
-            { "tag": "sweet", "negated": false }
-          ],
-          "plainly": "wants something sweet for the quayside",
-          "quantity": 3
-        }
-      ],
+      "wants": [{ "kind": "spirits", "quantity": 3 }],
       "bonusTags": [],
       "refusalTags": [],
       "refusalLine": "That isn't what I asked for."
@@ -1254,16 +1218,7 @@
       "id": "nadia-fenwick",
       "name": "Nadia Fenwick",
       "locationId": "gannet",
-      "wants": [
-        {
-          "predicate": [
-            { "tag": "spirits", "negated": false },
-            { "tag": "strong", "negated": false }
-          ],
-          "plainly": "wants strong drink for the crews",
-          "quantity": 4
-        }
-      ],
+      "wants": [{ "kind": "spirits", "quantity": 4 }],
       "bonusTags": [],
       "refusalTags": [],
       "refusalLine": "I can't use that."
@@ -1327,16 +1282,7 @@
       "id": "kit-barlow",
       "name": "Kit Barlow",
       "locationId": "scoria",
-      "wants": [
-        {
-          "predicate": [
-            { "tag": "mechanical", "negated": false },
-            { "tag": "rugged", "negated": false }
-          ],
-          "plainly": "wants machinery that can take a beating",
-          "quantity": 3
-        }
-      ],
+      "wants": [{ "kind": "mechanical", "quantity": 3 }],
       "bonusTags": [],
       "refusalTags": [],
       "refusalLine": "That isn't what I asked for."
@@ -1476,16 +1422,7 @@
       "id": "abel-crane",
       "name": "Abel Crane",
       "locationId": "anvil",
-      "wants": [
-        {
-          "predicate": [
-            { "tag": "ore", "negated": false },
-            { "tag": "salvaged", "negated": true }
-          ],
-          "plainly": "wants ore from the ground, not scrap",
-          "quantity": 3
-        }
-      ],
+      "wants": [{ "kind": "ore", "quantity": 3 }],
       "bonusTags": [],
       "refusalTags": [],
       "refusalLine": "That isn't what I asked for."
@@ -1734,16 +1671,7 @@
       "id": "thea-lowry",
       "name": "Thea Lowry",
       "locationId": "longacre",
-      "wants": [
-        {
-          "predicate": [
-            { "tag": "mechanical", "negated": false },
-            { "tag": "light", "negated": false }
-          ],
-          "plainly": "wants something light enough to carry out to the field",
-          "quantity": 2
-        }
-      ],
+      "wants": [{ "kind": "mechanical", "quantity": 2 }],
       "bonusTags": [],
       "refusalTags": [],
       "refusalLine": "No. It has to be what I said."
@@ -1780,16 +1708,7 @@
       "id": "bea-ashgrove",
       "name": "Bea Ashgrove",
       "locationId": "fallow",
-      "wants": [
-        {
-          "predicate": [
-            { "tag": "cloth", "negated": false },
-            { "tag": "waterproof", "negated": false }
-          ],
-          "plainly": "wants something that keeps the rain off",
-          "quantity": 2
-        }
-      ],
+      "wants": [{ "kind": "cloth", "quantity": 2 }],
       "bonusTags": [],
       "refusalTags": [],
       "refusalLine": "Not what I'm buying."
@@ -1912,16 +1831,7 @@
       "id": "anders-kell",
       "name": "Anders Kell",
       "locationId": "harrow",
-      "wants": [
-        {
-          "predicate": [
-            { "tag": "mechanical", "negated": false },
-            { "tag": "fine", "negated": false }
-          ],
-          "plainly": "wants finely made machinery",
-          "quantity": 1
-        }
-      ],
+      "wants": [{ "kind": "mechanical", "quantity": 1 }],
       "bonusTags": [],
       "refusalTags": [],
       "refusalLine": "I can't use that."
@@ -1950,16 +1860,7 @@
       "id": "joachim-sparrow",
       "name": "Joachim Sparrow",
       "locationId": "mallory",
-      "wants": [
-        {
-          "predicate": [
-            { "tag": "cloth", "negated": false },
-            { "tag": "raw", "negated": false }
-          ],
-          "plainly": "wants raw fibre or cloth, as it comes",
-          "quantity": 3
-        }
-      ],
+      "wants": [{ "kind": "cloth", "quantity": 3 }],
       "bonusTags": [],
       "refusalTags": [],
       "refusalLine": "No, that isn't it."
