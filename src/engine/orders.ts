@@ -2,6 +2,7 @@ import type { Campaign, DigestEntry } from './campaign';
 import type { CommandResult } from './commands';
 import { goodNamed } from './galaxy';
 import { matchOf } from './match';
+import { isOrder } from './want';
 import {
   delivered,
   lastDayOf,
@@ -30,7 +31,7 @@ import {
 export function showingOrders(campaign: Campaign): Campaign {
   const fresh = peopleHere(campaign)
     .flatMap((buyer) => openWants(campaign, buyer))
-    .filter(({ id, want }) => want.order !== undefined && !seenBefore(campaign, id))
+    .filter(({ id, want }) => isOrder(want) && !seenBefore(campaign, id))
     .map(({ id }) => ({ want: id, day: campaign.day }));
   return fresh.length === 0
     ? campaign
@@ -61,7 +62,7 @@ export function accept(campaign: Campaign, wantId: string): CommandResult {
       rejected: { code: 'no-such-want', message: 'Nobody here is after that, or not any longer.' },
     };
   }
-  if (open.want.order === undefined) {
+  if (!isOrder(open.want)) {
     return {
       rejected: {
         code: 'not-an-order',

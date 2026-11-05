@@ -3,6 +3,7 @@ import type { CommandResult } from './commands';
 import type { Buyer, Want } from './content';
 import { goodNamed } from './galaxy';
 import { matchOf } from './match';
+import { isOrder } from './want';
 
 /**
  * Selling a unit of a good to a buyer, against one of their wants. **Trade is
@@ -32,7 +33,7 @@ export type OpenWant = {
  */
 export function lastDayOf(campaign: Campaign, wantId: string, want: Want): number | null {
   const seen = campaign.firstSeen.find((each) => each.want === wantId);
-  return want.order === undefined || seen === undefined ? null : seen.day + want.order.days;
+  return !isOrder(want) || seen === undefined ? null : seen.day + want.order.days;
 }
 
 /** The people standing where the player is, in id order: none in **transit**. */
@@ -102,7 +103,7 @@ export function sell(
     };
   }
 
-  if (open.want.order !== undefined) {
+  if (isOrder(open.want)) {
     return {
       rejected: {
         code: 'is-an-order',

@@ -1,7 +1,15 @@
 import { dateOf, type CalendarDate } from './calendar';
 import type { Campaign, DigestEntry } from './campaign';
 import { departureTo, offeredCommands, type Command } from './commands';
-import type { Archetype, Buyer, Good, Lane, Want } from './content';
+import {
+  registerOf,
+  type Archetype,
+  type Buyer,
+  type Good,
+  type Lane,
+  type Register,
+  type Want,
+} from './content';
 import { goodNamed, locationNamed, personNamed, type DrawnGalaxy } from './galaxy';
 import { sightingHere, wordCorrection, type Sighting } from './knowledge';
 import { daysToFly, fareToFly, otherEnd, withinRange } from './map';
@@ -9,6 +17,7 @@ import { isAnswer, matchOf, tierOf, type Tier } from './match';
 import { isAccepted } from './orders';
 import { lastDayOf, mostYouCanSell, openWants, peopleHere, type OpenWant } from './selling';
 import { holdUsed, lotsHere, mostYouCanBuy } from './trade';
+import { isOrder, wordingOf } from './want';
 import type { Point } from './layout';
 
 /**
@@ -100,12 +109,6 @@ export type AcceptedOrderView = {
   readonly by: CalendarDate;
   readonly daysLeft: number;
 };
-
-/**
- * The two registers a want is said in: **plain** names what would satisfy it,
- * **vague** names only a kind and leaves the finding to the player.
- */
-export type Register = 'plain' | 'vague';
 
 export type MatchView = {
   readonly good: string;
@@ -600,7 +603,7 @@ function wantFor(campaign: Campaign, open: OpenWant): WantView {
       const good = goodNamed(galaxy, goodId);
       const { tier, failedTerm, offer: computed } = matchOf(want, buyer, good, content.offers);
       // An order pays what it states, and only at acceptable or better.
-      const offer = want.order === undefined ? computed : isAnswer(tier) ? want.order.price : null;
+      const offer = !isOrder(want) ? computed : isAnswer(tier) ? want.order.price : null;
       return {
         good: good.name,
         prose: good.prose,
@@ -610,31 +613,16 @@ function wantFor(campaign: Campaign, open: OpenWant): WantView {
         reason: tier === 'refused' ? buyer.refusalLine : null,
         sale: { want: id, good: goodId },
         mostYouCanSell: mostYouCanSell(open, quantity, offer),
-        verb: want.order === undefined ? 'sell' : 'fill',
-        available: want.order === undefined || isAccepted(campaign, id),
+        verb: isOrder(want) ? 'fill' : 'sell',
+        available: !isOrder(want) || isAccepted(campaign, id),
       };
     }),
   };
 }
 
-/**
- * A want as it is said: a good by its name, a predicate in the buyer's own
- * words, a vague want as a gesture at its kind. A kind is public vocabulary, so
- * naming it gives nothing away (ADR 0007 decision 3).
- */
-export function wordingOf(galaxy: Pick<DrawnGalaxy, 'goods'>, want: Want): string {
-  if ('goodId' in want) return `wants ${goodNamed(galaxy, want.goodId).name}`;
-  if ('kind' in want) return `is after anything at all in ${want.kind}`;
-  return want.plainly;
-}
-
-export function registerOf(want: Want): Register {
-  return 'kind' in want ? 'vague' : 'plain';
-}
-
 function orderTermsOf(campaign: Campaign, { id, want }: OpenWant): OrderTermsView | null {
   const last = lastDayOf(campaign, id, want);
-  if (want.order === undefined || last === null) return null;
+  if (!isOrder(want) || last === null) return null;
   const accepted = isAccepted(campaign, id);
   return {
     price: want.order.price,
