@@ -45,6 +45,8 @@ export type {
   PlacedSlot,
   SlotFilling,
   Survey,
+  WantAnswered,
+  WantsAtKind,
 } from './cross-product';
 export type { Spread } from './content-reports';
 

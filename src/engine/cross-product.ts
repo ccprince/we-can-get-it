@@ -1,4 +1,12 @@
-import { roleTags, type ContentSet, type Motif, type Tag } from './content';
+import {
+  roleTags,
+  type Buyer,
+  type ContentSet,
+  type Good,
+  type Motif,
+  type Tag,
+  type Want,
+} from './content';
 import {
   holds,
   missingTell,
@@ -9,7 +17,9 @@ import {
 } from './content-reports';
 import { locationNamed, type DrawnBack, type DrawnGalaxy } from './galaxy';
 import { drawnLength, worstDistortion } from './layout';
+import { tierOf, type Tier } from './match';
 import { judge, type Report } from './verdicts';
+import { registerOf, wordingOf, type Register } from './view';
 
 /**
  * The **cross-product report** (ADR 0007 decision 18): what a writer has
@@ -93,6 +103,42 @@ export type Survey = {
   readonly missingTells: readonly Report[];
   /** Goods whose prose carries the tells of a tag they do not hold. */
   readonly strayTells: readonly Report[];
+  /** The wants at each kind, by register, in kind id order. */
+  readonly wantsPerKind: readonly WantsAtKind[];
+  /**
+   * Each want and how the goods answer it, **unanswered first**: a want no good
+   * reaches acceptable for is a judgement for the writer, never a failure. Then
+   * in buyer id and want order.
+   */
+  readonly answersPerWant: readonly WantAnswered[];
+};
+
+/**
+ * How many wants point at one kind, in each register, with orders counted
+ * apart from speculative wants: counts, never a ratio alone. A plain want's
+ * kind is the good's it names, or the kind term of its predicate. `kind` is
+ * null for the plain wants whose predicate names no kind of the set surveyed,
+ * which is listed only when there are any.
+ */
+export type WantsAtKind = {
+  readonly kind: string | null;
+  /** Speculative wants, by register. */
+  readonly vague: number;
+  readonly plain: number;
+  readonly orders: { readonly vague: number; readonly plain: number };
+};
+
+export type WantAnswered = {
+  /** The want, as `buyers.<buyer>.wants[<index>]`. */
+  readonly where: string;
+  /** As the player is shown it. */
+  readonly wording: string;
+  readonly register: Register;
+  readonly order: boolean;
+  /** The best match tier any good surveyed earns against it, by the engine's own match. */
+  readonly best: Tier;
+  /** How many goods earn acceptable or better. */
+  readonly answers: number;
 };
 
 export type Drawn = Survey & {
@@ -249,5 +295,60 @@ function survey(
           ),
         ),
     ),
+    wantsPerKind: wantsPerKind(tags, subject),
+    answersPerWant: answersPerWant(subject),
+  };
+}
+
+function wantsPerKind(
+  tags: readonly Tag[],
+  subject: Pick<ContentSet, 'goods' | 'buyers'>,
+): readonly WantsAtKind[] {
+  const kinds = tags.filter((tag) => tag.class === 'kind').map((tag) => tag.id);
+  const kindOf = (want: Want): string | null => {
+    if ('kind' in want) return want.kind;
+    if ('goodId' in want) {
+      return subject.goods.find((good) => good.id === want.goodId)?.kind ?? null;
+    }
+    return want.predicate.find((term) => !term.negated && kinds.includes(term.tag))?.tag ?? null;
+  };
+  const wants = subject.buyers.flatMap((buyer) => buyer.wants);
+  const counted = (kind: string | null): WantsAtKind => {
+    const at = wants.filter((want) => kindOf(want) === kind);
+    const count = (register: Register, order: boolean) =>
+      at.filter((want) => registerOf(want) === register && (want.order !== undefined) === order)
+        .length;
+    return {
+      kind,
+      vague: count('vague', false),
+      plain: count('plain', false),
+      orders: { vague: count('vague', true), plain: count('plain', true) },
+    };
+  };
+  const nowhere = wants.some((want) => kindOf(want) === null) ? [counted(null)] : [];
+  return [...kinds.map(counted), ...nowhere];
+}
+
+const TIERS: readonly Tier[] = ['refused', 'grudging', 'acceptable', 'great'];
+
+function answersPerWant(subject: Pick<ContentSet, 'goods' | 'buyers'>): readonly WantAnswered[] {
+  const answered = subject.buyers.flatMap((buyer) =>
+    buyer.wants.map((want, index) => answering(subject.goods, buyer, want, index)),
+  );
+  return [
+    ...answered.filter(({ answers }) => answers === 0),
+    ...answered.filter(({ answers }) => answers > 0),
+  ];
+}
+
+function answering(goods: readonly Good[], buyer: Buyer, want: Want, index: number): WantAnswered {
+  const tiers = goods.map((good) => TIERS.indexOf(tierOf(want, buyer, good).tier));
+  return {
+    where: `buyers.${buyer.id}.wants[${index}]`,
+    wording: wordingOf({ goods }, want),
+    register: registerOf(want),
+    order: want.order !== undefined,
+    best: TIERS[Math.max(0, ...tiers)] ?? 'refused',
+    answers: tiers.filter((tier) => tier >= TIERS.indexOf('acceptable')).length,
   };
 }

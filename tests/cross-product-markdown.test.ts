@@ -9,8 +9,10 @@ import {
   aGood,
   aTag,
   aTradingGalaxy,
+  aWant,
   aWantForGood,
   anArchetype,
+  anOrder,
 } from './support/content';
 
 /**
@@ -43,15 +45,24 @@ describe('the cross-product report as Markdown', () => {
       '## As written: goods per role tag',
       '## As written: prose missing the tells of a tag the good holds',
       '## As written: prose carrying the tells of a tag the good does not hold',
+      '## As written: wants per kind, by register',
+      '## As written: answers per want',
       '## Drawn: goods per kind',
       '## Drawn: goods per role tag',
       '## Drawn: prose missing the tells of a tag the good holds',
       '## Drawn: prose carrying the tells of a tag the good does not hold',
+      '## Drawn: wants per kind, by register',
+      '## Drawn: answers per want',
       '## Drawn: goods hidden',
       '## Drawn: slots placed',
       '## Drawn: inter-motif stretch',
     ]);
     expect(text).toContain('- 3 goods: cloth');
+    expect(text).toContain('- cloth: 0 vague, 1 plain; orders: 0 vague, 0 plain\n');
+    expect(text).toContain(
+      '- `buyers.ilse.wants[0]` wants something warm to sleep under (plain): ' +
+        'best great, 2 goods at acceptable or better\n',
+    );
     expect(text).toContain('- hidden 0 of 5 (0%) against 0% declared; 0 drawn back\n\n');
   });
 
@@ -139,5 +150,49 @@ describe('the cross-product report as Markdown', () => {
 
     expect(text).toMatch(/## Problems[\s\S]*- \*\*fails\*\* `fareRate`/);
     expect(text).not.toContain('## Motif Slots');
+  });
+});
+
+describe('answers per want, as Markdown', () => {
+  it('lists a want nothing answers first, marked for a writer to judge', () => {
+    const loaded = loadContent(
+      aContentSet(
+        aTradingGalaxy({
+          buyers: [
+            aBuyer(),
+            aBuyer({
+              id: 'osk',
+              name: 'Osk',
+              bonusTags: [],
+              wants: [
+                aWant({
+                  predicate: [{ tag: 'tools' }, { tag: 'warm' }],
+                  plainly: 'wants warm tools',
+                  ...anOrder(),
+                }),
+              ],
+            }),
+          ],
+        }),
+      ),
+    );
+    if (!loaded.ok) throw new Error('the fixture did not load');
+
+    const text = markdown({
+      contentPath: 'fixture.json',
+      seed: null,
+      problems: [],
+      reports: loaded.reports,
+      drawProblems: [],
+      crossProduct: crossProduct(loaded.content, null),
+    });
+
+    expect(text).toContain(
+      '## As written: answers per want\n\n' +
+        'Each want, by buyer: the best match tier any good reaches for it, and how many goods ' +
+        'reach acceptable or better. Unanswered first.\n\n' +
+        '- **judge** `buyers.osk.wants[0]` wants warm tools (plain, order): ' +
+        'best grudging, no good at acceptable or better\n',
+    );
   });
 });
