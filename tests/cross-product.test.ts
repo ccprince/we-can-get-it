@@ -11,7 +11,11 @@ import {
   aMotif,
   aSlot,
   aTradingGalaxy,
+  aVagueWant,
+  aWant,
+  aWantForGood,
   anArchetype,
+  anOrder,
   loadedContentSet,
 } from './support/content';
 
@@ -166,5 +170,121 @@ describe('the cross-product report', () => {
     const content = loadedContentSet(aGalaxy());
 
     expect(crossProduct(content, null).drawn).toBeNull();
+  });
+});
+
+describe('the cross-product report on wants', () => {
+  it('counts the wants at each kind by register, keeping orders apart', () => {
+    const content = loadedContentSet(
+      aTradingGalaxy({
+        buyers: [
+          aBuyer({
+            wants: [
+              aWant(),
+              aWantForGood('silk'),
+              aVagueWant('cloth'),
+              aWant({ predicate: [{ tag: 'tools' }], plainly: 'wants tools', ...anOrder() }),
+            ],
+          }),
+          aBuyer({
+            id: 'osk',
+            name: 'Osk',
+            bonusTags: [],
+            wants: [aVagueWant('cloth', anOrder())],
+          }),
+        ],
+      }),
+    );
+
+    expect(crossProduct(content, null).asWritten.wantsPerKind).toEqual([
+      { kind: 'cloth', vague: 1, plain: 2, orders: { vague: 1, plain: 0 } },
+      { kind: 'tools', vague: 0, plain: 0, orders: { vague: 0, plain: 1 } },
+    ]);
+  });
+
+  it('gives each want its best tier and how many goods answer it, unanswered first', () => {
+    // Ilse wants warm cloth and has a bonus in warm, so the blanket and the
+    // quilt are great; Osk wants warm tools, which only half-fit anything.
+    const content = loadedContentSet(
+      aTradingGalaxy({
+        buyers: [
+          aBuyer(),
+          aBuyer({
+            id: 'osk',
+            name: 'Osk',
+            bonusTags: [],
+            wants: [
+              aWant({ predicate: [{ tag: 'tools' }], plainly: 'wants tools' }),
+              aWant({
+                predicate: [{ tag: 'tools' }, { tag: 'warm' }],
+                plainly: 'wants warm tools',
+              }),
+            ],
+          }),
+        ],
+      }),
+    );
+
+    expect(crossProduct(content, null).asWritten.answersPerWant).toEqual([
+      {
+        where: 'buyers.osk.wants[1]',
+        wording: 'wants warm tools',
+        register: 'plain',
+        order: false,
+        best: 'grudging',
+        answers: 0,
+      },
+      {
+        where: 'buyers.ilse.wants[0]',
+        wording: 'wants something warm to sleep under',
+        register: 'plain',
+        order: false,
+        best: 'great',
+        answers: 2,
+      },
+      {
+        where: 'buyers.osk.wants[0]',
+        wording: 'wants tools',
+        register: 'plain',
+        order: false,
+        best: 'acceptable',
+        answers: 2,
+      },
+    ]);
+  });
+
+  it('counts the answers among the goods and people the draw kept', () => {
+    // Every good is rolled hidden; the floor of one draws back one cloth.
+    const content = loadedContentSet({
+      archetypes: [anArchetype({ supplies: ['cloth'] })],
+      tags: [aTag()],
+      goods: [
+        aGood(),
+        aGood({ id: 'linen', name: 'Linen' }),
+        aGood({ id: 'canvas', name: 'Canvas' }),
+      ],
+      buyers: [aBuyer({ bonusTags: [], wants: [aVagueWant('cloth')] })],
+      bounds: aBounds({ usabilityFloor: 1 }),
+      drawParameters: aDrawParameters({ goodsHiddenPercent: 100 }),
+    });
+    const drawn = drawGalaxy(content, 1);
+    if (!drawn.ok) throw new Error('the fixture did not draw');
+
+    const report = crossProduct(content, drawn.galaxy);
+
+    expect(report.asWritten.answersPerWant.map(({ answers }) => answers)).toEqual([3]);
+    expect(report.drawn?.answersPerWant).toEqual([
+      {
+        where: 'buyers.ilse.wants[0]',
+        wording: 'is after anything at all in cloth',
+        register: 'vague',
+        order: false,
+        best: 'acceptable',
+        answers: 1,
+      },
+    ]);
+    expect(report.drawn?.wantsPerKind).toEqual([
+      { kind: 'cloth', vague: 1, plain: 0, orders: { vague: 0, plain: 0 } },
+    ]);
   });
 });

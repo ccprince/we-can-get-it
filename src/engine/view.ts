@@ -628,13 +628,13 @@ function wantFor(campaign: Campaign, open: OpenWant): WantView {
  * words, a vague want as a gesture at its kind. A kind is public vocabulary, so
  * naming it gives nothing away (ADR 0007 decision 3).
  */
-function wordingOf(galaxy: DrawnGalaxy, want: Want): string {
+export function wordingOf(galaxy: Pick<DrawnGalaxy, 'goods'>, want: Want): string {
   if ('goodId' in want) return `wants ${goodNamed(galaxy, want.goodId).name}`;
   if ('kind' in want) return `is after anything at all in ${want.kind}`;
   return want.plainly;
 }
 
-function registerOf(want: Want): Register {
+export function registerOf(want: Want): Register {
   return 'kind' in want ? 'vague' : 'plain';
 }
 

@@ -1,4 +1,13 @@
-import type { CrossProduct, GoodsHidden, Problem, Report, Spread, Survey } from '../src/engine';
+import type {
+  CrossProduct,
+  GoodsHidden,
+  Problem,
+  Report,
+  Spread,
+  Survey,
+  WantAnswered,
+  WantsAtKind,
+} from '../src/engine';
 
 /**
  * The cross-product report as Markdown. This only **formats** what the engine
@@ -186,7 +195,34 @@ function survey(name: string, surveyed: Survey): readonly string[] {
     '',
     ...entries(surveyed.strayTells, 'none'),
     '',
+    `## ${name}: wants per kind, by register`,
+    '',
+    'Speculative wants, then orders, each split vague and plain. Counts, never a ratio alone.',
+    '',
+    ...(surveyed.wantsPerKind.length === 0 ? ['- none'] : surveyed.wantsPerKind.map(atKind)),
+    '',
+    `## ${name}: answers per want`,
+    '',
+    'Each want, by buyer: the best match tier any good reaches for it, and how many goods ' +
+      'reach acceptable or better. Unanswered first.',
+    '',
+    ...(surveyed.answersPerWant.length === 0 ? ['- none'] : surveyed.answersPerWant.map(answered)),
+    '',
   ];
+}
+
+function atKind({ kind, vague, plain, orders }: WantsAtKind): string {
+  return (
+    `- ${kind ?? 'no kind'}: ${vague} vague, ${plain} plain; ` +
+    `orders: ${orders.vague} vague, ${orders.plain} plain`
+  );
+}
+
+function answered({ where, wording, register, order, best, answers }: WantAnswered): string {
+  const said = `\`${where}\` ${wording} (${register}${order ? ', order' : ''}): best ${best}`;
+  return answers === 0
+    ? `- **judge** ${said}, no good at acceptable or better`
+    : `- ${said}, ${answers} ${answers === 1 ? 'good' : 'goods'} at acceptable or better`;
 }
 
 function distribution(counted: Spread): readonly string[] {
