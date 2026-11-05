@@ -799,7 +799,7 @@
     {
       "id": "bog-iron",
       "name": "Bog iron",
-      "prose": "Bog iron raked up from a swamp moon's shallows: cheap ore, sold by the tonne.",
+      "prose": "Bog iron raked up from the shallows of a swamp moon, rusty lumps of it by the tonne. It is the cheapest ore there is, and nobody has ever run short of it.",
       "kind": "ore",
       "tags": ["common"],
       "worth": 10
@@ -807,7 +807,7 @@
     {
       "id": "reworked-tailings",
       "name": "Reworked tailings",
-      "prose": "Tailings reclaimed from a spent working and run again, cheap ore with little left in it.",
+      "prose": "Tailings reclaimed from a spent working and run through the crushers again: grey grit with a little ore still in it. It is cheap, and worth exactly what it costs.",
       "kind": "ore",
       "tags": ["salvaged", "common"],
       "worth": 12
@@ -815,7 +815,7 @@
     {
       "id": "smelter-slag",
       "name": "Smelter slag",
-      "prose": "Slag reclaimed from the heaps behind a smelter and crushed for the ore still in it.",
+      "prose": "Slag reclaimed from the heaps behind an Anvil smelter and crushed for the ore the first firing missed. It rings like glass when it is tipped into a hold.",
       "kind": "ore",
       "tags": ["salvaged"],
       "worth": 14
@@ -823,7 +823,7 @@
     {
       "id": "hull-plate-scrap",
       "name": "Hull-plate scrap",
-      "prose": "Hull plate salvaged from a breaker's yard and baled, sold by assay like any ore.",
+      "prose": "Hull plate salvaged from a breaker's yard, cut into squares and baled. It was a ship once; now it is iron of a known assay, and it melts like any other.",
       "kind": "ore",
       "tags": ["salvaged"],
       "worth": 18
@@ -831,7 +831,7 @@
     {
       "id": "pyrite",
       "name": "Pyrite",
-      "prose": "Pyrite from a sulphur seam, an ore that has fooled many a prospector.",
+      "prose": "Pyrite from a sulphur seam, gold-bright cubes of iron that have fooled many a prospector and paid none of them. Smelters take it for the iron and the sulphur both.",
       "kind": "ore",
       "tags": [],
       "worth": 20
@@ -839,7 +839,7 @@
     {
       "id": "galena",
       "name": "Galena",
-      "prose": "Galena in grey cubes, lead ore with a dull shine.",
+      "prose": "Galena in grey cubes with a dull shine: lead ore broken straight from the seam, weighing twice what it looks as if it should.",
       "kind": "ore",
       "tags": [],
       "worth": 25
@@ -847,7 +847,7 @@
     {
       "id": "assayed-tin",
       "name": "Assayed tin",
-      "prose": "Tin ore, assayed high-grade and bagged with its certificate.",
+      "prose": "Tin ore, assayed high-grade where it was dug and bagged with the certificate sewn to the sack. A smelter can pour it without asking a single question.",
       "kind": "ore",
       "tags": ["pure"],
       "worth": 30
@@ -855,7 +855,7 @@
     {
       "id": "copper-ore",
       "name": "Copper ore",
-      "prose": "Copper ore pure enough to show green at a scratch, from a rich seam.",
+      "prose": "Copper ore pure enough to show green at a scratch, out of a rich seam on Scoria. It goes into the furnace very nearly as it came out of the ground.",
       "kind": "ore",
       "tags": ["pure"],
       "worth": 35
@@ -863,7 +863,7 @@
     {
       "id": "bismuth",
       "name": "Bismuth",
-      "prose": "Bismuth crystal in rainbow stairsteps, a rare ore few smelters ever see.",
+      "prose": "Bismuth crystal grown in rainbow stairsteps, a rare ore that few smelters ever see and fewer want to melt. Most of it ends up on a collector's shelf.",
       "kind": "ore",
       "tags": ["rare"],
       "worth": 40
@@ -871,7 +871,7 @@
     {
       "id": "meteoric-iron",
       "name": "Meteoric iron",
-      "prose": "Meteoric iron cut from a fallen star, a freak ore laced with nickel.",
+      "prose": "Meteoric iron dug out of the crater where it fell, a freak lump of star laced with nickel. Smiths pay for it by the gram and make knives of it that they never sell.",
       "kind": "ore",
       "tags": ["rare"],
       "worth": 45
@@ -879,7 +879,7 @@
     {
       "id": "native-silver",
       "name": "Native silver",
-      "prose": "Native silver in wires, pure from the seam, and seldom found.",
+      "prose": "Native silver in curling wires, pure as it comes from the seam and seldom found at all. One good pocket of it has made a family's fortune, and started its feud.",
       "kind": "ore",
       "tags": ["pure", "rare"],
       "worth": 55
@@ -887,7 +887,7 @@
     {
       "id": "seed-potatoes",
       "name": "Seed potatoes",
-      "prose": "Seed potatoes chitting in the dark, that spoil if they're kept damp.",
+      "prose": "Seed potatoes chitting in a dark crate, each one putting out pale shoots. Kept dry, they will plant a field; let them get damp and they spoil inside a week.",
       "kind": "botanicals",
       "tags": ["perishable"],
       "worth": 10
@@ -895,7 +895,7 @@
     {
       "id": "willow-bark",
       "name": "Willow bark",
-      "prose": "Willow bark peeled from cutting-stock in spring, a physic for fevers.",
+      "prose": "Willow bark peeled in spring from the cutting-stock along the ditches: a physic for fevers and aching joints that any apothecary will grind.",
       "kind": "botanicals",
       "tags": ["medicinal"],
       "worth": 12
@@ -903,7 +903,7 @@
     {
       "id": "retted-flax",
       "name": "Retted flax",
-      "prose": "Flax retted and scutched for its fibre, the stalks of a linseed crop.",
+      "prose": "Flax retted in the field and scutched for its fibre, the long stalks of a linseed crop bundled like hair.",
       "kind": "botanicals",
       "tags": ["textile"],
       "worth": 15
@@ -911,7 +911,7 @@
     {
       "id": "cotton-bolls",
       "name": "Cotton bolls",
-      "prose": "Cotton bolls by the sack, seed and fibre together.",
+      "prose": "Cotton bolls by the sack, seed and fibre together, picked on Long Acre and not yet ginned.",
       "kind": "botanicals",
       "tags": ["textile"],
       "worth": 18
@@ -919,7 +919,7 @@
     {
       "id": "woad-leaf",
       "name": "Woad leaf",
-      "prose": "Woad leaf, balled and dried, for a blue dye.",
+      "prose": "Woad leaf, crushed, balled and dried in the sun, for the blue dye that comes out of it. It smells like a cabbage left in a cupboard, and it keeps for years.",
       "kind": "botanicals",
       "tags": ["textile", "keeps"],
       "worth": 20
@@ -927,7 +927,7 @@
     {
       "id": "feverfew",
       "name": "Feverfew",
-      "prose": "Feverfew leaf, dried in bunches, medicinal for a headache.",
+      "prose": "Feverfew leaf, hung in bunches from the rafters until it is dried: a medicinal for headaches that apothecaries buy by the armful.",
       "kind": "botanicals",
       "tags": ["medicinal", "keeps"],
       "worth": 22
@@ -935,7 +935,7 @@
     {
       "id": "madder-root",
       "name": "Madder root",
-      "prose": "Madder root grown on from seed for three summers, for the red dye in it.",
+      "prose": "Madder root, grown on from seed for three summers until it is worth the digging, for the red dye in it.",
       "kind": "botanicals",
       "tags": ["textile"],
       "worth": 25
@@ -943,7 +943,7 @@
     {
       "id": "foxglove-cuttings",
       "name": "Foxglove cuttings",
-      "prose": "Foxglove cuttings, fresh and still wet, for the apothecary's heart physic.",
+      "prose": "Foxglove cuttings, fresh and still wet, for the apothecary's heart physic. They wilt by the day, and a dead cutting is worth nothing to anybody.",
       "kind": "botanicals",
       "tags": ["medicinal", "perishable"],
       "worth": 30
@@ -951,7 +951,7 @@
     {
       "id": "green-tea-leaf",
       "name": "Green tea leaf",
-      "prose": "Tea leaf, fresh-picked and wilting by the day, wanted at the roller fast.",
+      "prose": "Tea leaf, fresh-picked and wilting by the hour, wanted at the rolling sheds while it is still green and worth half as much a day late.",
       "kind": "botanicals",
       "tags": ["perishable"],
       "worth": 35
@@ -959,7 +959,7 @@
     {
       "id": "cured-tobacco",
       "name": "Cured tobacco",
-      "prose": "Tobacco leaf, cured brown in the barn and good for years.",
+      "prose": "Tobacco leaf, cured brown in the barn and good for years in a dry hold. It perfumes the whole ship, and the crew will not stop mentioning it.",
       "kind": "botanicals",
       "tags": ["keeps"],
       "worth": 40
@@ -967,7 +967,7 @@
     {
       "id": "saffron",
       "name": "Saffron",
-      "prose": "Imported saffron, the dried threads of a crocus packed between leaf papers, worth its weight in silver.",
+      "prose": "Imported saffron, the dried red threads of a crocus packed between leaf papers, worth its weight in silver. A pinch of it colours a whole pot.",
       "kind": "botanicals",
       "tags": ["keeps", "exotic"],
       "worth": 55
@@ -1500,7 +1500,7 @@
             { "tag": "botanicals", "negated": false },
             { "tag": "keeps", "negated": false }
           ],
-          "plainly": "wants dried leaf that will keep in the store",
+          "plainly": "wants dried crops that will keep in the store",
           "quantity": 4,
           "order": { "price": 30, "days": 30 }
         }
@@ -1620,7 +1620,7 @@
             { "tag": "ore", "negated": false },
             { "tag": "pure", "negated": false }
           ],
-          "plainly": "wants high-grade ore for the mordant vats",
+          "plainly": "wants high-grade ore, and nothing less",
           "quantity": 4
         }
       ],
