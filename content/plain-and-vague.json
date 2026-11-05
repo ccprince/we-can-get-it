@@ -527,7 +527,7 @@
     {
       "id": "homespun-blanket",
       "name": "Homespun blanket",
-      "prose": "A homespun blanket, woven by one family over one winter, plain as porridge and still raw in the grease, so that it smells of sheep when it gets wet. It will keep a child warm for twenty years, and then that child's child.",
+      "prose": "A homespun blanket, woven by one family over one winter, plain as porridge and still raw in the grease, so that it smells of sheep when it gets wet. It is warm enough for a winter on Fallow, and soft enough that nobody minds the smell.",
       "kind": "cloth",
       "tags": ["handmade", "plain", "raw"],
       "worth": 30
@@ -535,7 +535,7 @@
     {
       "id": "rose-border-tablecloth",
       "name": "Rose-border tablecloth",
-      "prose": "A linen tablecloth, fine as paper, with a border of roses stitched by hand: a grandmother's year of evenings. It has been to three weddings and a funeral and has never once been spilt on.",
+      "prose": "A linen tablecloth, fine as paper, with a border of roses stitched by hand: a grandmother's year of evenings. It is meant for a table with company at it, and it has never once been spilt on.",
       "kind": "cloth",
       "tags": ["floral", "handmade", "fine"],
       "worth": 50
@@ -575,7 +575,7 @@
     {
       "id": "daisy-stitch-shawl",
       "name": "Daisy-stitch shawl",
-      "prose": "A shawl worked in daisy-stitch, light as breath, every one of its little flowers knotted by hand. It folds into a pocket and comes out without a crease, which is better than most travellers manage.",
+      "prose": "A shawl knitted in daisy-stitch, light as breath, every one of its little flowers knotted by hand. It folds into a pocket and comes out without a crease, which is better than most travellers manage.",
       "kind": "cloth",
       "tags": ["floral", "handmade", "light"],
       "worth": 28
@@ -751,7 +751,7 @@
     {
       "id": "vintage-clock-movement",
       "name": "Vintage clock movement",
-      "prose": "A vintage clock movement under a glass bell, every gear as delicate as an eyelash and the whole of it lighter than the glass. Somebody on Corrow made it when the lower cities were new. It still keeps time, and it has views on being dropped.",
+      "prose": "A vintage clock movement under a glass bell, every gear as delicate as an eyelash and the whole of it lighter than the glass. It was made on Corrow when the lower cities were new. It still keeps time, and it has views on being dropped.",
       "kind": "mechanical",
       "tags": ["old", "fine", "light"],
       "worth": 50
@@ -791,7 +791,7 @@
     {
       "id": "cast-iron-flywheel",
       "name": "Cast-iron flywheel",
-      "prose": "A cast-iron flywheel off an old-pattern steam engine, machined smooth by somebody long dead. It is heavy and slow, and once it starts it turns for a very long time, which is all anybody has ever asked of it.",
+      "prose": "A cast-iron flywheel off an old-pattern steam engine, machined smooth in a works that closed long ago. It is heavy and slow, and once it starts it turns for a very long time, which is all anybody has ever asked of it.",
       "kind": "mechanical",
       "tags": ["old", "heavy"],
       "worth": 20
@@ -1918,7 +1918,7 @@
             { "tag": "mechanical", "negated": false },
             { "tag": "fine", "negated": false }
           ],
-          "plainly": "wants something fine for the surveyor's kit",
+          "plainly": "wants finely made machinery",
           "quantity": 1
         }
       ],
@@ -1956,7 +1956,7 @@
             { "tag": "cloth", "negated": false },
             { "tag": "raw", "negated": false }
           ],
-          "plainly": "wants raw cloth, unwashed and as it comes",
+          "plainly": "wants raw fibre or cloth, as it comes",
           "quantity": 3
         }
       ],
