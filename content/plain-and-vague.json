@@ -823,7 +823,7 @@
     {
       "id": "hull-plate-scrap",
       "name": "Hull-plate scrap",
-      "prose": "Hull plate salvaged from a breaker's yard, cut into squares and baled. It was a ship once; now it is iron of a known assay, and it melts like any other.",
+      "prose": "Hull plate salvaged from a breaker's yard, cut into squares and baled. It was a ship once; now it is iron, sold by assay, and it melts like any other.",
       "kind": "ore",
       "tags": ["salvaged"],
       "worth": 18
@@ -831,7 +831,7 @@
     {
       "id": "pyrite",
       "name": "Pyrite",
-      "prose": "Pyrite from a sulphur seam, gold-bright cubes of iron that have fooled many a prospector and paid none of them. Smelters take it for the iron and the sulphur both.",
+      "prose": "Pyrite from a sulphur seam, gold-bright cubes of iron that have fooled many a prospector into thinking they were rich. Smelters pay a fair price for it all the same, for the iron and the sulphur both.",
       "kind": "ore",
       "tags": [],
       "worth": 20
@@ -1528,7 +1528,7 @@
             { "tag": "botanicals", "negated": false },
             { "tag": "medicinal", "negated": false }
           ],
-          "plainly": "wants herbs for the infirmary",
+          "plainly": "wants medicinal plants for the infirmary",
           "quantity": 3
         }
       ],

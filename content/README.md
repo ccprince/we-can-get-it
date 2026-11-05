@@ -386,7 +386,7 @@ judged here rather than padded away:
 | No tell of `ore` | meteoric-iron | *Iron* and *a lump of star* are the better words. |
 | Reads like `spirits` | oilskin-smock, signal-orange-tarpaulin, sweet-pea-rain-cape | **Waterproof** carries `proof`. A known false tell, kept because both words are the right ones (#122). |
 
-Writing the prose also turned up four plain wants that read wrong against the goods they reach, the
+Writing the prose also turned up five plain wants that read wrong against the goods they reach, the
 way findings §2.4 found balloon silk is cloth but not warm. Each want was reworded to fit what
 meets it:
 
@@ -396,6 +396,8 @@ meets it:
   movement are not. The want is now "finely made machinery".
 - Alder wanted high-grade ore *for the mordant vats*, and native silver is no mordant. The want is
   now "high-grade ore, and nothing less".
+- Marta wanted *herbs* for the infirmary, and willow bark is not one. The want is now "medicinal
+  plants for the infirmary".
 - Yusuf wanted dried *leaf*, and saffron is threads. The want is now "dried crops that will keep in
   the store".
 
