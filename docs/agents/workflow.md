@@ -79,6 +79,11 @@ keeps a linear log, then polls with a ten-minute deadline (a second argument cha
 prints the final status. Exit `0` is merged; `1` is failed, with GitHub's message saying why; `2`
 is a refused request or the deadline.
 
+**A one-slice ticket has no stack, so it merges with `gh pr merge`**:
+`gh pr merge <n> --rebase --match-head-commit <sha>`, pinned to the head you pushed. The merge API
+behind the script answers an unstacked PR with an empty body, and the script exits `2` having merged
+nothing; #160 hit this.
+
 **Fall back to bottom-up**, `tools/merge-stack.sh` on one PR at a time, when the one-call merge
 fails or when only part of the stack should land. #12's two-slice stack merged this way. After each
 parent merges, GitHub retargets the child onto `main` and **rebases it itself**, so the child's head
