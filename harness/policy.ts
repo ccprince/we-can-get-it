@@ -61,13 +61,28 @@ function departureFor(read: View, route: RouteRule): Command | null {
     (lane) => lane.depart !== null && lane.fare <= read.credits.credits,
   );
   const chosen = flyable.reduce<LaneView | null>(
-    (best, lane) => (best === null || prefers(route, lane, best) ? lane : best),
+    (best, lane) => (best === null || prefers(read, route, lane, best) ? lane : best),
     null,
   );
   return chosen?.depart ?? null;
 }
 
-/** Fewest days or most, with the chart's own order breaking a tie. */
-function prefers(route: RouteRule, lane: LaneView, best: LaneView): boolean {
+/**
+ * Fewest days or most, with the chart's own order breaking a tie. `explore`
+ * prefers the destination the guide knows least — never seen first, then the
+ * stalest — and the fewest days among equals. It is a stateless read of the
+ * guide, so it needs no memory of where it has been.
+ */
+function prefers(read: View, route: RouteRule, lane: LaneView, best: LaneView): boolean {
+  if (route === 'explore') {
+    const age = staleness(read, lane) - staleness(read, best);
+    return age === 0 ? lane.days < best.days : age > 0;
+  }
   return route === 'nearest' ? lane.days < best.days : lane.days > best.days;
+}
+
+/** How long since the guide last saw a lane's destination: unseen is the longest. */
+function staleness(read: View, lane: LaneView): number {
+  const known = read.guide.entries.find((entry) => entry.name === lane.destination)?.known;
+  return known === undefined || known === null ? Number.POSITIVE_INFINITY : known.daysAgo;
 }
