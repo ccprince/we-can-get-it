@@ -18,11 +18,12 @@ describe('the shop where the player is', () => {
     const lots = view(started(loadedContentSet(aTradingGalaxy()), SEED)).here?.lots;
 
     // 180 credits buys every unit of a lot but the silk's, at four.
-    expect(lots).toMatchObject([
+    expect(lots).toEqual([
       {
         lot: 'kestrel/blanket',
         good: 'Ship blanket',
         kind: 'cloth',
+        prose: 'A woven blanket with a fleece lining, sold by the gantry crews.',
         quantity: 5,
         price: 25,
         mostYouCanBuy: 5,
@@ -31,6 +32,7 @@ describe('the shop where the player is', () => {
         lot: 'kestrel/quilt',
         good: 'Quilted roll',
         kind: 'cloth',
+        prose: "A quilted bolt of ship's cloth, woven thick against a cold watch.",
         quantity: 5,
         price: 30,
         mostYouCanBuy: 5,
@@ -39,6 +41,7 @@ describe('the shop where the player is', () => {
         lot: 'kestrel/silk',
         good: 'Bolt of silk',
         kind: 'cloth',
+        prose: 'A bolt of woven silk, cool to the hand and no use at all in a draught.',
         quantity: 5,
         price: 40,
         mostYouCanBuy: 4,
