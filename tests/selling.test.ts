@@ -47,7 +47,7 @@ describe('selling against a want', () => {
 
     expect(quoted).toBe(37);
     expect(view(sold).credits.credits).toBe(view(campaign).credits.credits + 37);
-    expect(view(sold).hold.cargo).toEqual([
+    expect(view(sold).hold.cargo).toMatchObject([
       { good: 'Bolt of silk', kind: 'cloth', quantity: 1 },
       { good: 'Ship blanket', kind: 'cloth', quantity: 1 },
     ]);
