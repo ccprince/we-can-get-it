@@ -359,7 +359,7 @@
     {
       "id": "still-house-rotgut",
       "name": "Still-house rotgut",
-      "prose": "Still-house rotgut, cheap and fiery, distilled in a shed and bottled in whatever was to hand.",
+      "prose": "Still-house rotgut, distilled in a shed out of whatever was going and bottled in whatever was to hand. It is cheap, it is fiery, and the morning after it is a long morning.",
       "kind": "spirits",
       "tags": ["strong", "common"],
       "worth": 10
@@ -367,7 +367,7 @@
     {
       "id": "tater-firewater",
       "name": "Tater firewater",
-      "prose": "Tater firewater, distilled from a common crop and as plentiful as it is rough.",
+      "prose": "Firewater distilled from a potato mash on any farm with a still behind the barn, which is most of them. It is as plentiful as potatoes and about as subtle, and a cup of it will take the frost out of a hauler's bones.",
       "kind": "spirits",
       "tags": ["strong", "common"],
       "worth": 12
@@ -375,7 +375,7 @@
     {
       "id": "peppered-root-brandy",
       "name": "Peppered root brandy",
-      "prose": "A strong root brandy distilled with pepper-bark, a bottle that warms the hands that hold it.",
+      "prose": "A root brandy distilled with pepper-bark, strong enough to warm the hands holding the bottle. Crews on Scoria drink it neat and call it good for the chest, and nobody has ever shown them wrong.",
       "kind": "spirits",
       "tags": ["strong"],
       "worth": 30
@@ -383,7 +383,7 @@
     {
       "id": "plum-cordial",
       "name": "Plum cordial",
-      "prose": "A plum cordial, sugared and distilled to keep a summer in a bottle.",
+      "prose": "A plum cordial, sugared and distilled to keep a summer in a bottle. It is gentle, dark and sticky, and the label is the farm's own, painted by somebody's child.",
       "kind": "spirits",
       "tags": ["sweet"],
       "worth": 22
@@ -391,7 +391,7 @@
     {
       "id": "harvest-liqueur",
       "name": "Harvest liqueur",
-      "prose": "A honeyed harvest liqueur, cheap by the bottle at every farm fair.",
+      "prose": "A honeyed liqueur that every farm on Verdance makes for its harvest fair, and sells cheap by the bottle the morning after, when it finds it has made too much.",
       "kind": "spirits",
       "tags": ["sweet", "common"],
       "worth": 15
@@ -399,7 +399,7 @@
     {
       "id": "pear-brandy",
       "name": "Pear brandy",
-      "prose": "A clear orchard pear brandy, said to have been laid down the year the orchard first fruited.",
+      "prose": "A clear pear brandy, said to have been laid down the year the orchard first fruited. A whole pear sits in the bottle, grown inside it on the branch, and nobody on Verdance will say how many bottles there were.",
       "kind": "spirits",
       "tags": ["storied"],
       "worth": 35
@@ -407,7 +407,7 @@
     {
       "id": "last-of-marrowby",
       "name": "The last of Marrowby's",
-      "prose": "The last of Marrowby's still, saved when the fire took it: a strong spirit in a scorched bottle.",
+      "prose": "The last of Marrowby's still, saved when the fire took the distillery and the Marrowbys with it. It is strong and smoky, and the bottle is scorched down one side where somebody carried it out.",
       "kind": "spirits",
       "tags": ["storied", "strong"],
       "worth": 55
@@ -415,7 +415,7 @@
     {
       "id": "blockade-rum",
       "name": "Blockade rum",
-      "prose": "A bottle of rum said to have run the Corrow blockade, and it tastes of the trip.",
+      "prose": "A bottle of dark rum said to have run the Corrow blockade in a false hull, and it tastes of the trip: tar, salt and nerves.",
       "kind": "spirits",
       "tags": ["storied"],
       "worth": 45
@@ -423,7 +423,7 @@
     {
       "id": "wedding-year-cordial",
       "name": "Wedding-year cordial",
-      "prose": "A storied bottle of honeyed cordial, laid down the year the farm's daughter was wed.",
+      "prose": "A honeyed cordial laid down the year the farm's daughter was wed, a bottle for every guest, and this is one of the last of them unopened. The story of the wedding comes with it, whether you want it or not.",
       "kind": "spirits",
       "tags": ["storied", "sweet"],
       "worth": 50
@@ -583,7 +583,7 @@
     {
       "id": "cave-aloe-salve",
       "name": "Cave-aloe salve",
-      "prose": "A cave-aloe salve, cool on a burn and the first thing a smelter reaches for.",
+      "prose": "A salve pressed from the cave aloe that grows in the warm dark under Scoria's craters. Cool on a burn, it is the first thing a smelter reaches for and the last thing anybody runs short of on purpose.",
       "kind": "remedies",
       "tags": ["burns"],
       "worth": 25
@@ -591,7 +591,7 @@
     {
       "id": "pine-tar-jelly",
       "name": "Pine-tar jelly",
-      "prose": "A pine-tar jelly laid thick on a scald: the salve works, and it reeks.",
+      "prose": "A pine-tar jelly, the salve furnace crews swear by, laid on thick over a scald. It works, and it reeks: a shift can tell who has been burnt by the smell alone.",
       "kind": "remedies",
       "tags": ["burns", "pungent"],
       "worth": 18
@@ -599,7 +599,7 @@
     {
       "id": "wormwood-tincture",
       "name": "Wormwood tincture",
-      "prose": "A wormwood tincture for the gut, a dose as bitter as regret.",
+      "prose": "A wormwood tincture for a sour gut, taken a dose at a time from a dropper. It is as bitter as regret, and about as quick to leave the mouth.",
       "kind": "remedies",
       "tags": ["bitter"],
       "worth": 20
@@ -607,7 +607,7 @@
     {
       "id": "willow-bark-dose",
       "name": "Willow-bark dose",
-      "prose": "A willow-bark dose for an aching back, astringent enough to pucker the mouth.",
+      "prose": "Willow bark steeped down to a dose for an aching back, astringent enough to pucker the mouth for an hour. It works, and that is all the praise it ever gets.",
       "kind": "remedies",
       "tags": ["bitter"],
       "worth": 12
@@ -615,7 +615,7 @@
     {
       "id": "lamp-blind-drops",
       "name": "Lamp-blind drops",
-      "prose": "Drops for eyes gone dim under the lamps: a tincture to see by again.",
+      "prose": "Drops for eyes gone dim under the lamps: a tincture to see by again. Crews on Tamsin Reef put them in at the start of every shift and argue about the colour of skies none of them has seen.",
       "kind": "remedies",
       "tags": ["daylight"],
       "worth": 40
@@ -623,7 +623,7 @@
     {
       "id": "sunlamp-tonic",
       "name": "Sunlamp tonic",
-      "prose": "A sunlamp tonic for a deep-shift pallor, taken as one bitter dose a day.",
+      "prose": "A tonic for a deep-shift pallor, steeped under a sunlamp and taken as one bitter dose a day. It puts the colour back in a miner's face and takes it out of the miner's mouth.",
       "kind": "remedies",
       "tags": ["daylight", "bitter"],
       "worth": 45
@@ -631,7 +631,7 @@
     {
       "id": "camphor-rub",
       "name": "Camphor rub",
-      "prose": "A camphor chest salve, pungent enough to clear a head across the room.",
+      "prose": "A camphor chest salve, pungent enough to clear a head from across the room, and to empty the room while it is at it.",
       "kind": "remedies",
       "tags": ["pungent"],
       "worth": 15
@@ -639,7 +639,7 @@
     {
       "id": "sulphur-poultice",
       "name": "Sulphur poultice",
-      "prose": "A sulphur poultice for a burn or a blister, a salve that stinks of the pit.",
+      "prose": "A sulphur poultice for a burn or a blister, wrapped hot in muslin. It heals clean, and it stinks of the pit, so the patient is keen to get better.",
       "kind": "remedies",
       "tags": ["burns", "pungent"],
       "worth": 22
@@ -647,7 +647,7 @@
     {
       "id": "fever-tincture",
       "name": "Fever tincture",
-      "prose": "A clear fever tincture, measured out by the dose.",
+      "prose": "A clear fever tincture in a stoppered vial, measured out by the dose. It tastes of nothing much, smells of nothing at all, and brings a fever down overnight.",
       "kind": "remedies",
       "tags": [],
       "worth": 30
@@ -655,7 +655,7 @@
     {
       "id": "bone-reliquary",
       "name": "Bone reliquary",
-      "prose": "An antique bone reliquary, carved by a pilgrim long ago: a curio fit for a chapel shelf.",
+      "prose": "An antique reliquary carved from bone by a pilgrim on the road to Saint Ambry, and blessed at every shrine along the way. What it holds is a knuckle, or a tooth, or nothing: it has not been opened in three hundred years.",
       "kind": "curios",
       "tags": ["blessed", "old"],
       "worth": 50
@@ -663,7 +663,7 @@
     {
       "id": "pilgrims-badge",
       "name": "Pilgrim's badge",
-      "prose": "A pilgrim's tin badge from the shrine road, a trinket worn thin by thumbs.",
+      "prose": "A pilgrim's tin badge from the shrine road, a trinket rubbed bright by thumbs. Every pilgrim to Saint Ambry buys one, and every pilgrim swears theirs is the lucky one.",
       "kind": "curios",
       "tags": ["blessed"],
       "worth": 12
@@ -671,7 +671,7 @@
     {
       "id": "chapel-bell",
       "name": "Chapel bell",
-      "prose": "A consecrated chapel bell in miniature, a bauble that rings true.",
+      "prose": "A chapel bell no taller than a thumb, cast for a shrine on Saint Ambry and consecrated while it was still warm from the mould. Pilgrims hang one over the door to keep out bad news, and it has a better record than most.",
       "kind": "curios",
       "tags": ["blessed"],
       "worth": 30
@@ -679,7 +679,7 @@
     {
       "id": "geode-bookends",
       "name": "Geode bookends",
-      "prose": "A pair of geode bookends, dug from the deep rock and polished to a curio's shine.",
+      "prose": "A geode split in two and polished into bookends, dug from the deep rock under Hob and opened on a cave of purple crystal. They hold up very few books and are looked at a great deal.",
       "kind": "curios",
       "tags": ["mined"],
       "worth": 25
@@ -687,7 +687,7 @@
     {
       "id": "jet-brooch",
       "name": "Jet brooch",
-      "prose": "A vintage mourning brooch, carved in jet dug from the coal: a widow's trinket.",
+      "prose": "A vintage mourning brooch in jet dug from the coal at Hob Deep, black and glassy and carved with a weeping willow. A widow pinned it on every morning for forty years, and it has outlasted her by sixty.",
       "kind": "curios",
       "tags": ["mined", "old"],
       "worth": 40
@@ -695,7 +695,7 @@
     {
       "id": "coal-pony",
       "name": "Coal pony",
-      "prose": "A pit pony figurine of coal dug from the deep, new-made for visitors: a bauble for the mantel.",
+      "prose": "A pit pony carved from coal dug from the deep, new-made for the visitors who come down to Hob to see where coal comes from. It is a bauble for the mantel, and it leaves a mark on anything it touches.",
       "kind": "curios",
       "tags": ["mined", "modern"],
       "worth": 15
@@ -703,7 +703,7 @@
     {
       "id": "brass-astrolabe",
       "name": "Brass astrolabe",
-      "prose": "A vintage brass astrolabe, its rings carved with the old constellations: a navigator's curio.",
+      "prose": "A vintage brass astrolabe, its rings engraved with constellations no ship has steered by in centuries. It no longer points at anything true, and a navigator will still pay for it, because it was the first thing that ever tried.",
       "kind": "curios",
       "tags": ["old"],
       "worth": 55
@@ -711,7 +711,7 @@
     {
       "id": "clockwork-songbird",
       "name": "Clockwork songbird",
-      "prose": "A clockwork songbird, the latest model, a trinket that sings on the hour.",
+      "prose": "A clockwork songbird, the latest model, that sings on the hour and preens on the half. Every child on Lantern Quay wants one this year, and next year they will want the next one.",
       "kind": "curios",
       "tags": ["modern"],
       "worth": 35
@@ -719,7 +719,7 @@
     {
       "id": "music-box",
       "name": "Music box",
-      "prose": "A painted music box, a pilgrim's bauble that plays one hymn.",
+      "prose": "A painted music box, a pilgrim's keepsake, that plays one hymn and plays it a little wrong. It was blessed at the shrine where it was bought, which is also where it was made.",
       "kind": "curios",
       "tags": ["blessed"],
       "worth": 20

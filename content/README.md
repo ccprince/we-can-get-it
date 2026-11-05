@@ -372,8 +372,8 @@ demand**. Each **quirk** now sits on four goods, so that a drawn quirk is usuall
 ### The prose
 
 A good's prose is written to carry its **tells** the way a writer would, not as a list of them
-(#111). Mechanical, provisions and cloth goods have their finished prose. Every other good still
-has one line saying what it is.
+(#111). Every kind's goods but ore's and botanicals' have their finished prose; those two still
+have one line saying what each good is.
 
 Every tell finding the cross-product report raises has been read, and the ones left standing are
 judged here rather than padded away:
@@ -382,6 +382,8 @@ judged here rather than padded away:
 | --- | --- | --- |
 | No tell of `cloth` | daisy-stitch-shawl | A shawl is knitted, not woven, and *shawl* is the better word. |
 | No tell of `provisions` | field-greens, halberd-cream-cheese, imported-tinned-peaches, orchard-figs | Each is plainly something to eat, and a **kind** is public. *Food* would be padding. |
+| No tell of `curios` | bone-reliquary, brass-astrolabe, chapel-bell, clockwork-songbird, geode-bookends, jet-brooch, music-box | A curio is named by what it is: a reliquary, an astrolabe, a brooch. *Curio*, *trinket* and *bauble* fit the cheap ones, and the cheap ones carry them. |
+| No tell of `remedies` | sulphur-poultice | *Poultice* is the better word. |
 | Reads like `spirits` | oilskin-smock, signal-orange-tarpaulin, sweet-pea-rain-cape | **Waterproof** carries `proof`. A known false tell, kept because both words are the right ones (#122). |
 
 Writing the prose also turned up two plain wants that read wrong against the goods they reach, the
@@ -396,6 +398,10 @@ meets it:
 The prose was read for the opposite mistake too: a good whose prose claims a tag it does not hold.
 The homespun blanket no longer outlasts a generation, since it is not `rugged`. The rose-border
 tablecloth no longer has a history, since it is not `old`.
+
+A tell matches inside longer words, so *before* and *wore* read as `ore`, *drawn* as `raw` and
+*slightly* as `light`. No player reads them that way. Where an equally good word was to hand, the
+prose took it, to keep the report's wrong-tag section for prose that really does read like the wrong tag.
 
 ### The map
 
