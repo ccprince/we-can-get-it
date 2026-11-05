@@ -21,11 +21,13 @@ import { readJson } from '../tools/files';
  *   many landings and little time in transit.
  * - `farthest` — departs along the flyable lane of most days, so a run is few
  *   landings and long hauls.
+ * - `explore` — departs toward the destination the trade guide knows least:
+ *   never seen first, then the stalest, fewest days among equals.
  *
- * All three are stateless reads of the chart, because a policy is handed a view
- * and nothing else. A rule that avoided flying straight back the way it came
- * would need the policy to remember, which is a later knob if a run asks for
- * it.
+ * All four are stateless reads of the view, because a policy is handed a view
+ * and nothing else. `nearest` and `farthest` fly straight back the way they
+ * came; `explore` avoids that without remembering, because the guide's as-of
+ * dates already say where it has been (#148).
  */
 export const routeRules = ['stay', 'nearest', 'farthest', 'explore'] as const;
 
