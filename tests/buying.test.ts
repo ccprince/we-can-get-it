@@ -23,7 +23,7 @@ describe('buying a lot', () => {
 
     const seen = view(campaign);
     expect(seen.credits).toEqual({ credits: 130 });
-    expect(seen.hold).toEqual({
+    expect(seen.hold).toMatchObject({
       capacity: 100,
       used: 2,
       cargo: [{ good: 'Ship blanket', kind: 'cloth', quantity: 2 }],
@@ -50,7 +50,7 @@ describe('buying a lot', () => {
   it('carries two buys of one good as one cargo', () => {
     const campaign = after(atKestrel(), buy('kestrel/silk', 1), buy('kestrel/silk', 2));
 
-    expect(view(campaign).hold.cargo).toEqual([
+    expect(view(campaign).hold.cargo).toMatchObject([
       { good: 'Bolt of silk', kind: 'cloth', quantity: 3 },
     ]);
   });

@@ -18,7 +18,7 @@ describe('the shop where the player is', () => {
     const lots = view(started(loadedContentSet(aTradingGalaxy()), SEED)).here?.lots;
 
     // 180 credits buys every unit of a lot but the silk's, at four.
-    expect(lots).toEqual([
+    expect(lots).toMatchObject([
       {
         lot: 'kestrel/blanket',
         good: 'Ship blanket',

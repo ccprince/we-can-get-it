@@ -109,6 +109,8 @@ export type Register = 'plain' | 'vague';
 
 export type MatchView = {
   readonly good: string;
+  /** The good's own words, so the player can read it against the want. */
+  readonly prose: string;
   readonly tier: Tier;
   /**
    * The tag of the first positive term the good fails; null unless grudging.
@@ -151,6 +153,8 @@ export type LotView = {
   readonly good: string;
   /** The good's **kind**, which is public vocabulary (ADR 0007 decision 3). */
   readonly kind: string;
+  /** The good's own words: the tells are how a player reaches its tags. */
+  readonly prose: string;
   readonly quantity: number;
   readonly price: number;
   /**
@@ -175,6 +179,7 @@ export type HoldView = {
 export type CargoView = {
   readonly good: string;
   readonly kind: string;
+  readonly prose: string;
   readonly quantity: number;
 };
 
@@ -324,6 +329,8 @@ export type KnownView = {
 export type KnownLotView = {
   readonly good: string;
   readonly kind: string;
+  /** The good's, not the sighting's: it never changes, so it has no as-of date. */
+  readonly prose: string;
   readonly quantity: number;
   readonly price: number;
   readonly asOf: CalendarDate;
@@ -495,7 +502,7 @@ function knownView(campaign: Campaign, sighting: Sighting): KnownView {
     lots: sighting.lots.map((lot) => {
       const good = goodNamed(galaxy, lot.goodId);
       return {
-        ...goodAndKind(galaxy, lot.goodId),
+        ...goodAsShown(galaxy, lot.goodId),
         quantity: lot.quantity,
         price: lot.price,
         asOf,
@@ -565,7 +572,7 @@ function hereAt(campaign: Campaign, locationId: string): HereView {
   const lots = lotsHere(campaign).map(
     (lot): LotView => ({
       lot: lot.id,
-      ...goodAndKind(campaign.galaxy, lot.goodId),
+      ...goodAsShown(campaign.galaxy, lot.goodId),
       quantity: lot.quantity,
       price: lot.price,
       mostYouCanBuy: mostYouCanBuy(campaign, lot),
@@ -602,6 +609,7 @@ function wantFor(campaign: Campaign, open: OpenWant): WantView {
             : null;
       return {
         good: good.name,
+        prose: good.prose,
         tier,
         failedTerm,
         offer,
@@ -675,14 +683,17 @@ function holdFor(campaign: Campaign): HoldView {
     capacity: campaign.ship.hold,
     used: holdUsed(campaign.cargo),
     cargo: campaign.cargo.map(({ goodId, quantity }) => ({
-      ...goodAndKind(campaign.galaxy, goodId),
+      ...goodAsShown(campaign.galaxy, goodId),
       quantity,
     })),
   };
 }
 
-/** A good as a surface names it: its name, and its **kind**, which is public. */
-function goodAndKind(galaxy: DrawnGalaxy, goodId: string): Pick<CargoView, 'good' | 'kind'> {
-  const { name, kind } = goodNamed(galaxy, goodId);
-  return { good: name, kind };
+/** A good as a surface names it: its name, its **kind**, which is public, and its prose. */
+function goodAsShown(
+  galaxy: DrawnGalaxy,
+  goodId: string,
+): Pick<CargoView, 'good' | 'kind' | 'prose'> {
+  const { name, kind, prose } = goodNamed(galaxy, goodId);
+  return { good: name, kind, prose };
 }
