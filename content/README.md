@@ -382,7 +382,7 @@ judged here rather than padded away:
 | --- | --- | --- |
 | No tell of `cloth` | daisy-stitch-shawl | A shawl is knitted, not woven, and *shawl* is the better word. |
 | No tell of `provisions` | field-greens, halberd-cream-cheese, imported-tinned-peaches, orchard-figs | Each is plainly something to eat, and a **kind** is public. *Food* would be padding. |
-| No tell of `curios` | bone-reliquary, brass-astrolabe, chapel-bell, clockwork-songbird, geode-bookends, jet-brooch, music-box | A curio is named by what it is: a reliquary, an astrolabe, a brooch. *Curio*, *trinket* and *bauble* fit the cheap ones, and the cheap ones carry them. |
+| No tell of `curios` | bone-reliquary, brass-astrolabe, chapel-bell, clockwork-songbird, geode-bookends, jet-brooch, music-box | A curio is named by what it is: a reliquary, an astrolabe, a brooch. *Trinket* and *bauble* fit the two cheapest, the badge and the pony, and those two carry them. |
 | No tell of `remedies` | sulphur-poultice | *Poultice* is the better word. |
 | Reads like `spirits` | oilskin-smock, signal-orange-tarpaulin, sweet-pea-rain-cape | **Waterproof** carries `proof`. A known false tell, kept because both words are the right ones (#122). |
 
@@ -401,7 +401,8 @@ tablecloth no longer has a history, since it is not `old`.
 
 A tell matches inside longer words, so *before* and *wore* read as `ore`, *drawn* as `raw` and
 *slightly* as `light`. No player reads them that way. Where an equally good word was to hand, the
-prose took it, to keep the report's wrong-tag section for prose that really does read like the wrong tag.
+prose took it, to keep the report's wrong-tag section for prose that really does read like the
+wrong tag.
 
 ### The map
 
