@@ -281,6 +281,16 @@ export type Want = {
 );
 
 /**
+ * The two registers a want is said in: **plain** names what would satisfy it,
+ * **vague** names only a kind and leaves the finding to the player.
+ */
+export type Register = 'plain' | 'vague';
+
+export function registerOf(want: Want): Register {
+  return 'kind' in want ? 'vague' : 'plain';
+}
+
+/**
  * Someone who wants something. **Bonus** and **refusal** are roles this buyer
  * holds a tag in rather than classes of tag, so they live here (ADR 0007
  * decision 7).

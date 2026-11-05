@@ -1,9 +1,11 @@
 import {
+  registerOf,
   roleTags,
   type Buyer,
   type ContentSet,
   type Good,
   type Motif,
+  type Register,
   type Tag,
   type Want,
 } from './content';
@@ -19,7 +21,7 @@ import { locationNamed, type DrawnBack, type DrawnGalaxy } from './galaxy';
 import { drawnLength, worstDistortion } from './layout';
 import { better, isAnswer, tierOf, type Tier } from './match';
 import { judge, type Report } from './verdicts';
-import { registerOf, wordingOf, type Register } from './view';
+import { isOrder, wordingOf } from './want';
 
 /**
  * The **cross-product report** (ADR 0007 decision 18): what a writer has
@@ -318,8 +320,7 @@ function wantsPerKind(
   const atKind = (kind: string | null): WantsAtKind => {
     const there = wants.filter((want) => kindOf(want) === kind);
     const count = (register: Register, order: boolean) =>
-      there.filter((want) => registerOf(want) === register && (want.order !== undefined) === order)
-        .length;
+      there.filter((want) => registerOf(want) === register && isOrder(want) === order).length;
     return {
       kind,
       vague: count('vague', false),
@@ -348,7 +349,7 @@ function answerTo(goods: readonly Good[], buyer: Buyer, want: Want, index: numbe
     where: `buyers.${buyer.id}.wants[${index}]`,
     wording: wordingOf({ goods }, want),
     register: registerOf(want),
-    order: want.order !== undefined,
+    order: isOrder(want),
     best: tiers.reduce(better, 'refused'),
     answers,
     verdict: answers === 0 ? 'judge' : null,
