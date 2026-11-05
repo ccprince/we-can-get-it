@@ -202,6 +202,28 @@ describe('the cross-product report on wants', () => {
     ]);
   });
 
+  it('counts a plain want whose predicate names no kind under no kind', () => {
+    const content = loadedContentSet(
+      aTradingGalaxy({
+        buyers: [
+          aBuyer({ wants: [aWant({ predicate: [{ tag: 'warm' }], plainly: 'wants warmth' })] }),
+          aBuyer({
+            id: 'osk',
+            name: 'Osk',
+            bonusTags: [],
+            wants: [aVagueWant('cloth'), aVagueWant('tools')],
+          }),
+        ],
+      }),
+    );
+
+    expect(crossProduct(content, null).asWritten.wantsPerKind).toEqual([
+      { kind: 'cloth', vague: 1, plain: 0, orders: { vague: 0, plain: 0 } },
+      { kind: 'tools', vague: 1, plain: 0, orders: { vague: 0, plain: 0 } },
+      { kind: null, vague: 0, plain: 1, orders: { vague: 0, plain: 0 } },
+    ]);
+  });
+
   it('gives each want its best tier and how many goods answer it, unanswered first', () => {
     // Ilse wants warm cloth and has a bonus in warm, so the blanket and the
     // quilt are great; Osk wants warm tools, which only half-fit anything.
@@ -233,6 +255,7 @@ describe('the cross-product report on wants', () => {
         order: false,
         best: 'grudging',
         answers: 0,
+        verdict: 'judge',
       },
       {
         where: 'buyers.ilse.wants[0]',
@@ -241,6 +264,7 @@ describe('the cross-product report on wants', () => {
         order: false,
         best: 'great',
         answers: 2,
+        verdict: null,
       },
       {
         where: 'buyers.osk.wants[0]',
@@ -249,6 +273,7 @@ describe('the cross-product report on wants', () => {
         order: false,
         best: 'acceptable',
         answers: 2,
+        verdict: null,
       },
     ]);
   });
@@ -281,6 +306,7 @@ describe('the cross-product report on wants', () => {
         order: false,
         best: 'acceptable',
         answers: 1,
+        verdict: null,
       },
     ]);
     expect(report.drawn?.wantsPerKind).toEqual([

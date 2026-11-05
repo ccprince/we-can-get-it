@@ -218,10 +218,18 @@ function atKind({ kind, vague, plain, orders }: WantsAtKind): string {
   );
 }
 
-function answered({ where, wording, register, order, best, answers }: WantAnswered): string {
+function answered({
+  where,
+  wording,
+  register,
+  order,
+  best,
+  answers,
+  verdict,
+}: WantAnswered): string {
   const said = `\`${where}\` ${wording} (${register}${order ? ', order' : ''}): best ${best}`;
-  return answers === 0
-    ? `- **judge** ${said}, no good at acceptable or better`
+  return verdict !== null
+    ? `- **${verdict}** ${said}, no good at acceptable or better`
     : `- ${said}, ${answers} ${answers === 1 ? 'good' : 'goods'} at acceptable or better`;
 }
 

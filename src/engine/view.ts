@@ -5,7 +5,7 @@ import type { Archetype, Buyer, Good, Lane, Want } from './content';
 import { goodNamed, locationNamed, personNamed, type DrawnGalaxy } from './galaxy';
 import { sightingHere, wordCorrection, type Sighting } from './knowledge';
 import { daysToFly, fareToFly, otherEnd, withinRange } from './map';
-import { matchOf, tierOf, type Tier } from './match';
+import { isAnswer, matchOf, tierOf, type Tier } from './match';
 import { isAccepted } from './orders';
 import { lastDayOf, mostYouCanSell, openWants, peopleHere, type OpenWant } from './selling';
 import { holdUsed, lotsHere, mostYouCanBuy } from './trade';
@@ -488,8 +488,7 @@ function seenEverywhere(campaign: Campaign): {
 }
 
 function answers(want: Want, buyer: Buyer, good: Good): boolean {
-  const { tier } = tierOf(want, buyer, good);
-  return tier === 'acceptable' || tier === 'great';
+  return isAnswer(tierOf(want, buyer, good).tier);
 }
 
 function knownView(campaign: Campaign, sighting: Sighting): KnownView {
@@ -601,12 +600,7 @@ function wantFor(campaign: Campaign, open: OpenWant): WantView {
       const good = goodNamed(galaxy, goodId);
       const { tier, failedTerm, offer: computed } = matchOf(want, buyer, good, content.offers);
       // An order pays what it states, and only at acceptable or better.
-      const offer =
-        want.order === undefined
-          ? computed
-          : tier === 'acceptable' || tier === 'great'
-            ? want.order.price
-            : null;
+      const offer = want.order === undefined ? computed : isAnswer(tier) ? want.order.price : null;
       return {
         good: good.name,
         prose: good.prose,
