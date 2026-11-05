@@ -431,7 +431,7 @@
     {
       "id": "tucks-salt-pork",
       "name": "Tuck's salt pork",
-      "prose": "A barrel of Tuck's salt pork, salted hard: hearty fare for a long haul.",
+      "prose": "A barrel of Tuck's salt pork, salted hard enough to see out a long haul and the one after it. Stewed with whatever is going, it makes a hearty meal for a whole crew, and the Tuck's mark is stamped into every lid, as it is on everything the claim sends out.",
       "kind": "provisions",
       "tags": ["keeps", "hearty", "tucks"],
       "worth": 30
@@ -439,7 +439,7 @@
     {
       "id": "halberd-hardtack",
       "name": "Halberd hardtack",
-      "prose": "Halberd hardtack, common as dust and tinned by the hundred, the cheapest fare on the Drift.",
+      "prose": "Halberd hardtack, tinned by the hundred, common as dust and about as tasty. It lasts for ever, it breaks teeth, and it is the cheapest fare anywhere on the Drift.",
       "kind": "provisions",
       "tags": ["keeps", "common", "halberd"],
       "worth": 10
@@ -447,7 +447,7 @@
     {
       "id": "tucks-fresh-eggs",
       "name": "Tuck's fresh eggs",
-      "prose": "A tray of Tuck's fresh eggs, good food for a week, then they spoil.",
+      "prose": "A tray of Tuck's eggs, fresh from the one henhouse on the whole claim, packed in husks against the jolts. They are good food for a week. After that they spoil, and nobody wants to be in the hold when the hatch opens.",
       "kind": "provisions",
       "tags": ["perishable", "tucks"],
       "worth": 20
@@ -455,7 +455,7 @@
     {
       "id": "halberd-cream-cheese",
       "name": "Halberd cream cheese",
-      "prose": "A delicate Halberd cream cheese, fresh and soft: fine food that will spoil in days.",
+      "prose": "A fresh cream cheese from the Halberd dairies, soft, white and delicate, fine enough for a captain's table. It has to get there in days, because in a week it will spoil, and then it will have opinions.",
       "kind": "provisions",
       "tags": ["perishable", "fine", "halberd"],
       "worth": 35
@@ -463,7 +463,7 @@
     {
       "id": "imported-tinned-peaches",
       "name": "Imported tinned peaches",
-      "prose": "Imported peaches, tinned in syrup: sweet fare from a world away.",
+      "prose": "Peaches from a world nobody here has seen, tinned in thick syrup and imported at a price that would buy a side of beef. They keep for years and taste of a summer somewhere else.",
       "kind": "provisions",
       "tags": ["keeps", "exotic"],
       "worth": 40
@@ -471,7 +471,7 @@
     {
       "id": "orchard-figs",
       "name": "Orchard figs",
-      "prose": "Exotic orchard figs, ripe and delicate: fine food that won't last the trip.",
+      "prose": "Exotic figs from an orchard a long way off the Drift, ripe and purple and so delicate that they travel in paper twists, one to a twist. For the week they last they are the finest thing on any table, and after that a sticky regret.",
       "kind": "provisions",
       "tags": ["perishable", "fine", "exotic"],
       "worth": 55
@@ -479,7 +479,7 @@
     {
       "id": "sack-of-oats",
       "name": "Sack of oats",
-      "prose": "A sack of common oats, ground to a hearty, filling meal.",
+      "prose": "A sack of oats, common as rain on a farm world and cheap anywhere else. Ground coarse and stirred into hot water, it makes a filling meal that will keep a shift on its feet till supper.",
       "kind": "provisions",
       "tags": ["common", "hearty"],
       "worth": 15
@@ -487,7 +487,7 @@
     {
       "id": "field-greens",
       "name": "Field greens",
-      "prose": "Fresh field greens, common and cheap: good food on the day they're picked.",
+      "prose": "Field greens in a wet crate, cut this morning and common as weeds where they grow. Fresh, they are the best thing a crew has eaten in a month; two days out, they are compost.",
       "kind": "provisions",
       "tags": ["perishable", "common"],
       "worth": 12
@@ -495,7 +495,7 @@
     {
       "id": "tinned-mutton-stew",
       "name": "Tinned mutton stew",
-      "prose": "Mutton stew, tinned and long-keeping: a hearty meal for a cold shift.",
+      "prose": "Mutton stew, tinned on Sheaf with barley by the fistful, and long-keeping enough to ride in a hold for a year. Heated on an engine manifold, one tin is a hearty meal for a cold shift.",
       "kind": "provisions",
       "tags": ["keeps", "hearty"],
       "worth": 25
@@ -503,7 +503,7 @@
     {
       "id": "mill-sacking",
       "name": "Mill sacking",
-      "prose": "Unscoured, plain sacking, mill-woven and tough enough to scrub a deck with.",
+      "prose": "Plain brown sacking, mill-woven by the mile and sold unscoured, still smelling of the jute. It is tough enough to scrub a deck with, and that is mostly what it is for.",
       "kind": "cloth",
       "tags": ["raw", "factory", "rugged", "plain"],
       "worth": 10
@@ -511,7 +511,7 @@
     {
       "id": "oilskin-smock",
       "name": "Oilskin smock",
-      "prose": "A factory-cut smock of waxed cloth in loud yellow, waterproof and hard-wearing, re-oiled until the rain runs off it.",
+      "prose": "A smock of waxed cloth in a loud, unmissable yellow, cut by the thousand in a factory on Weft. It is waterproof and hard-wearing, and its owner re-oils it every spring until the rain runs off it like an insult.",
       "kind": "cloth",
       "tags": ["waterproof", "rugged", "factory", "loud"],
       "worth": 35
@@ -519,7 +519,7 @@
     {
       "id": "grey-work-twill",
       "name": "Grey work twill",
-      "prose": "A bolt of sober grey twill, machine-made, every hard-wearing yard the same as the last.",
+      "prose": "A bolt of sober grey twill, machine-made on Weft, every hard-wearing yard of it the same as the last. Nobody has ever been sorry to own it, and nobody has ever been glad.",
       "kind": "cloth",
       "tags": ["plain", "factory", "rugged"],
       "worth": 18
@@ -527,7 +527,7 @@
     {
       "id": "homespun-blanket",
       "name": "Homespun blanket",
-      "prose": "Homespun and woven by one family over one winter, plain as porridge and still raw in the grease.",
+      "prose": "A homespun blanket, woven by one family over one winter, plain as porridge and still raw in the grease, so that it smells of sheep when it gets wet. It will keep a child warm for twenty years, and then that child's child.",
       "kind": "cloth",
       "tags": ["handmade", "plain", "raw"],
       "worth": 30
@@ -535,7 +535,7 @@
     {
       "id": "rose-border-tablecloth",
       "name": "Rose-border tablecloth",
-      "prose": "Fine linen cloth with a border of roses stitched by hand, a grandmother's year of evenings.",
+      "prose": "A linen tablecloth, fine as paper, with a border of roses stitched by hand: a grandmother's year of evenings. It has been to three weddings and a funeral and has never once been spilt on.",
       "kind": "cloth",
       "tags": ["floral", "handmade", "fine"],
       "worth": 50
@@ -543,7 +543,7 @@
     {
       "id": "chintz",
       "name": "Chintz",
-      "prose": "A bolt of factory chintz, printed with cabbage blossoms in garish colours that occur nowhere in nature.",
+      "prose": "A bolt of factory chintz, printed with cabbage roses in garish colours that occur nowhere in nature. It sells by the mile to anyone who wants a room to be noticed from the street.",
       "kind": "cloth",
       "tags": ["floral", "loud", "factory"],
       "worth": 22
@@ -551,7 +551,7 @@
     {
       "id": "raw-silk",
       "name": "Hand-reeled raw silk",
-      "prose": "A hank of raw silk, hand-reeled and still gummy, fine as breath and not yet woven.",
+      "prose": "A hank of raw silk, hand-reeled from the cocoon and still stiff with its gum, fine as breath and not yet woven into anything. A spinner with patience will make a gown of it; a spinner without will make a mess.",
       "kind": "cloth",
       "tags": ["raw", "fine", "handmade"],
       "worth": 60
@@ -559,7 +559,7 @@
     {
       "id": "signal-orange-tarpaulin",
       "name": "Signal-orange tarpaulin",
-      "prose": "Waxed cotton cloth in a loud orange you could see from orbit, tough and waterproof.",
+      "prose": "A tarpaulin of waxed cotton cloth in a loud orange you could see from orbit. It is tough and waterproof, and it has covered harvesters, crashed shuttles and one wedding in a downpour.",
       "kind": "cloth",
       "tags": ["waterproof", "rugged", "loud"],
       "worth": 25
@@ -567,7 +567,7 @@
     {
       "id": "sweet-pea-rain-cape",
       "name": "Sweet-pea rain cape",
-      "prose": "A cape of fine oiled cloth printed with sweet peas in shrieking pinks; the rain runs off the petals.",
+      "prose": "A rain cape of fine oiled cloth, printed with sweet peas in shrieking pinks and purples. It is waterproof, the rain runs off its petals, and nobody has ever accused it of being discreet.",
       "kind": "cloth",
       "tags": ["floral", "waterproof", "fine", "loud"],
       "worth": 45
@@ -575,7 +575,7 @@
     {
       "id": "daisy-stitch-shawl",
       "name": "Daisy-stitch shawl",
-      "prose": "A daisy-stitch shawl, light as breath, its flowers worked by hand.",
+      "prose": "A shawl worked in daisy-stitch, light as breath, every one of its little flowers knotted by hand. It folds into a pocket and comes out without a crease, which is better than most travellers manage.",
       "kind": "cloth",
       "tags": ["floral", "handmade", "light"],
       "worth": 28
@@ -727,7 +727,7 @@
     {
       "id": "deep-rated-pump",
       "name": "Deep-rated pump",
-      "prose": "A factory-built pump, modern and machined to take crushing depth; heavy, and tough as the rock around it.",
+      "prose": "A deep-rated pump, the latest thing off a factory line, machined to hold against a mile of rock leaning on it. It is heavy enough to want a crane and a crew to move it, and tough enough that the crew will wear out first.",
       "kind": "mechanical",
       "tags": ["heavy", "rugged", "modern", "factory"],
       "worth": 55
@@ -735,7 +735,7 @@
     {
       "id": "veteran-gearbox",
       "name": "Veteran harvester gearbox",
-      "prose": "A veteran gearbox out of a harvester, heavy and hard-wearing, its teeth worn but true and its casing patched by hand.",
+      "prose": "A gearbox out of a veteran harvester, forty seasons in the wheat and still turning. Its teeth are worn but true, its casing has been patched by hand so often nobody keeps count, and it is heavy enough to break a foot and hard-wearing enough not to notice.",
       "kind": "mechanical",
       "tags": ["old", "heavy", "rugged", "handmade"],
       "worth": 40
@@ -743,7 +743,7 @@
     {
       "id": "hand-winch",
       "name": "Hand winch",
-      "prose": "A featherweight winch built by hand around a cranked gear, light enough to carry up a ladder.",
+      "prose": "A little winch built by hand around one cranked gear, light enough to carry up a ladder under one arm. Clamp it to anything that will hold still and it will lift a bucket, a sack or a stubborn calf.",
       "kind": "mechanical",
       "tags": ["light", "handmade"],
       "worth": 15
@@ -751,7 +751,7 @@
     {
       "id": "vintage-clock-movement",
       "name": "Vintage clock movement",
-      "prose": "A vintage clockwork movement, every gear delicate and light as a wish.",
+      "prose": "A vintage clock movement under a glass bell, every gear as delicate as an eyelash and the whole of it lighter than the glass. Somebody on Corrow made it when the lower cities were new. It still keeps time, and it has views on being dropped.",
       "kind": "mechanical",
       "tags": ["old", "fine", "light"],
       "worth": 50
@@ -759,7 +759,7 @@
     {
       "id": "sealed-unit-servo",
       "name": "Sealed-unit servo",
-      "prose": "A latest-model servo motor, a factory sealed unit, delicate and light in the palm.",
+      "prose": "A servo motor, a sealed unit straight from the factory: nothing to open, nothing to mend, and nothing inside that anyone with a spanner was meant to touch. It sits light in the palm, delicate enough to answer to a thousandth of a turn.",
       "kind": "mechanical",
       "tags": ["modern", "fine", "light", "factory"],
       "worth": 35
@@ -767,7 +767,7 @@
     {
       "id": "shed-rebuilt-motor",
       "name": "Shed-rebuilt motor",
-      "prose": "A vintage tractor motor, rebuilt by hand in someone's shed, tough and ugly.",
+      "prose": "A vintage tractor motor, rebuilt by hand in somebody's shed out of three others that had died. It is ugly, it rattles, and it is tough as a boot heel. It starts on the second pull every time, and it has never once started on the first.",
       "kind": "mechanical",
       "tags": ["old", "handmade", "rugged"],
       "worth": 25
@@ -775,7 +775,7 @@
     {
       "id": "crusher-jaw-plate",
       "name": "Crusher jaw plate",
-      "prose": "A jaw plate for a rock crusher, factory-cast and machined, hefty and tough.",
+      "prose": "A jaw plate for a rock crusher, cast in a factory and machined flat: a slab of manganese steel that chews basalt for a living. It is hefty enough to want two hauliers and a sledge, and tough enough to be the last part of the crusher to wear.",
       "kind": "mechanical",
       "tags": ["heavy", "rugged", "factory"],
       "worth": 30
@@ -783,7 +783,7 @@
     {
       "id": "laser-level",
       "name": "Laser level",
-      "prose": "A modern laser level, its motor delicate and its case light enough to clip to a belt.",
+      "prose": "A modern laser level in a case light enough to clip to a belt, its little motor delicate enough to find true across a valley. Surveyors swear by it. Farmers borrow it and swear at it.",
       "kind": "mechanical",
       "tags": ["modern", "fine", "light"],
       "worth": 45
@@ -791,7 +791,7 @@
     {
       "id": "cast-iron-flywheel",
       "name": "Cast-iron flywheel",
-      "prose": "A vintage cast-iron flywheel off an old-pattern engine, heavy and slow and machined smooth.",
+      "prose": "A cast-iron flywheel off an old-pattern steam engine, machined smooth by somebody long dead. It is heavy and slow, and once it starts it turns for a very long time, which is all anybody has ever asked of it.",
       "kind": "mechanical",
       "tags": ["old", "heavy"],
       "worth": 20
@@ -1918,7 +1918,7 @@
             { "tag": "mechanical", "negated": false },
             { "tag": "fine", "negated": false }
           ],
-          "plainly": "wants a fine instrument for the surveyor",
+          "plainly": "wants something fine for the surveyor's kit",
           "quantity": 1
         }
       ],
@@ -1956,7 +1956,7 @@
             { "tag": "cloth", "negated": false },
             { "tag": "raw", "negated": false }
           ],
-          "plainly": "wants raw fibre to spin at home",
+          "plainly": "wants raw cloth, unwashed and as it comes",
           "quantity": 3
         }
       ],
