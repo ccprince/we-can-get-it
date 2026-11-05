@@ -75,14 +75,19 @@ function departureFor(read: View, route: RouteRule): Command | null {
  */
 function prefers(read: View, route: RouteRule, lane: LaneView, best: LaneView): boolean {
   if (route === 'explore') {
-    const age = staleness(read, lane) - staleness(read, best);
-    return age === 0 ? lane.days < best.days : age > 0;
+    const laneDaysAgo = daysSinceSeen(read, lane);
+    const bestDaysAgo = daysSinceSeen(read, best);
+    return laneDaysAgo === bestDaysAgo ? lane.days < best.days : laneDaysAgo > bestDaysAgo;
   }
   return route === 'nearest' ? lane.days < best.days : lane.days > best.days;
 }
 
-/** How long since the guide last saw a lane's destination: unseen is the longest. */
-function staleness(read: View, lane: LaneView): number {
+/**
+ * Days since the guide last saw a lane's destination, its **as-of date**'s age:
+ * never seen is the longest. Compared with `===`, never subtracted, since two
+ * unseen places are equal and `Infinity - Infinity` is not zero.
+ */
+function daysSinceSeen(read: View, lane: LaneView): number {
   const known = read.guide.entries.find((entry) => entry.name === lane.destination)?.known;
   return known === undefined || known === null ? Number.POSITIVE_INFINITY : known.daysAgo;
 }

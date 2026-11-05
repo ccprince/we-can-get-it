@@ -1,0 +1,15 @@
+{
+  "days": 20,
+  "firstSeed": 1,
+  "seedCount": 200,
+  "out": "harness/out/bracket-148.csv",
+  "settings": [
+    {
+      "name": "plain-and-vague",
+      "contentPath": "content/plain-and-vague.json",
+      "route": "explore"
+    },
+    { "name": "plain-leaning", "contentPath": "content/plain-leaning.json", "route": "explore" },
+    { "name": "vague-leaning", "contentPath": "content/vague-leaning.json", "route": "explore" }
+  ]
+}
