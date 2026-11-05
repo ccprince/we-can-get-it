@@ -1,3 +1,4 @@
+import { parseArgs } from 'node:util';
 import { drawGalaxy, loadContent } from '../src/engine';
 import type { ContentSet, DrawnGalaxy } from '../src/engine';
 // A content set read off disk reads the same here as it does for the harness,
@@ -172,40 +173,41 @@ type Asked = {
 };
 
 /**
- * The command line, decoded in **one place**: the flags with their values, the
- * content set to search, and the predicate asked for by name with the arguments
- * given to it. Nothing downstream reads a positional word by its index.
+ * The command line, decoded in **one place**: the bound as typed, the content
+ * set to search, and the predicate asked for by name with the arguments given
+ * to it. Nothing downstream reads a positional word by its index.
  */
 type Words = {
-  readonly flags: ReadonlyMap<string, string>;
+  readonly bound: string | undefined;
   readonly contentPath: string;
   readonly name: string;
   readonly args: readonly string[];
 };
 
-const FLAGS = ['--bound'];
-
-function split(argv: readonly string[]): Words {
-  const flags = new Map<string, string>();
-  const rest: string[] = [];
-  for (let at = 0; at < argv.length; at += 1) {
-    const arg = argv[at] ?? '';
-    if (!arg.startsWith('--')) {
-      rest.push(arg);
-      continue;
-    }
-    if (!FLAGS.includes(arg)) {
-      throw new Error(`${arg} is not a flag this script takes.\n\n${usage()}`);
-    }
-    const value = argv[at + 1];
-    if (value === undefined) throw new Error(`${arg} was given no value.\n\n${usage()}`);
-    flags.set(arg, value);
-    at += 1;
+/**
+ * Node's own `parseArgs` refuses unknown flags and a flag with no value. What
+ * is left here is splitting the positionals into the content set, the
+ * predicate and its arguments; whether those arguments fit the predicate is
+ * `predicateNamed`'s to say.
+ */
+function split(argv: string[]): Words {
+  let parsed;
+  try {
+    parsed = parseArgs({
+      args: argv,
+      options: { bound: { type: 'string' } },
+      allowPositionals: true,
+      strict: true,
+    });
+  } catch (trouble) {
+    throw new Error(
+      `${trouble instanceof Error ? trouble.message : String(trouble)}\n\n${usage()}`,
+      { cause: trouble },
+    );
   }
-
-  const [contentPath, name, ...args] = rest;
+  const [contentPath, name, ...args] = parsed.positionals;
   if (contentPath === undefined || name === undefined) throw new Error(usage());
-  return { flags, contentPath, name, args };
+  return { bound: parsed.values.bound, contentPath, name, args };
 }
 
 /**
@@ -232,11 +234,10 @@ function predicateNamed(words: Words): PredicateKind {
  * predicate built against the reserve, and the bound to search within.
  */
 function asking(words: Words, named: PredicateKind, content: ContentSet): Asked {
-  const bound = words.flags.get('--bound');
   return {
     predicate: [named.name, ...words.args].join(' '),
     holds: named.make(words.args, content),
-    bound: bound === undefined ? DEFAULT_BOUND : whole(bound, '--bound', 1),
+    bound: words.bound === undefined ? DEFAULT_BOUND : whole(words.bound, '--bound', 1),
   };
 }
 

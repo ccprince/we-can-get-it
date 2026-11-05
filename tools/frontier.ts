@@ -1,4 +1,5 @@
 import { execFileSync } from 'node:child_process';
+import { parseArgs } from 'node:util';
 
 /**
  * The **frontier query** from `docs/agents/issue-tracker.md`: a parent's open
@@ -187,22 +188,40 @@ function fenced(lines: readonly string[]): string[] {
  */
 type Mode = 'list' | 'graph' | 'graph-only';
 
-const FLAGS: Readonly<Record<string, Mode>> = { '--graph': 'graph', '--graph-only': 'graph-only' };
-
-function parseArgs(argv: readonly string[]): { readonly number: number; readonly mode: Mode } {
-  const flags = argv.filter((arg) => arg.startsWith('--'));
-  const rest = argv.filter((arg) => !arg.startsWith('--'));
-  const number = Number(rest[0]?.replace(/^#/, ''));
-  const mode = flags.length === 0 ? 'list' : FLAGS[flags[0] ?? ''];
-  if (flags.length > 1 || mode === undefined) throw new Error(USAGE);
-  if (rest.length !== 1 || !Number.isInteger(number) || number <= 0) throw new Error(USAGE);
+/**
+ * Node's own `parseArgs` refuses unknown flags and a value given to either
+ * flag. What is left here is what it cannot know: that there is one issue
+ * number, with or without its `#`, and that the two flags are a choice.
+ */
+function readArgs(argv: string[]): { readonly number: number; readonly mode: Mode } {
+  let parsed;
+  try {
+    parsed = parseArgs({
+      args: argv,
+      options: { graph: { type: 'boolean' }, 'graph-only': { type: 'boolean' } },
+      allowPositionals: true,
+      strict: true,
+    });
+  } catch (trouble) {
+    throw new Error(`${trouble instanceof Error ? trouble.message : String(trouble)}\n${USAGE}`, {
+      cause: trouble,
+    });
+  }
+  const { values, positionals } = parsed;
+  if (values.graph === true && values['graph-only'] === true) {
+    throw new Error(`--graph or --graph-only, not both\n${USAGE}`);
+  }
+  const number = Number(positionals[0]?.replace(/^#/, ''));
+  if (positionals.length !== 1 || !Number.isInteger(number) || number <= 0) throw new Error(USAGE);
+  const mode =
+    values.graph === true ? 'graph' : values['graph-only'] === true ? 'graph-only' : 'list';
   return { number, mode };
 }
 
 const USAGE = 'Usage: npm run frontier -- <parent issue number> [--graph | --graph-only]';
 
 function main(): void {
-  const { number, mode } = parseArgs(process.argv.slice(2));
+  const { number, mode } = readArgs(process.argv.slice(2));
   const parent = fetchParent(number);
 
   if (parent.subIssues.totalCount === 0) {
