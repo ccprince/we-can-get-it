@@ -60,6 +60,22 @@ export function tierOf(
 }
 
 /**
+ * Whether a tier **answers** a want: acceptable or better. It is what completes
+ * an order, and what a want's answers are counted at.
+ */
+export function isAnswer(tier: Tier): boolean {
+  return tier === 'acceptable' || tier === 'great';
+}
+
+/** The tiers, worst first. */
+const RANKED: readonly Tier[] = ['refused', 'grudging', 'acceptable', 'great'];
+
+/** The better of two tiers. */
+export function better(one: Tier, other: Tier): Tier {
+  return RANKED.indexOf(other) > RANKED.indexOf(one) ? other : one;
+}
+
+/**
  * What the buyer pays for the good at that tier: the good's **worth** times the
  * tier's percent, rounded down to a whole credit — a buyer does not pay a
  * fraction, and rounding down is the buyer's side of the rounding a shop's

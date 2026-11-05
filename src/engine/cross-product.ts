@@ -17,7 +17,7 @@ import {
 } from './content-reports';
 import { locationNamed, type DrawnBack, type DrawnGalaxy } from './galaxy';
 import { drawnLength, worstDistortion } from './layout';
-import { tierOf, type Tier } from './match';
+import { better, isAnswer, tierOf, type Tier } from './match';
 import { judge, type Report } from './verdicts';
 import { registerOf, wordingOf, type Register } from './view';
 
@@ -139,6 +139,8 @@ export type WantAnswered = {
   readonly best: Tier;
   /** How many goods earn acceptable or better. */
   readonly answers: number;
+  /** `judge` when no good answers it: for a writer to judge, never a reason to fail. */
+  readonly verdict: Report['verdict'] | null;
 };
 
 export type Drawn = Survey & {
@@ -313,10 +315,10 @@ function wantsPerKind(
     return want.predicate.find((term) => !term.negated && kinds.includes(term.tag))?.tag ?? null;
   };
   const wants = subject.buyers.flatMap((buyer) => buyer.wants);
-  const counted = (kind: string | null): WantsAtKind => {
-    const at = wants.filter((want) => kindOf(want) === kind);
+  const atKind = (kind: string | null): WantsAtKind => {
+    const there = wants.filter((want) => kindOf(want) === kind);
     const count = (register: Register, order: boolean) =>
-      at.filter((want) => registerOf(want) === register && (want.order !== undefined) === order)
+      there.filter((want) => registerOf(want) === register && (want.order !== undefined) === order)
         .length;
     return {
       kind,
@@ -325,15 +327,13 @@ function wantsPerKind(
       orders: { vague: count('vague', true), plain: count('plain', true) },
     };
   };
-  const nowhere = wants.some((want) => kindOf(want) === null) ? [counted(null)] : [];
-  return [...kinds.map(counted), ...nowhere];
+  const noKind = wants.some((want) => kindOf(want) === null) ? [atKind(null)] : [];
+  return [...kinds.map(atKind), ...noKind];
 }
-
-const TIERS: readonly Tier[] = ['refused', 'grudging', 'acceptable', 'great'];
 
 function answersPerWant(subject: Pick<ContentSet, 'goods' | 'buyers'>): readonly WantAnswered[] {
   const answered = subject.buyers.flatMap((buyer) =>
-    buyer.wants.map((want, index) => answering(subject.goods, buyer, want, index)),
+    buyer.wants.map((want, index) => answerTo(subject.goods, buyer, want, index)),
   );
   return [
     ...answered.filter(({ answers }) => answers === 0),
@@ -341,14 +341,16 @@ function answersPerWant(subject: Pick<ContentSet, 'goods' | 'buyers'>): readonly
   ];
 }
 
-function answering(goods: readonly Good[], buyer: Buyer, want: Want, index: number): WantAnswered {
-  const tiers = goods.map((good) => TIERS.indexOf(tierOf(want, buyer, good).tier));
+function answerTo(goods: readonly Good[], buyer: Buyer, want: Want, index: number): WantAnswered {
+  const tiers = goods.map((good) => tierOf(want, buyer, good).tier);
+  const answers = tiers.filter(isAnswer).length;
   return {
     where: `buyers.${buyer.id}.wants[${index}]`,
     wording: wordingOf({ goods }, want),
     register: registerOf(want),
     order: want.order !== undefined,
-    best: TIERS[Math.max(0, ...tiers)] ?? 'refused',
-    answers: tiers.filter((tier) => tier >= TIERS.indexOf('acceptable')).length,
+    best: tiers.reduce(better, 'refused'),
+    answers,
+    verdict: answers === 0 ? 'judge' : null,
   };
 }

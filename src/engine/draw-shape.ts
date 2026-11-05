@@ -1,6 +1,6 @@
 import { goodsCarrying, type ContentSet } from './content';
 import type { DrawnGalaxy } from './galaxy';
-import { tierOf } from './match';
+import { isAnswer, tierOf } from './match';
 
 /**
  * What a drawn galaxy holds of the two numbers the first milestone's question
@@ -28,12 +28,7 @@ export function drawShape(content: ContentSet, galaxy: DrawnGalaxy): DrawShape {
   const vagueAnswers = galaxy.people.flatMap((buyer) =>
     buyer.wants.flatMap((want) => {
       if (!('kind' in want)) return [];
-      return [
-        galaxy.goods.filter((good) => {
-          const { tier } = tierOf(want, buyer, good);
-          return tier === 'acceptable' || tier === 'great';
-        }).length,
-      ];
+      return [galaxy.goods.filter((good) => isAnswer(tierOf(want, buyer, good).tier)).length];
     }),
   );
 
