@@ -51,6 +51,18 @@ function surfaces(
   );
 }
 
+/**
+ * A line by its whole text, though a good's name in it is its own button: the
+ * innermost element whose text is exactly this.
+ */
+function line(text: string) {
+  return screen.getByText(
+    (_, element) =>
+      element?.textContent === text &&
+      [...element.children].every((child) => child.textContent !== text),
+  );
+}
+
 /** The surfaces open on where the player is; the chart and the guide are a tab away. */
 function openTab(name: string) {
   fireEvent.click(screen.getByRole('tab', { name }));
@@ -295,7 +307,7 @@ describe('the shop and the hold', () => {
     surfaces({ campaign: after(atKestrel(), { kind: 'buy', lot: 'kestrel/quilt', quantity: 2 }) });
 
     expect(screen.getByText('2 of 100 units')).toBeDefined();
-    expect(screen.getByText('2 × Quilted roll (cloth)')).toBeDefined();
+    expect(line('2 × Quilted roll (cloth)')).toBeDefined();
   });
 
   it('says so when the shop has nothing and the hold is empty', () => {
@@ -338,11 +350,9 @@ describe('the people here', () => {
       ),
     ).toBeDefined();
     expect(
-      screen.getByText(
-        'Bolt of silk: grudging, 20 credits each — close, but not quite what they asked for',
-      ),
+      line('Bolt of silk: grudging, 20 credits each — close, but not quite what they asked for'),
     ).toBeDefined();
-    expect(screen.getByText('Ship blanket: great, 37 credits each')).toBeDefined();
+    expect(line('Ship blanket: great, 37 credits each')).toBeDefined();
   });
 
   it('hands back the sale of the good the player chose', () => {
@@ -528,5 +538,66 @@ describe('the chart drawn as a graph', () => {
 
     const graph = screen.getByRole('img', { name: 'Chart' });
     expect(graph.querySelectorAll('[aria-current="location"]')).toHaveLength(0);
+  });
+});
+
+describe("a good's prose", () => {
+  const BLANKET = 'A woven blanket with a fleece lining, sold by the gantry crews.';
+  /** Kestrel's shop, with a blanket and a silk aboard for Ilse to weigh. */
+  const holding = () =>
+    after(
+      started(loadedContentSet(aTradingGalaxy({ buyers: [aBuyer(), anElsewhereBuyer()] })), SEED),
+      { kind: 'buy', lot: 'kestrel/silk', quantity: 1 },
+      { kind: 'buy', lot: 'kestrel/blanket', quantity: 1 },
+    );
+  const card = () => screen.queryByRole('dialog', { name: 'Ship blanket' });
+
+  it('is not on the page until asked for', () => {
+    surfaces({ campaign: holding() });
+
+    expect(screen.queryByText(BLANKET)).toBeNull();
+  });
+
+  it('opens a card with the name and prose when the good is clicked, and Escape closes it', () => {
+    surfaces({ campaign: holding() });
+
+    fireEvent.click(
+      within(screen.getByRole('row', { name: /Ship blanket/ })).getByRole('button', {
+        name: 'Ship blanket',
+      }),
+    );
+
+    expect(within(card()!).getByText(BLANKET)).toBeDefined();
+    expect(card()!.textContent).toBe(`Ship blanket${BLANKET}`);
+
+    fireEvent.keyDown(document, { key: 'Escape' });
+
+    expect(card()).toBeNull();
+  });
+
+  it('closes the card on a click elsewhere', () => {
+    surfaces({ campaign: holding() });
+    fireEvent.click(screen.getAllByRole('button', { name: 'Ship blanket' })[0]!);
+
+    fireEvent.mouseDown(document.body);
+
+    expect(card()).toBeNull();
+  });
+
+  it('opens from the hold, the match line and the trade guide too', () => {
+    surfaces({ campaign: holding() });
+    const names = () => screen.getAllByRole('button', { name: 'Ship blanket' });
+    // The shop, the hold, and the match line under Ilse's want.
+    expect(names()).toHaveLength(3);
+    for (const name of names().slice(1)) {
+      fireEvent.click(name);
+      expect(within(card()!).getByText(BLANKET)).toBeDefined();
+      fireEvent.keyDown(document, { key: 'Escape' });
+    }
+
+    openTab('Trade guide');
+    fireEvent.click(screen.getByRole('button', { name: 'Ship blanket' }));
+
+    expect(within(card()!).getByText(BLANKET)).toBeDefined();
   });
 });
